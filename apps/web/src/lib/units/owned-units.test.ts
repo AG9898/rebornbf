@@ -1,4 +1,7 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Form } from "@bfr/data";
+import { TYPE_GAIN_RANGES } from "@bfr/engine";
 import { describe, expect, it } from "vitest";
 import {
   formArtFile,
@@ -145,5 +148,17 @@ describe("rarityLabel", () => {
   it("labels star rarities and Omni", () => {
     expect(rarityLabel(3)).toBe("3★");
     expect(rarityLabel("omni")).toBe("Omni");
+  });
+});
+
+describe("type gain ranges", () => {
+  it("match the unit_type_rolls migration the server rolls from (M3-01D)", () => {
+    const dir = join(import.meta.dirname, "..", "..", "..", "..", "..", "supabase", "migrations");
+    const name = readdirSync(dir).find((n) => n.endsWith("_unit_type_rolls.sql"));
+    expect(name).toBeDefined();
+    const sql = readFileSync(join(dir, name ?? ""), "utf8");
+    const literal = /select '(\{[^']*\})'::jsonb/.exec(sql)?.[1];
+    expect(literal).toBeDefined();
+    expect(JSON.parse(literal ?? "{}")).toEqual(TYPE_GAIN_RANGES);
   });
 });

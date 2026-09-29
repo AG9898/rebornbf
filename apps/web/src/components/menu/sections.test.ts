@@ -14,8 +14,10 @@ describe("menu sections", () => {
     expect(new Set(NAV_SECTIONS.map((s) => s.href)).size).toBe(NAV_SECTIONS.length);
   });
 
-  it("marks Home only on the root path", () => {
-    expect(activeSection("/")?.label).toBe("Home");
+  it("marks Home on /home, not on the title screen", () => {
+    expect(activeSection("/home")?.label).toBe("Home");
+    expect(activeSection("/")).toBeUndefined();
+    expect(activeSection("/homex")).toBeUndefined();
     expect(activeSection("/gallery")).toBeUndefined();
   });
 

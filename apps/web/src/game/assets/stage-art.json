@@ -3,10 +3,19 @@
   "backgrounds": {
     "plains": {
       "chapters": [1],
-      "stages": ["demo-stage", "placeholder-stage"]
+      "stages": ["demo-stage", "placeholder-stage", "tutorial"]
     }
   },
   "enemies": {
+    "tut-thistle-sprout": {
+      "canvas": 128
+    },
+    "tut-puddle-imp": {
+      "canvas": 128
+    },
+    "tut-training-golem": {
+      "canvas": 128
+    },
     "ch1-bramble-pup": {
       "canvas": 128
     },

@@ -11,7 +11,7 @@ export type NavSection = {
 };
 
 export const NAV_SECTIONS: readonly NavSection[] = [
-  { href: "/", label: "Home", icon: "home" },
+  { href: "/home", label: "Home", icon: "home" },
   { href: "/units", label: "Unit", icon: "unit" },
   { href: "/squad", label: "Squad", icon: "squad" },
   { href: "/items", label: "Items", icon: "items" },
@@ -50,10 +50,12 @@ export const GAME_MODES: readonly GameMode[] = [
 
 export const START_MODE_INDEX = 1;
 
-/** The nav section that owns `pathname`: Home only for `/`, otherwise the longest prefix match. */
+/**
+ * The nav section that owns `pathname`: the longest prefix match. Home lives at `/home`; `/` is
+ * the title screen (RESOLVED-68), outside the menu frame, so no section owns it.
+ */
 export function activeSection(pathname: string): NavSection | undefined {
-  if (pathname === "/") return NAV_SECTIONS[0];
-  return NAV_SECTIONS.filter(
-    (s) => s.href !== "/" && (pathname === s.href || pathname.startsWith(`${s.href}/`)),
-  ).sort((a, b) => b.href.length - a.href.length)[0];
+  return NAV_SECTIONS.filter((s) => pathname === s.href || pathname.startsWith(`${s.href}/`)).sort(
+    (a, b) => b.href.length - a.href.length,
+  )[0];
 }

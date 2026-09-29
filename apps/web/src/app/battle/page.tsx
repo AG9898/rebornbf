@@ -76,7 +76,7 @@ export default async function BattlePage({
       <header className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between px-4">
         <h1 className="text-sm font-semibold tracking-[0.18em] uppercase">{title}</h1>
         <Link
-          href={sessionId ? "/quests" : "/"}
+          href={sessionId ? "/quests" : "/home"}
           className="text-xs font-semibold text-amber-200 hover:underline"
         >
           {sessionId ? "Quest" : "Home"}

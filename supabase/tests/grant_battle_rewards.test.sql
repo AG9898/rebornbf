@@ -34,11 +34,11 @@ reset role;
 
 set local role service_role;
 select is(public.grant_battle_rewards('00000000-0000-0000-0000-0000000007a1'),
-  '{"first_clear":true,"gems":25,"zel":60}'::jsonb, 'first clear grants gems and two Zel drops');
+  '{"first_clear":true,"gems":25,"zel":60,"units":[],"items":{}}'::jsonb, 'first clear grants gems and two Zel drops');
 select throws_ok($$select public.grant_battle_rewards('00000000-0000-0000-0000-0000000007a1')$$,
   'P0002', null, 'a session cannot pay twice');
 select is(public.grant_battle_rewards('00000000-0000-0000-0000-0000000007a2'),
-  '{"first_clear":false,"gems":0,"zel":60}'::jsonb, 'repeat clear grants drops but not first-clear gems');
+  '{"first_clear":false,"gems":0,"zel":60,"units":[],"items":{}}'::jsonb, 'repeat clear grants drops but not first-clear gems');
 select throws_ok($$select public.grant_battle_rewards('00000000-0000-0000-0000-0000000007a3')$$,
   'P0002', null, 'expired sessions cannot pay');
 reset role;

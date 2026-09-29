@@ -1,15 +1,19 @@
 // Content validation entry point: parses every file in content/ against its zod schema.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { type Enemy, EnemySchema } from "../src/schemas/enemy.ts";
 import { type Stage, StageSchema } from "../src/schemas/stage.ts";
 import { type Unit, UnitSchema } from "../src/schemas/unit.ts";
 import {
   validateBannerFile,
+  validateDropRefs,
+  validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
   validateItemFile,
   validateStageFile,
   validateStory,
+  validateTutorials,
   validateUnitFile,
 } from "../src/validate.ts";
 
@@ -53,7 +57,16 @@ const itemIds = new Set(jsonFiles("items").map((file) => file.slice("items/".len
 for (const unit of units) {
   errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
 }
-validateDir("enemies", validateEnemyFile);
+const enemies = new Map<string, Enemy>();
+validateDir("enemies", (file, json) => {
+  const parsed = EnemySchema.safeParse(json);
+  if (parsed.success) enemies.set(parsed.data.id, parsed.data);
+  return validateEnemyFile(file, json);
+});
+// Enemy drops reference capture units and items by file name.
+for (const enemy of enemies.values()) {
+  errors.push(...validateDropRefs(`enemies/${enemy.id}.json`, enemy, unitIds, itemIds));
+}
 // Stages reference enemies by file name; a broken enemy file is reported above.
 const enemyIds = new Set(
   jsonFiles("enemies").map((file) => file.slice("enemies/".length, -".json".length)),
@@ -66,6 +79,10 @@ validateDir("stages", (file, json) => {
 });
 // Story placement spans files: numbering, complete chapters, and chapter bosses.
 errors.push(...validateStory(stages));
+// Dungeon gates, key items, and always-captured slots span stages, enemies, and items.
+errors.push(...validateDungeons(stages, enemies, itemIds));
+// The tutorial's preset squad names unit forms, and its enemies may drop nothing granted.
+errors.push(...validateTutorials(stages, new Map(units.map((unit) => [unit.id, unit])), enemies));
 // Banners reference unit forms; unreadable unit files are reported above and skipped here.
 const unitForms = new Map<string, Set<string>>();
 for (const file of jsonFiles("units")) {

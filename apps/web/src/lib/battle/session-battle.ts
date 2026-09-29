@@ -25,7 +25,7 @@ export type SnapshotUnit = {
   unit_id: string;
   form_id: string;
   level: number;
-  /** The owned unit's persisted type roll (M3-01D adds it to the snapshot); absent means Lord. */
+  /** The owned unit's persisted type roll (snapshotted since M3-01D); null or absent means Lord. */
   unit_type?: UnitTypeRoll | null;
 };
 

@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import { BannerSchema } from "./schemas/banner.ts";
-import { EnemySchema } from "./schemas/enemy.ts";
+import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
 import { ItemContentSchema } from "./schemas/item.ts";
 import { isBossStage, type Stage, StageSchema } from "./schemas/stage.ts";
 import { type Unit, UnitSchema } from "./schemas/unit.ts";
@@ -89,6 +89,111 @@ export function validateItemFile(file: string, json: unknown): string[] {
 /** Validates one parsed enemy file (schema, AI rule references, file name). */
 export function validateEnemyFile(file: string, json: unknown): string[] {
   return validateContentFile(EnemySchema, file, json).errors;
+}
+
+/**
+ * Checks that an enemy's drops name existing content: its capture unit is one of `unitIds` (the
+ * files in `content/units/`) and each item drop one of `itemIds` (the files in `content/items/`).
+ */
+export function validateDropRefs(
+  file: string,
+  enemy: Enemy,
+  unitIds: ReadonlySet<string>,
+  itemIds: ReadonlySet<string>,
+): string[] {
+  const errors: string[] = [];
+  const capture = enemy.drops.capture;
+  if (capture && !unitIds.has(capture.unit)) {
+    errors.push(`${file}: drops.capture.unit: unknown unit "${capture.unit}"`);
+  }
+  (enemy.drops.items ?? []).forEach((entry, i) => {
+    if (!itemIds.has(entry.item)) {
+      errors.push(
+        `${file}: ${formatPath(["drops", "items", i, "item"])}: unknown item "${entry.item}"`,
+      );
+    }
+  });
+  return errors;
+}
+
+/**
+ * Cross-file dungeon checks over every parsed stage (GAME_DESIGN §7 → Farming dungeons): a
+ * dungeon's gate is an existing non-dungeon stage, its key item is one of `itemIds`, and every
+ * `capture: "always"` slot names an enemy (in `enemies`, by ID) that has a capture drop.
+ */
+export function validateDungeons(
+  stages: readonly Stage[],
+  enemies: ReadonlyMap<string, Enemy>,
+  itemIds: ReadonlySet<string>,
+): string[] {
+  const errors: string[] = [];
+  const byId = new Map(stages.map((stage) => [stage.id, stage]));
+  for (const stage of stages) {
+    const dungeon = stage.dungeon;
+    if (!dungeon) continue;
+    const file = `stages/${stage.id}.json`;
+    const gate = byId.get(dungeon.gate);
+    if (!gate) {
+      errors.push(`${file}: dungeon.gate: unknown stage "${dungeon.gate}"`);
+    } else if (gate.dungeon) {
+      errors.push(`${file}: dungeon.gate: "${dungeon.gate}" is a dungeon stage, not a story gate`);
+    }
+    if (dungeon.keyItem && !itemIds.has(dungeon.keyItem.item)) {
+      errors.push(`${file}: dungeon.keyItem.item: unknown item "${dungeon.keyItem.item}"`);
+    }
+    stage.waves.forEach((wave, w) => {
+      wave.enemies.forEach((slot, e) => {
+        const enemy = enemies.get(slot.enemy);
+        if (slot.capture === "always" && enemy && !enemy.drops.capture) {
+          const path = formatPath(["waves", w, "enemies", e, "capture"]);
+          errors.push(`${file}: ${path}: enemy "${slot.enemy}" has no capture drop`);
+        }
+      });
+    });
+  }
+  return errors;
+}
+
+/**
+ * Cross-file tutorial checks over every parsed stage (GAME_DESIGN §8 → New player flow): each
+ * preset unit (in `units`, by ID) has a form at the tutorial's rarity whose max level reaches the
+ * tutorial's level, and every wave enemy (in `enemies`, by ID) drops nothing that is granted
+ * (no Zel, Karma, items, or capture), since the tutorial grants nothing.
+ */
+export function validateTutorials(
+  stages: readonly Stage[],
+  units: ReadonlyMap<string, Unit>,
+  enemies: ReadonlyMap<string, Enemy>,
+): string[] {
+  const errors: string[] = [];
+  for (const stage of stages) {
+    const tutorial = stage.tutorial;
+    if (!tutorial) continue;
+    const file = `stages/${stage.id}.json`;
+    const members: Array<[string, string]> = tutorial.units.map((id, i) => [`units[${i}]`, id]);
+    if (tutorial.ally) members.push(["ally", tutorial.ally]);
+    for (const [path, id] of members) {
+      const unit = units.get(id);
+      const form = unit?.forms.find((f) => f.rarity === tutorial.rarity);
+      if (!unit) {
+        errors.push(`${file}: tutorial.${path}: unknown unit "${id}"`);
+      } else if (!form) {
+        errors.push(`${file}: tutorial.${path}: "${id}" has no ${tutorial.rarity}★ form`);
+      } else if (tutorial.level > form.maxLevel) {
+        errors.push(`${file}: tutorial.level: above ${form.id}'s max level ${form.maxLevel}`);
+      }
+    }
+    stage.waves.forEach((wave, w) => {
+      wave.enemies.forEach((slot, e) => {
+        const drops = enemies.get(slot.enemy)?.drops;
+        if (drops && (drops.zel || drops.karma || drops.items?.length || drops.capture)) {
+          const path = formatPath(["waves", w, "enemies", e, "enemy"]);
+          errors.push(`${file}: ${path}: "${slot.enemy}" drops rewards; the tutorial grants none`);
+        }
+      });
+    });
+  }
+  return errors;
 }
 
 /**

@@ -4,6 +4,7 @@ export const PROTECTED_PATH_PREFIXES: readonly string[] = [
   "/units",
   "/squad",
   "/owner",
+  "/onboarding",
 ];
 
 export const SIGN_IN_PATH = "/sign-in";

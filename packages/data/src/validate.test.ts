@@ -1,16 +1,20 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
 import { type Stage, StageSchema } from "./schemas/stage.ts";
-import { UnitSchema } from "./schemas/unit.ts";
+import { type Unit, UnitSchema } from "./schemas/unit.ts";
 import {
   formatPath,
   validateBannerFile,
+  validateDropRefs,
+  validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
   validateItemFile,
   validateStageFile,
   validateStory,
+  validateTutorials,
   validateUnitFile,
 } from "./validate.ts";
 
@@ -362,6 +366,105 @@ describe("evolution materials and recipes (M4-02D)", () => {
     expect(validateEvolutionRefs("units/x.json", parsed, unitIds, itemIds)).toEqual([
       'units/x.json: forms[0].evolution.units[0].unit: unknown unit "missing-mote"',
       'units/x.json: forms[0].evolution.items[0].item: unknown item "missing-shard"',
+    ]);
+  });
+});
+
+describe("farming dungeons (M4-03B)", () => {
+  const grunt = EnemySchema.parse(loadContent("enemies/placeholder-grunt.json"));
+  const mote: Enemy = {
+    ...grunt,
+    id: "test-mote",
+    drops: { capture: { unit: "moss-mote", rate: 25 }, items: [{ item: "crown-shard", rate: 5 }] },
+  };
+  const enemies = new Map<string, Enemy>([
+    [mote.id, mote],
+    [grunt.id, grunt],
+  ]);
+  const unitIds = new Set(["moss-mote"]);
+  const itemIds = new Set(["crown-shard"]);
+  const story = StageSchema.parse(loadContent("stages/story-01-brightmere-outskirts.json"));
+  const dungeon = StageSchema.parse({
+    id: "test-dungeon",
+    name: "Test Dungeon",
+    dungeon: { series: "test", gate: story.id, keyItem: { item: "crown-shard", rate: 20 } },
+    waves: [
+      { enemies: [{ enemy: "test-mote" }] },
+      { enemies: [{ enemy: "test-mote" }] },
+      { enemies: [{ enemy: "test-mote", capture: "always" }] },
+    ],
+  });
+
+  it("accepts a gated dungeon with a key item and a capturing final wave", () => {
+    expect(validateDungeons([story, dungeon], enemies, itemIds)).toEqual([]);
+    expect(validateDropRefs("enemies/test-mote.json", mote, unitIds, itemIds)).toEqual([]);
+  });
+
+  it("reports unknown gates, dungeon gates, unknown key items, and uncapturable slots", () => {
+    const unknownGate = { ...dungeon, dungeon: { series: "test", gate: "nowhere" } };
+    expect(validateDungeons([unknownGate], enemies, itemIds)).toEqual([
+      'stages/test-dungeon.json: dungeon.gate: unknown stage "nowhere"',
+    ]);
+    const chained: Stage = {
+      ...dungeon,
+      id: "test-dungeon-2",
+      dungeon: { series: "test", gate: "test-dungeon", keyItem: { item: "lost", rate: 1 } },
+      waves: [{ enemies: [{ enemy: "placeholder-grunt", capture: "always" }] }],
+    };
+    expect(validateDungeons([story, dungeon, chained], enemies, itemIds)).toEqual([
+      'stages/test-dungeon-2.json: dungeon.gate: "test-dungeon" is a dungeon stage, not a story gate',
+      'stages/test-dungeon-2.json: dungeon.keyItem.item: unknown item "lost"',
+      'stages/test-dungeon-2.json: waves[0].enemies[0].capture: enemy "placeholder-grunt" has no capture drop',
+    ]);
+  });
+
+  it("reports drops that name unknown units or items", () => {
+    expect(validateDropRefs("enemies/test-mote.json", mote, new Set(), new Set())).toEqual([
+      'enemies/test-mote.json: drops.capture.unit: unknown unit "moss-mote"',
+      'enemies/test-mote.json: drops.items[0].item: unknown item "crown-shard"',
+    ]);
+  });
+});
+
+describe("tutorial stage (M3-06D)", () => {
+  const tutorial = StageSchema.parse(loadContent("stages/tutorial.json"));
+  const preset = tutorial.tutorial;
+  if (!preset) throw new Error("stages/tutorial.json has no tutorial block");
+  const units = new Map<string, Unit>(
+    [...preset.units, ...(preset.ally ? [preset.ally] : [])].map((id) => [
+      id,
+      UnitSchema.parse(loadContent(`units/${id}.json`)),
+    ]),
+  );
+  const enemies = new Map<string, Enemy>(
+    tutorial.waves
+      .flatMap((wave) => wave.enemies.map((slot) => slot.enemy))
+      .map((id) => [id, EnemySchema.parse(loadContent(`enemies/${id}.json`))]),
+  );
+
+  it("is valid and grants nothing", () => {
+    expect(tutorial.story ?? tutorial.dungeon ?? tutorial.firstClear).toBeUndefined();
+    expect(validateTutorials([tutorial], units, enemies)).toEqual([]);
+  });
+
+  it("rejects a tutorial with a reward", () => {
+    const result = StageSchema.safeParse({ ...tutorial, firstClear: { gems: 5 } });
+    expect(result.success).toBe(false);
+  });
+
+  it("reports unknown units, missing forms, levels past max, and rewarding enemies", () => {
+    const grunt = EnemySchema.parse(loadContent("enemies/placeholder-grunt.json"));
+    const broken: Stage = {
+      ...tutorial,
+      tutorial: { ...preset, units: ["brand", "nobody"], rarity: 3, level: 41 },
+      waves: [{ enemies: [{ enemy: "rich" }] }],
+    };
+    const rich: Enemy = { ...grunt, id: "rich", drops: { zel: { rate: 50, amount: 10 } } };
+    expect(validateTutorials([broken], units, new Map([["rich", rich]]))).toEqual([
+      "stages/tutorial.json: tutorial.level: above brand-3's max level 40",
+      'stages/tutorial.json: tutorial.units[1]: unknown unit "nobody"',
+      "stages/tutorial.json: tutorial.level: above morrick-3's max level 40",
+      'stages/tutorial.json: waves[0].enemies[0].enemy: "rich" drops rewards; the tutorial grants none',
     ]);
   });
 });

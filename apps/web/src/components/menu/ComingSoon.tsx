@@ -9,7 +9,7 @@ export function ComingSoon({ title, note }: { title: string; note: string }): Re
       <section className={styles.panel}>
         <h1 className={`${styles.panelTitle} ${styles.gold}`}>{title}</h1>
         <p className={styles.panelText}>{note}</p>
-        <Link href="/" className={styles.panelLink}>
+        <Link href="/home" className={styles.panelLink}>
           Back to Home
         </Link>
       </section>

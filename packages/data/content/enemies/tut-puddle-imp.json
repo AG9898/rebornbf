@@ -1,0 +1,27 @@
+{
+  "id": "tut-puddle-imp",
+  "name": "Puddle Imp",
+  "element": "water",
+  "stats": {
+    "hp": 4500,
+    "atk": 130,
+    "def": 60,
+    "rec": 80
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 8],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {}
+}

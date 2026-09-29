@@ -183,7 +183,7 @@ export default function GalleryPage(): ReactNode {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-4 py-8">
       <header className="mb-8 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-black tracking-[0.18em] text-amber-100">
+        <Link href="/home" className="text-2xl font-black tracking-[0.18em] text-amber-100">
           BFR
         </Link>
         <div className="flex items-center gap-3">

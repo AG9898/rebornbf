@@ -1,0 +1,421 @@
+/*
+ * Onboarding screens (ART_GUIDE.md -> Onboarding screens). The same portrait 640x1136 screen as
+ * the title screen (app/title.module.css), with its key art blurred and dimmed, a small wordmark,
+ * and a centred slate-and-gold panel. Everything sizes in cqw/cqh of the screen. Built only from
+ * locked pieces: title-keyart, bg-slate, item-panel, btn-pill-lit, btn-pill.
+ */
+
+.backdrop {
+  min-height: 100dvh;
+  background: #06080f url("/assets/ui/bg-slate.webp") repeat;
+  background-size: 256px;
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  width: min(100vw, calc(100dvh * 640 / 1136));
+  height: 100dvh;
+  container-type: size;
+  overflow: hidden;
+  font-family: var(--font-menu), system-ui, sans-serif;
+  color: #fff;
+  box-shadow: 0 0 48px rgb(0 0 0 / 0.8);
+}
+
+/* Oversized so the blur has no soft edge; the dim sits on top in ::after. */
+.keyArt {
+  position: absolute;
+  inset: -4cqw;
+  background: #141a2e url("/assets/ui/title-keyart.webp") center top / cover no-repeat;
+  filter: blur(1.6cqw) saturate(0.85);
+}
+
+.keyArt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgb(4 6 12 / 0.55), rgb(4 6 12 / 0.7) 40%, rgb(4 6 12 / 0.85));
+}
+
+.wordmark {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: calc(100cqh * 0.03) 0 0;
+  line-height: 1;
+  text-align: center;
+  filter: drop-shadow(0.35cqw 0 0 #2a1606) drop-shadow(-0.35cqw 0 0 #2a1606)
+    drop-shadow(0 0.35cqw 0 #2a1606) drop-shadow(0 -0.35cqw 0 #2a1606)
+    drop-shadow(0 0.8cqw 0.4cqw rgb(0 0 0 / 0.6));
+}
+
+.wordmarkLead,
+.wordmarkAccent,
+.panelTitle {
+  background: linear-gradient(#fff6c8 10%, #f6c342 45%, #c9811c 75%, #fbe39a 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.wordmarkLead {
+  font-size: 5.5cqw;
+}
+
+.wordmarkAccent {
+  margin-top: 0.5cqw;
+  font-size: 8cqw;
+}
+
+/* The area under the wordmark; steps centre their panel in it. */
+.stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 5cqw calc(100cqh * 0.08);
+}
+
+/* The item-panel piece's gold frame and corners as a border image over the slate texture. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3cqw;
+  width: 100%;
+  padding: 6cqw 7cqw 7cqw;
+  border: 5cqw solid transparent;
+  border-image: url("/assets/ui/item-panel.webp") 110 / 5cqw / 0 stretch;
+  /* The slate texture multiplied to the frame's navy so the inside meets the trim without a seam. */
+  background: #82ceff url("/assets/ui/bg-slate.webp") center / 40cqw;
+  background-blend-mode: multiply;
+  background-clip: padding-box;
+  box-shadow: 0 2cqw 6cqw rgb(0 0 0 / 0.6);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 7.5cqw;
+  font-weight: 400;
+  text-align: center;
+  filter: drop-shadow(0 0.4cqw 0 #2a1606);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqw;
+}
+
+.label {
+  font-size: 3.6cqw;
+  color: rgb(255 246 200 / 0.85);
+}
+
+.input {
+  width: 100%;
+  padding: 2.2cqw 3cqw;
+  border: 0.5cqw solid #c9811c;
+  border-radius: 1.5cqw;
+  background: rgb(4 6 12 / 0.75);
+  color: #fff;
+  font: inherit;
+  font-size: 5cqw;
+  outline: none;
+}
+
+.input:focus-visible {
+  border-color: #fbe39a;
+  box-shadow: 0 0 0 0.6cqw rgb(246 195 66 / 0.45);
+}
+
+.input[aria-invalid="true"] {
+  border-color: #e0564a;
+}
+
+.fieldFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 2cqw;
+  min-height: 4.5cqw;
+  font-family: system-ui, sans-serif;
+  font-size: 3.2cqw;
+}
+
+.error {
+  margin: 0;
+  color: #ff8f80;
+}
+
+.count {
+  margin-left: auto;
+  color: rgb(255 255 255 / 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.countOver {
+  color: #ff8f80;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 4cqw;
+}
+
+/* The lit gold pill (btn-pill-lit) as the primary button; btn-pill for a secondary one. */
+.button,
+.buttonSecondary {
+  width: 42cqw;
+  aspect-ratio: 300 / 65;
+  border: 0;
+  background: url("/assets/ui/btn-pill-lit.webp") center / 100% 100% no-repeat;
+  color: #fff;
+  font: inherit;
+  font-size: 5cqw;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.8cqw #0b1d4a;
+  cursor: pointer;
+}
+
+.buttonSecondary {
+  background-image: url("/assets/ui/btn-pill.webp");
+}
+
+.button:hover:not(:disabled),
+.buttonSecondary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.button:focus-visible,
+.buttonSecondary:focus-visible {
+  outline: 0.6cqw solid #fbe39a;
+  outline-offset: 0.6cqw;
+  border-radius: 99cqw;
+}
+
+.button:disabled,
+.buttonSecondary:disabled {
+  filter: grayscale(0.6) brightness(0.8);
+  cursor: default;
+}
+
+/*
+ * Tutorial prompts (M3-06E) over the full-screen battle. They sit in the battle's canvas overlay (a
+ * size container the canvas's size), so cqw/cqh are the battle screen's. The prompt panel is a
+ * compact `.panel` docked over the item bar, which the tutorial does not use; only its buttons take
+ * pointer input, so the battle stays playable under it.
+ */
+.promptDock {
+  position: absolute;
+  inset: auto 1.5cqw 1cqh;
+  font-family: var(--font-menu), system-ui, sans-serif;
+  color: #fff;
+  pointer-events: none;
+}
+
+.prompt {
+  gap: 1cqw;
+  padding: 1cqw 2.5cqw 1.5cqw;
+  border-width: 3cqw;
+  border-image-width: 3cqw;
+}
+
+.promptHead {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.promptTitle {
+  flex: 1;
+  font-size: 5.5cqw;
+  text-align: left;
+}
+
+.promptCount {
+  font-size: 3.2cqw;
+  color: rgb(255 246 200 / 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.promptText {
+  margin: 0;
+  font-size: 3.6cqw;
+  line-height: 1.25;
+  color: rgb(255 246 200 / 0.92);
+}
+
+.prompt .error {
+  font-family: system-ui, sans-serif;
+  font-size: 3cqw;
+}
+
+/* The Skip pill: `btn-pill` at half size. */
+.buttonSmall {
+  width: 20cqw;
+  font-size: 3.6cqw;
+  -webkit-text-stroke-width: 0.6cqw;
+  pointer-events: auto;
+}
+
+/* The win and loss panels: centred over the dimmed battle, which no longer takes input. */
+.endDock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6cqw;
+  background: rgb(4 6 12 / 0.45);
+  font-family: var(--font-menu), system-ui, sans-serif;
+  color: #fff;
+  pointer-events: auto;
+}
+
+.endDock .promptText {
+  text-align: center;
+  font-size: 4.2cqw;
+}
+
+/*
+ * Starter pick (M3-05A): the six B0 starters as 3★ showcase cards straight on the backdrop, three
+ * per row, in the home showcase's proportions (card-frame 250x727 over the 250x690 card art, with
+ * the element orb). Selecting one opens the confirm panel over the dimmed grid.
+ */
+.starterHead {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5cqw;
+  margin-bottom: 3cqw;
+}
+
+.starterIntro {
+  margin: 0;
+  font-size: 3.6cqw;
+  line-height: 1.25;
+  text-align: center;
+  color: rgb(255 246 200 / 0.92);
+}
+
+.starterGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 19cqw);
+  justify-content: center;
+  gap: 2.5cqw 5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.starterCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8cqw;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.starterCardArt,
+.confirmCard {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 19cqw;
+  aspect-ratio: 250 / 727;
+}
+
+.starterCardImage {
+  position: absolute;
+  inset: 3.2%;
+  width: 93.6%;
+  height: 93.6%;
+  border-radius: 7.2cqw / 2.5cqw;
+  object-fit: cover;
+}
+
+.starterCardFrame,
+.starterCardOrb {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+}
+
+.starterCardFrame {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Home's orb: 44/125 of the card width, 6/125 from the right, 8/363 from the bottom. */
+.starterCardOrb {
+  right: 4.8%;
+  bottom: 2.2%;
+  width: 35.2%;
+}
+
+.starterCardName {
+  font-size: 4cqw;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.6cqw #0b1d4a;
+}
+
+.starterCard:hover .starterCardArt,
+.starterCard:focus-visible .starterCardArt {
+  filter: brightness(1.15) drop-shadow(0 0 1.5cqw rgb(246 195 66 / 0.7));
+}
+
+.starterCard:focus-visible {
+  outline: none;
+}
+
+.starterCard:focus-visible .starterCardName {
+  text-decoration: underline;
+}
+
+.confirmDock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5cqw;
+  background: rgb(4 6 12 / 0.6);
+}
+
+.confirmDock > [role="dialog"] {
+  width: 100%;
+}
+
+.confirmBody {
+  display: flex;
+  align-items: center;
+  gap: 4cqw;
+}
+
+.confirmBody .starterIntro {
+  flex: 1;
+  text-align: left;
+  font-size: 4cqw;
+}
+
+.confirmDock .error {
+  min-height: 3.2cqw;
+  font-family: system-ui, sans-serif;
+  font-size: 3.2cqw;
+  text-align: center;
+}

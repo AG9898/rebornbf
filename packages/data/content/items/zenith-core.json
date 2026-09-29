@@ -1,0 +1,6 @@
+{
+  "id": "zenith-core",
+  "kind": "material",
+  "name": "Zenith Core",
+  "description": "A core that holds a unit's final light. Every 7★ to Omni evolution needs one."
+}

@@ -17,10 +17,15 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000006a', 'battle-a@example.test'),
   ('00000000-0000-0000-0000-00000000006b', 'battle-b@example.test');
 
+-- Explicit type rolls (M3-01D) so the snapshot is deterministic; the Omni ally stores no roll.
+insert into public.owned_units (id, user_id, unit_id, form_id, level, unit_type) values
+  ('00000000-0000-0000-0000-0000000006a1', '00000000-0000-0000-0000-00000000006a', 'brand', 'brand-3', 1,
+    '{"type": "lord", "gains": {"hp": 0, "atk": 0, "def": 0, "rec": 0}}'),
+  ('00000000-0000-0000-0000-0000000006a2', '00000000-0000-0000-0000-00000000006a', 'maren', 'maren-3', 4,
+    '{"type": "anima", "gains": {"hp": 7, "atk": 0, "def": 0, "rec": -2}}'),
+  ('00000000-0000-0000-0000-0000000006a3', '00000000-0000-0000-0000-00000000006a', 'rook', 'rook-omni', 1,
+    null);
 insert into public.owned_units (id, user_id, unit_id, form_id, level) values
-  ('00000000-0000-0000-0000-0000000006a1', '00000000-0000-0000-0000-00000000006a', 'brand', 'brand-3', 1),
-  ('00000000-0000-0000-0000-0000000006a2', '00000000-0000-0000-0000-00000000006a', 'maren', 'maren-3', 4),
-  ('00000000-0000-0000-0000-0000000006a3', '00000000-0000-0000-0000-00000000006a', 'rook', 'rook-3', 1),
   ('00000000-0000-0000-0000-0000000006b1', '00000000-0000-0000-0000-00000000006b', 'brand', 'brand-3', 1);
 
 insert into public.squads (user_id, slot, unit_ids, leader_index, ally_unit_id) values
@@ -76,10 +81,13 @@ select is((select expires_at - created_at from public.battle_sessions), interval
 select ok((select finished_at is null from public.battle_sessions), 'the session is not finished');
 select is((select squad from public.battle_sessions),
   '{"leader_index": 1, "units": [
-     {"owned_unit_id": "00000000-0000-0000-0000-0000000006a2", "unit_id": "maren", "form_id": "maren-3", "level": 4},
-     {"owned_unit_id": "00000000-0000-0000-0000-0000000006a1", "unit_id": "brand", "form_id": "brand-3", "level": 1}],
-    "ally": {"owned_unit_id": "00000000-0000-0000-0000-0000000006a3", "unit_id": "rook", "form_id": "rook-3", "level": 1}}'::jsonb,
-  'the squad snapshot keeps squad order, leader, levels, and the ally');
+     {"owned_unit_id": "00000000-0000-0000-0000-0000000006a2", "unit_id": "maren", "form_id": "maren-3", "level": 4,
+      "unit_type": {"type": "anima", "gains": {"hp": 7, "atk": 0, "def": 0, "rec": -2}}},
+     {"owned_unit_id": "00000000-0000-0000-0000-0000000006a1", "unit_id": "brand", "form_id": "brand-3", "level": 1,
+      "unit_type": {"type": "lord", "gains": {"hp": 0, "atk": 0, "def": 0, "rec": 0}}}],
+    "ally": {"owned_unit_id": "00000000-0000-0000-0000-0000000006a3", "unit_id": "rook", "form_id": "rook-omni", "level": 1,
+      "unit_type": null}}'::jsonb,
+  'the squad snapshot keeps squad order, leader, levels, type rolls, and the ally');
 select is((select (public.start_battle('test-story-one')).stage_id), 'test-story-one',
   'start_battle returns the new session row');
 

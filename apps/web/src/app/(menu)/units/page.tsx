@@ -59,7 +59,7 @@ export default async function UnitsPage(): Promise<ReactNode> {
           <p className={styles.panelText}>
             You have no units yet. Your starters join you as you clear the story.
           </p>
-          <Link href="/" className={styles.panelLink}>
+          <Link href="/home" className={styles.panelLink}>
             Back to Home
           </Link>
         </section>

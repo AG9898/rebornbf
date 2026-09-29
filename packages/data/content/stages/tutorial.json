@@ -1,0 +1,281 @@
+{
+  "id": "tutorial",
+  "name": "Training Grounds",
+  "tutorial": {
+    "units": ["brand", "maren", "rook", "garrick", "solen"],
+    "ally": "morrick",
+    "rarity": 3,
+    "level": 20,
+    "seed": 1,
+    "script": [
+      {
+        "lesson": "tap",
+        "inputs": [
+          {
+            "type": "attack",
+            "actor": "p0",
+            "delay": 0,
+            "target": "e0"
+          },
+          {
+            "type": "attack",
+            "actor": "p1",
+            "delay": 0,
+            "target": "e0"
+          },
+          {
+            "type": "attack",
+            "actor": "p2",
+            "delay": 0,
+            "target": "e1"
+          },
+          {
+            "type": "attack",
+            "actor": "p3",
+            "delay": 0,
+            "target": "e1"
+          },
+          {
+            "type": "attack",
+            "actor": "p4",
+            "delay": 0,
+            "target": "e1"
+          },
+          {
+            "type": "attack",
+            "actor": "ally",
+            "delay": 0,
+            "target": "e0"
+          }
+        ]
+      },
+      {
+        "lesson": "spark",
+        "inputs": [
+          {
+            "type": "attack",
+            "actor": "p0",
+            "delay": 0,
+            "target": "e0"
+          },
+          {
+            "type": "attack",
+            "actor": "p3",
+            "delay": 0,
+            "target": "e0"
+          }
+        ]
+      },
+      {
+        "lesson": "crystals",
+        "inputs": [
+          {
+            "type": "attack",
+            "actor": "p0",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p1",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p2",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p3",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p4",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "ally",
+            "delay": 0
+          }
+        ]
+      },
+      {
+        "lesson": "tap",
+        "inputs": [
+          {
+            "type": "attack",
+            "actor": "p0",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p1",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p2",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p3",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p4",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "ally",
+            "delay": 0
+          }
+        ]
+      },
+      {
+        "lesson": "burst",
+        "inputs": [
+          {
+            "type": "burst",
+            "actor": "p0",
+            "delay": 0,
+            "tier": "bb"
+          },
+          {
+            "type": "burst",
+            "actor": "p3",
+            "delay": 0,
+            "tier": "bb"
+          },
+          {
+            "type": "burst",
+            "actor": "p4",
+            "delay": 0,
+            "tier": "bb"
+          },
+          {
+            "type": "attack",
+            "actor": "p1",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p2",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "ally",
+            "delay": 0
+          }
+        ]
+      },
+      {
+        "lesson": "guard",
+        "inputs": [
+          {
+            "type": "guard",
+            "actor": "p1",
+            "delay": 0
+          },
+          {
+            "type": "guard",
+            "actor": "p3",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p0",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p2",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p4",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "ally",
+            "delay": 0
+          }
+        ]
+      },
+      {
+        "lesson": "burst",
+        "inputs": [
+          {
+            "type": "burst",
+            "actor": "p2",
+            "delay": 0,
+            "tier": "bb"
+          },
+          {
+            "type": "burst",
+            "actor": "ally",
+            "delay": 0,
+            "tier": "bb"
+          },
+          {
+            "type": "attack",
+            "actor": "p0",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p1",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p3",
+            "delay": 0
+          },
+          {
+            "type": "attack",
+            "actor": "p4",
+            "delay": 0
+          }
+        ]
+      }
+    ]
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "tut-thistle-sprout"
+        },
+        {
+          "enemy": "tut-thistle-sprout"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "tut-puddle-imp"
+        },
+        {
+          "enemy": "tut-thistle-sprout"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "tut-training-golem",
+          "boss": true
+        }
+      ]
+    }
+  ]
+}

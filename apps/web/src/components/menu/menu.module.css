@@ -95,6 +95,14 @@
   text-decoration: none;
 }
 
+/* A display name is up to 32 characters; a long one ends in an ellipsis inside the plate. */
+.nameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .progress {
   position: absolute;
   left: calc(var(--u) * 45);
@@ -150,6 +158,26 @@
   height: calc(100% - var(--u) * 8);
   border-radius: calc(var(--u) * 9);
   object-fit: cover;
+}
+
+.cardEmpty {
+  background: rgb(0 0 0 / 0.35);
+  border-radius: calc(var(--u) * 9);
+}
+
+.cardName {
+  position: absolute;
+  inset: calc(var(--u) * 4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--u) * 8);
+  border-radius: calc(var(--u) * 9);
+  background: rgb(0 0 0 / 0.45);
+  color: #f3e3b5;
+  font-size: calc(var(--u) * 20);
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .cardFrame,

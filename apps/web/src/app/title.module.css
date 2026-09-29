@@ -1,0 +1,164 @@
+/*
+ * Title screen (ART_GUIDE.md -> Title screen). A portrait screen on the 640x1136 grid like the
+ * menu frame; children size in cqw/cqh of it. The key art (M6-09A) fills it; the wordmark sits in
+ * its clear top band and the ribbon and footer in its dark bottom band.
+ */
+
+.backdrop {
+  min-height: 100dvh;
+  background: #06080f url("/assets/ui/bg-slate.webp") repeat;
+  background-size: 256px;
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  width: min(100vw, calc(100dvh * 640 / 1136));
+  height: 100dvh;
+  container-type: size;
+  overflow: hidden;
+  font-family: var(--font-menu), system-ui, sans-serif;
+  color: #fff;
+  user-select: none;
+  box-shadow: 0 0 48px rgb(0 0 0 / 0.8);
+}
+
+.keyArt {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgb(6 8 15 / 0.45), transparent 22%),
+    #141a2e url("/assets/ui/title-keyart.webp") center top / cover no-repeat;
+}
+
+/* The whole screen is the tap target; the footer link sits above it. */
+.tap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.title {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: calc(100cqh * 0.035);
+  line-height: 1;
+  text-align: center;
+  filter: drop-shadow(0.5cqw 0 0 #2a1606) drop-shadow(-0.5cqw 0 0 #2a1606)
+    drop-shadow(0 0.5cqw 0 #2a1606) drop-shadow(0 -0.5cqw 0 #2a1606)
+    drop-shadow(0 1.2cqw 0.6cqw rgb(0 0 0 / 0.6));
+}
+
+.titleLead,
+.titleAccent {
+  background: linear-gradient(#fff6c8 10%, #f6c342 45%, #c9811c 75%, #fbe39a 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.titleLead {
+  font-size: 11cqw;
+}
+
+.titleAccent {
+  margin-top: 1cqw;
+  font-size: 16cqw;
+}
+
+.band {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(100cqh * 0.03);
+  padding: calc(100cqh * 0.05) 4cqw calc(100cqh * 0.02);
+  background: linear-gradient(transparent, rgb(4 6 12 / 0.85) 35%, rgb(4 6 12 / 0.95));
+}
+
+/* A dark ribbon with gold trim, the prompt between two ornamental gold rules. */
+.ribbon {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  width: 100%;
+  margin: 0;
+  padding: 1.6cqw 0;
+  border-block: 0.5cqw solid #c9811c;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(20 14 6 / 0.85) 20%,
+    rgb(20 14 6 / 0.85) 80%,
+    transparent
+  );
+  border-image: linear-gradient(
+      90deg,
+      transparent,
+      #f6c342 20%,
+      #fbe39a 50%,
+      #f6c342 80%,
+      transparent
+    )
+    1;
+}
+
+.ribbon::before,
+.ribbon::after {
+  content: "";
+  flex: 1;
+  height: 0.5cqw;
+  background: linear-gradient(90deg, transparent, #f6c342);
+}
+
+.ribbon::after {
+  background: linear-gradient(90deg, #f6c342, transparent);
+}
+
+.prompt {
+  font-size: 6.5cqw;
+  letter-spacing: 0.08em;
+  background: linear-gradient(#fff6c8 15%, #f6c342 55%, #c9811c 90%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0.4cqw 0 #2a1606);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8cqw;
+  font-family: system-ui, sans-serif;
+  font-size: 2.6cqw;
+  color: rgb(255 255 255 / 0.75);
+}
+
+.about {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  font-size: 3cqw;
+  text-decoration: underline;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt {
+    animation: none;
+  }
+}

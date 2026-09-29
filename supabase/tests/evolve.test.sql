@@ -59,7 +59,7 @@ select set_config('request.jwt.claims',
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e03', array['00000000-0000-0000-0000-000000000e31', '00000000-0000-0000-0000-000000000e32']::uuid[])$$,
   '22023', null, 'a unit below max level is rejected');
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e04', array['00000000-0000-0000-0000-000000000e31', '00000000-0000-0000-0000-000000000e32']::uuid[])$$,
-  '22023', null, 'a 7-star form has no recipe to a next form');
+  '22023', null, 'a 7-star form given the wrong Omni materials is rejected');
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e05', array['00000000-0000-0000-0000-000000000e31', '00000000-0000-0000-0000-000000000e32']::uuid[])$$,
   '22023', null, 'an Omni form has no next form');
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', array['00000000-0000-0000-0000-000000000e31']::uuid[])$$,

@@ -82,8 +82,21 @@ const CurrencyDropSchema = z.strictObject({
 });
 
 /**
+ * A capture drop (GAME_DESIGN §7 → Farming dungeons, RESOLVED-70): defeating this enemy grants
+ * `unit` (a `content/units/` ID, in its first form at level 1) with a `rate`% chance, rolled on the
+ * server at reward settlement. A stage slot marked `capture: "always"` overrides the rate.
+ */
+export const CaptureDropSchema = z.strictObject({
+  unit: ContentIdSchema,
+  rate: z.number().min(0).max(100),
+});
+export type CaptureDrop = z.infer<typeof CaptureDropSchema>;
+
+/**
  * Per-enemy drop table (GAME_DESIGN §2 Drops). `bcResistance` is the base BC drop resistance as a
- * fraction; rates are % per hit roll. Omitted fields mean no resistance / no drop.
+ * fraction. Zel and item rates are % per defeated enemy, each rolled once on the server at reward
+ * settlement (GAME_DESIGN §8); items are granted one at a time. Omitted fields mean no resistance /
+ * no drop.
  */
 export const DropTableSchema = z.strictObject({
   bcResistance: z.number().min(0).max(1).optional(),
@@ -92,6 +105,7 @@ export const DropTableSchema = z.strictObject({
   items: z
     .array(z.strictObject({ item: ContentIdSchema, rate: z.number().min(0).max(100) }))
     .optional(),
+  capture: CaptureDropSchema.optional(),
 });
 export type DropTable = z.infer<typeof DropTableSchema>;
 

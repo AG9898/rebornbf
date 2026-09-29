@@ -611,7 +611,46 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "cinder-colossus",
+            "count": 2
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-effigy",
+            "count": 1
+          },
+          {
+            "unit": "cinder-sprite",
+            "count": 1
+          },
+          {
+            "unit": "cinder-mote",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          },
+          {
+            "item": "zenith-core",
+            "count": 1
+          }
+        ],
+        "zel": 3000000
+      }
     },
     {
       "id": "brand-omni",

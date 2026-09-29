@@ -150,4 +150,69 @@ describe("StageSchema", () => {
     expect(StageSchema.safeParse({ ...stage, waves: [] }).success).toBe(false);
     expect(StageSchema.safeParse({ ...stage, waves: [{ enemies: [] }] }).success).toBe(false);
   });
+
+  const mote = { enemy: "test-mote" };
+  const dungeon = {
+    id: "test-dungeon",
+    name: "Test Dungeon",
+    dungeon: {
+      series: "test-series",
+      gate: "story-01-brightmere-outskirts",
+      keyItem: { item: "crown-shard", rate: 20 },
+    },
+    waves: [
+      { enemies: [mote] },
+      { enemies: [mote] },
+      { enemies: [{ ...mote, capture: "always" }] },
+    ],
+  };
+
+  it("accepts a dungeon stage with a gate, key item, and always-captured final slot", () => {
+    expect(StageSchema.safeParse(dungeon).success).toBe(true);
+  });
+
+  it("rejects a key item rate above 100% and a self gate", () => {
+    const badRate = {
+      ...dungeon,
+      dungeon: { ...dungeon.dungeon, keyItem: { item: "x", rate: 101 } },
+    };
+    expect(StageSchema.safeParse(badRate).success).toBe(false);
+    const selfGate = { ...dungeon, dungeon: { ...dungeon.dungeon, gate: "test-dungeon" } };
+    expect(issues(StageSchema.safeParse(selfGate))).toEqual([
+      [["dungeon", "gate"], "a stage cannot gate itself"],
+    ]);
+  });
+
+  it("rejects a stage that is both story and dungeon", () => {
+    const both = { ...dungeon, story: { chapter: 1, number: 1, text: "x" } };
+    expect(issues(StageSchema.safeParse(both))).toEqual([
+      [["dungeon"], "a stage is a story stage or a dungeon stage, not both"],
+    ]);
+  });
+
+  it("allows always-captured slots only in a dungeon's final wave", () => {
+    const early = {
+      ...dungeon,
+      waves: [{ enemies: [{ ...mote, capture: "always" }] }, { enemies: [mote] }],
+    };
+    expect(issues(StageSchema.safeParse(early))).toEqual([
+      [["waves", 0, "enemies", 0, "capture"], "always-captured is for the final wave"],
+    ]);
+    const { dungeon: _placement, ...plain } = dungeon;
+    expect(issues(StageSchema.safeParse(plain))).toEqual([
+      [["waves", 2, "enemies", 0, "capture"], "only a dungeon stage captures"],
+    ]);
+  });
+});
+
+describe("DropTableSchema capture", () => {
+  it("accepts a capture drop and rejects a rate outside 0-100", () => {
+    const capture = (rate: number) => ({
+      ...enemy,
+      drops: { capture: { unit: "moss-mote", rate } },
+    });
+    expect(EnemySchema.safeParse(capture(25)).success).toBe(true);
+    expect(EnemySchema.safeParse(capture(101)).success).toBe(false);
+    expect(EnemySchema.safeParse(capture(-1)).success).toBe(false);
+  });
 });

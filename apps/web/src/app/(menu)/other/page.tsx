@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import styles from "../../../components/menu/menu.module.css";
+import { TUTORIAL_REPLAY_PATH } from "../../../lib/onboarding/routing.ts";
 
 export const metadata: Metadata = { title: "Other · BFR" };
 
@@ -9,6 +10,7 @@ const LINKS = [
   { href: "/account", label: "Account" },
   { href: "/gallery", label: "Art gallery" },
   { href: "/battle", label: "Demo battle" },
+  { href: TUTORIAL_REPLAY_PATH, label: "Replay tutorial" },
 ];
 
 export default function OtherPage(): ReactNode {

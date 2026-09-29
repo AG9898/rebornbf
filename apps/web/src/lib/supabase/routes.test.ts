@@ -20,6 +20,7 @@ describe("isProtectedPath", () => {
 
   it("protects the squad editor", () => {
     expect(isProtectedPath("/squad")).toBe(true);
+    expect(isProtectedPath("/onboarding/name")).toBe(true);
   });
 
   it("protects the owner tools", () => {

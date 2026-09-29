@@ -2,7 +2,7 @@
 -- The seed ran during `supabase db reset`; seeding again must leave identical state.
 begin;
 
-select plan(17);
+select plan(18);
 
 -- The seed loaded the generated content.
 select ok((select version ~ '^[0-9a-f]{16}$' from public.content_version),
@@ -19,6 +19,8 @@ select ok(exists (select 1 from public.content_items where kind = 'banner' and i
   'launch summon banner and its featured rates are seeded');
 select ok(exists (select 1 from public.content_items where kind = 'item' and id = 'crown-shard'
   and data ->> 'kind' = 'material'), 'the Crown Shard material item is seeded');
+select ok(exists (select 1 from public.content_items where kind = 'item' and id = 'zenith-core'
+  and data ->> 'kind' = 'material' and not data ? 'target'), 'the Zenith Core material item is seeded');
 select throws_ok(
   $$insert into public.content_items (kind, id, data) values ('unknown', 'bad', '{}'::jsonb)$$,
   '23514', null, 'unknown content kind is rejected');

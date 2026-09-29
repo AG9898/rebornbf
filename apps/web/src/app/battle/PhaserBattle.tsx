@@ -1,5 +1,6 @@
 "use client";
 
+import type { BattleEvent } from "@bfr/engine";
 import Link from "next/link";
 import type Phaser from "phaser";
 import type { ReactNode } from "react";
@@ -13,19 +14,37 @@ import { type Submission, submitSession } from "../../lib/battle/submit-session.
 import { menuFont } from "../../styles/fonts.ts";
 import styles from "./battle.module.css";
 
-/** Mounts the battle scene for `spec`; the parent keeps `spec` stable for the page's lifetime. */
+/**
+ * Mounts the battle scene for `spec`; the parent keeps `spec` stable for the page's lifetime.
+ * `onEvents` and `onResult` let a client-only battle (the tutorial) follow the fight; `fullScreen`
+ * drops the page header's height, and `children` draw over the canvas in a layer sized to it (a
+ * size container, so they can use `cqw`/`cqh`).
+ */
 export default function PhaserBattle({
   spec,
   sessionId,
+  onEvents,
+  onResult,
+  fullScreen = false,
+  children,
 }: {
   spec: BattleSpec;
   sessionId?: string;
+  onEvents?: (events: readonly BattleEvent[]) => void;
+  onResult?: (result: "win" | "lose") => void;
+  fullScreen?: boolean;
+  children?: ReactNode;
 }): ReactNode {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [ending, setEnding] = useState<"pending" | "lost" | Submission>();
   const submitted = useRef<string | undefined>(undefined);
+  // Read through refs so new callbacks never remount the game.
+  const callbacks = useRef({ onEvents, onResult });
+  useEffect(() => {
+    callbacks.current = { onEvents, onResult };
+  });
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -34,7 +53,9 @@ export default function PhaserBattle({
 
     const bridge: BattleBridge = {
       onReady: () => setReady(true),
+      onEvents: (events) => callbacks.current.onEvents?.(events),
       onComplete: (result, log) => {
+        callbacks.current.onResult?.(result);
         if (!sessionId) return;
         if (result === "lose") {
           setEnding("lost");
@@ -99,7 +120,7 @@ export default function PhaserBattle({
     <section
       ref={stageRef}
       aria-label="Battle scene"
-      className="relative flex min-h-[320px] h-[calc(100dvh-3rem)] w-full items-center justify-center overflow-hidden"
+      className={`relative flex min-h-[320px] ${fullScreen ? "h-dvh" : "h-[calc(100dvh-3rem)]"} w-full items-center justify-center overflow-hidden`}
     >
       <div
         aria-hidden="true"
@@ -114,6 +135,7 @@ export default function PhaserBattle({
         ref={canvasRef}
         className={`${styles.canvasHost} relative shrink-0 overflow-hidden shadow-[0_0_24px_rgba(0,0,0,0.6)]`}
       >
+        {children && <div className={styles.overlay}>{children}</div>}
         {sessionId && ending && (
           <div
             className="absolute inset-x-[5%] top-[55%] z-10 flex flex-col items-center gap-3 rounded-lg bg-[#0e1326]/95 p-3 text-center text-[clamp(11px,2.4vw,18px)] text-[#e8e6f0]"

@@ -96,6 +96,7 @@ export const UI_ASSETS = {
   "cutin-ribbon-sbb": { width: 1140, height: 335 },
   "cutin-ribbon-ubb": { width: 1140, height: 332 },
   "cutin-streaks": { width: 1280, height: 853 },
+  "title-keyart": { width: 1024, height: 1536 },
 } as const;
 
 export type UiAsset = keyof typeof UI_ASSETS;

@@ -1,56 +1,63 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { HOME_SQUAD_HREF, type ShowcaseCard } from "../../lib/squad/home-showcase.ts";
 import { ModeCarousel } from "./ModeCarousel.tsx";
 import styles from "./menu.module.css";
 import { UTILITY_TABS } from "./sections.ts";
 import { UiImage } from "./UiImage.tsx";
 import { CARD_ART_SIZE } from "./ui-assets.ts";
 
-type ShowcaseUnit = {
-  id: string;
-  name: string;
-  orb: "fire" | "water" | "thunder" | "earth" | "light" | "dark";
-};
-
-/** Placeholder squad until the player's own squad is read in M3-03B; the first card leads. */
-const SHOWCASE: readonly ShowcaseUnit[] = [
-  { id: "brand", name: "Brand", orb: "fire" },
-  { id: "maren", name: "Maren", orb: "water" },
-  { id: "rook", name: "Rook", orb: "thunder" },
-  { id: "garrick", name: "Garrick", orb: "earth" },
-  { id: "solen", name: "Solen", orb: "light" },
-];
-
-/** Star form whose card each showcase slot shows until the squad carries its own units' forms. */
-const SHOWCASE_FORM = "6star";
-
 /** Left positions (logical px) of the four utility tabs, two each side of the flourish. */
 const TAB_LEFT = [19, 140, 385, 506];
 
-export function HomeScreen(): ReactNode {
+/** Home: squad slot 0 as five cards (leader first, empty frames for empty slots; M3-03D). */
+export function HomeScreen({ cards }: { cards: readonly ShowcaseCard[] }): ReactNode {
   return (
     <>
       <section className={styles.showcase} aria-label="Squad">
-        {SHOWCASE.map((unit, i) => (
-          <Link key={unit.id} href="/squad" className={styles.card} aria-label={unit.name}>
-            <Image
-              src={`/assets/ui/cards/${unit.id}-${SHOWCASE_FORM}.webp`}
-              width={CARD_ART_SIZE.width}
-              height={CARD_ART_SIZE.height}
-              alt=""
-              className={styles.cardArt}
-              priority
-              unoptimized
-              draggable={false}
-            />
-            <UiImage name="card-frame" className={styles.cardFrame} />
-            {i === 0 ? (
-              <UiImage name="card-leader" className={styles.cardLeader} alt="Leader" />
-            ) : null}
-            <UiImage name={`orb-${unit.orb}`} className={styles.cardOrb} />
-          </Link>
-        ))}
+        {cards.map((card, i) =>
+          card.kind === "empty" ? (
+            <Link
+              // biome-ignore lint/suspicious/noArrayIndexKey: empty frames have no other identity
+              key={`empty-${i}`}
+              href={HOME_SQUAD_HREF}
+              className={`${styles.card} ${styles.cardEmpty}`}
+              aria-label="Empty squad slot"
+            >
+              <UiImage name="card-frame" className={styles.cardFrame} />
+            </Link>
+          ) : (
+            <Link
+              key={card.ownedId}
+              href={HOME_SQUAD_HREF}
+              className={styles.card}
+              aria-label={card.name}
+            >
+              {card.cardArt ? (
+                <Image
+                  src={card.cardArt}
+                  width={CARD_ART_SIZE.width}
+                  height={CARD_ART_SIZE.height}
+                  alt=""
+                  className={styles.cardArt}
+                  priority
+                  unoptimized
+                  draggable={false}
+                />
+              ) : (
+                <span className={styles.cardName}>{card.name}</span>
+              )}
+              <UiImage name="card-frame" className={styles.cardFrame} />
+              {card.leader ? (
+                <UiImage name="card-leader" className={styles.cardLeader} alt="Leader" />
+              ) : null}
+              {card.element ? (
+                <UiImage name={`orb-${card.element}`} className={styles.cardOrb} />
+              ) : null}
+            </Link>
+          ),
+        )}
       </section>
 
       <nav className={styles.utility} aria-label="Shortcuts">

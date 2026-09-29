@@ -47,6 +47,6 @@
     "bcResistance": 0.1,
     "zel": { "rate": 80, "amount": 100 },
     "karma": { "rate": 50, "amount": 30 },
-    "items": [{ "item": "placeholder-material", "rate": 10 }]
+    "items": [{ "item": "crown-shard", "rate": 10 }]
   }
 }

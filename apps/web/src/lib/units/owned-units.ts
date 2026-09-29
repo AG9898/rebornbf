@@ -25,7 +25,7 @@ import { formStatsAtLevel, LORD_ROLL, typeRollProblem, type UnitTypeRoll } from 
  */
 
 /** The `owned_units` columns the collection pages select. */
-export const OWNED_UNIT_COLUMNS = "id, unit_id, form_id, level, exp";
+export const OWNED_UNIT_COLUMNS = "id, unit_id, form_id, level, exp, unit_type";
 
 export type OwnedUnitRow = {
   id: string;
@@ -34,8 +34,8 @@ export type OwnedUnitRow = {
   level: number;
   exp: number;
   /**
-   * The persisted type roll (GAME_DESIGN §6 → Stat growth and unit types). `owned_units` gains the
-   * column with M3-01D; until then rows have none and the unit is Lord.
+   * The persisted type roll (GAME_DESIGN §6 → Stat growth and unit types), rolled at acquisition
+   * (M3-01D). Null for a unit that never rolls (Omni grants, single-form units): it is Lord.
    */
   unit_type?: UnitTypeRoll | null;
 };
