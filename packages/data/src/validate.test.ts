@@ -1,0 +1,282 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { type Stage, StageSchema } from "./schemas/stage.ts";
+import {
+  formatPath,
+  validateBannerFile,
+  validateEnemyFile,
+  validateStageFile,
+  validateStory,
+  validateUnitFile,
+} from "./validate.ts";
+
+const unitsDir = join(import.meta.dirname, "..", "content", "units");
+const unitFiles = readdirSync(unitsDir).filter((name) => name.endsWith(".json"));
+
+function loadUnit(name: string): Record<string, unknown> {
+  return JSON.parse(readFileSync(join(unitsDir, name), "utf8"));
+}
+
+/** Deep-clones the placeholder fixture so each test can break it independently. */
+function ember(): { forms: Array<Record<string, unknown>> } & Record<string, unknown> {
+  return structuredClone(loadUnit("placeholder-ember.json")) as ReturnType<typeof ember>;
+}
+
+describe("formatPath", () => {
+  it("renders keys and indices", () => {
+    expect(formatPath(["forms", 0, "bursts", "bb", "effects", 1, "id"])).toBe(
+      "forms[0].bursts.bb.effects[1].id",
+    );
+    expect(formatPath([])).toBe("(root)");
+  });
+});
+
+describe("validateUnitFile", () => {
+  it("has at least two unit files", () => {
+    expect(unitFiles.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each(unitFiles)("%s is valid", (name) => {
+    expect(validateUnitFile(`units/${name}`, loadUnit(name))).toEqual([]);
+  });
+
+  it("reports an unknown effect ID with a readable path", () => {
+    const unit = ember();
+    const form = unit.forms[0] as { bursts: { bb: { effects: Array<{ id: string }> } } };
+    (form.bursts.bb.effects[1] as { id: string }).id = "buff.speed";
+    const errors = validateUnitFile("units/placeholder-ember.json", unit);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(
+      /^units\/placeholder-ember\.json: forms\[0\]\.bursts\.bb\.effects\[1\]\.id: /,
+    );
+  });
+
+  it("reports a distribution not summing to 100 with a readable path", () => {
+    const unit = ember();
+    const form = unit.forms[0] as { normalAttack: { damageDistribution: number[] } };
+    form.normalAttack.damageDistribution = [30, 30, 30];
+    expect(validateUnitFile("units/placeholder-ember.json", unit)).toEqual([
+      "units/placeholder-ember.json: forms[0].normalAttack.damageDistribution: must sum to 100 (got 90)",
+    ]);
+  });
+
+  it("rejects a malformed source and a mismatched file name", () => {
+    const unit = ember();
+    unit.source = { unit: "Some Source Unit" };
+    expect(validateUnitFile("units/placeholder-ember.json", unit)[0]).toContain(": source: ");
+    expect(validateUnitFile("units/other.json", ember())[0]).toContain(
+      'must match the file name "other"',
+    );
+  });
+
+  it("rejects duplicate form IDs", () => {
+    const unit = ember();
+    unit.forms.push(structuredClone(unit.forms[0] as Record<string, unknown>));
+    expect(validateUnitFile("units/placeholder-ember.json", unit)).toEqual([
+      'units/placeholder-ember.json: forms[1].id: duplicate form ID "placeholder-ember-5"',
+    ]);
+  });
+
+  it("accepts a unit without a source (the public mirror strips it, RESOLVED-61)", () => {
+    const unit = ember();
+    delete unit.source;
+    expect(validateUnitFile("units/placeholder-ember.json", unit)).toEqual([]);
+  });
+
+  it("accepts an original (non-homage) source", () => {
+    const unit = ember();
+    unit.source = { original: true };
+    expect(validateUnitFile("units/placeholder-ember.json", unit)).toEqual([]);
+  });
+
+  it("accepts a homage source with a URL", () => {
+    const unit = ember();
+    unit.source = { unit: "Some Source Unit", url: "https://example.com/unit" };
+    expect(validateUnitFile("units/placeholder-ember.json", unit)).toEqual([]);
+  });
+});
+
+const contentDir = join(import.meta.dirname, "..", "content");
+
+function loadContent(file: string): Record<string, unknown> {
+  return JSON.parse(readFileSync(join(contentDir, file), "utf8"));
+}
+
+const enemyFiles = readdirSync(join(contentDir, "enemies")).filter((n) => n.endsWith(".json"));
+const stageFiles = readdirSync(join(contentDir, "stages")).filter((n) => n.endsWith(".json"));
+const enemyIds = new Set(enemyFiles.map((n) => n.replace(/\.json$/, "")));
+
+describe("validateEnemyFile", () => {
+  it.each(enemyFiles)("%s is valid", (name) => {
+    expect(validateEnemyFile(`enemies/${name}`, loadContent(`enemies/${name}`))).toEqual([]);
+  });
+
+  it("reports a malformed AI rule with a readable path", () => {
+    const brute = loadContent("enemies/placeholder-brute.json") as {
+      ai: Array<Record<string, unknown>>;
+    };
+    (brute.ai[2] as Record<string, unknown>).n = 0;
+    const errors = validateEnemyFile("enemies/placeholder-brute.json", brute);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(/^enemies\/placeholder-brute\.json: ai\[2\]\.n: /);
+  });
+
+  it("rejects a mismatched file name", () => {
+    const grunt = loadContent("enemies/placeholder-grunt.json");
+    expect(validateEnemyFile("enemies/other.json", grunt)[0]).toContain(
+      'must match the file name "other"',
+    );
+  });
+});
+
+describe("validateStageFile", () => {
+  it.each(stageFiles)("%s is valid", (name) => {
+    expect(validateStageFile(`stages/${name}`, loadContent(`stages/${name}`), enemyIds)).toEqual(
+      [],
+    );
+  });
+
+  it("has a placeholder stage with two waves", () => {
+    const stage = loadContent("stages/placeholder-stage.json") as { waves: unknown[] };
+    expect(stage.waves).toHaveLength(2);
+  });
+
+  it("reports an unknown wave enemy", () => {
+    const stage = loadContent("stages/placeholder-stage.json") as {
+      waves: Array<{ enemies: Array<{ enemy: string }> }>;
+    };
+    (stage.waves[1]?.enemies[0] as { enemy: string }).enemy = "missing-enemy";
+    expect(validateStageFile("stages/placeholder-stage.json", stage, enemyIds)).toEqual([
+      'stages/placeholder-stage.json: waves[1].enemies[0].enemy: unknown enemy "missing-enemy"',
+    ]);
+  });
+});
+
+describe("story stages (M3-04A)", () => {
+  const stages = (): Stage[] =>
+    stageFiles.map((name) => StageSchema.parse(loadContent(`stages/${name}`)));
+
+  it("the shipped story is valid", () => {
+    expect(validateStory(stages())).toEqual([]);
+  });
+
+  it("rejects a boss outside the last wave", () => {
+    const stage = structuredClone(loadContent("stages/story-08-beacon-hollow.json")) as {
+      waves: Array<{ enemies: Array<Record<string, unknown>> }>;
+    };
+    (stage.waves[0]?.enemies[0] as Record<string, unknown>).boss = true;
+    expect(validateStageFile("stages/story-08-beacon-hollow.json", stage, enemyIds)).toEqual([
+      "stages/story-08-beacon-hollow.json: waves[0].enemies[0].boss: a boss may only be in the last wave",
+    ]);
+  });
+
+  it("reports a missing stage, a duplicate number, and a chapter end without a boss", () => {
+    const all = stages();
+    const noBoss = all.map((stage) =>
+      stage.story?.number === 8
+        ? { ...stage, waves: [{ enemies: [{ enemy: "ch1-gravemaw" }] }] }
+        : stage.story?.number === 3
+          ? { ...stage, story: { chapter: 1, number: 2, text: "x" } }
+          : stage,
+    );
+    expect(validateStory(noBoss)).toEqual([
+      expect.stringMatching(/story\.number: stage 2 is also "story-0[23]-/),
+      "stages: chapter 1 has no stage 3",
+      "stages/story-08-beacon-hollow.json: waves: stage 8 ends chapter 1 and needs a boss",
+    ]);
+  });
+
+  it("reports a number outside its chapter", () => {
+    const [first] = stages().filter((stage) => stage.story?.number === 1);
+    if (!first?.story) throw new Error("stage 1 missing");
+    const moved = { ...first, story: { ...first.story, number: 9 } };
+    expect(validateStory([moved])).toContain(
+      "stages/story-01-brightmere-outskirts.json: story.number: stage 9 is outside chapter 1 (1-8)",
+    );
+  });
+});
+
+describe("validateBannerFile (M5-01B)", () => {
+  const unitForms = new Map(
+    unitFiles.map((name) => {
+      const unit = loadUnit(name) as { id: string; forms: Array<{ id: string }> };
+      return [unit.id, new Set(unit.forms.map((form) => form.id))] as const;
+    }),
+  );
+  const bannerFiles = readdirSync(join(contentDir, "banners")).filter((n) => n.endsWith(".json"));
+  type BannerJson = {
+    pityPulls: number;
+    featured: Array<{ unit: string; form: string; rateBp: number }>;
+    pool: Array<{ unit: string; form: string; rateBp: number }>;
+  };
+  const launch = (): BannerJson =>
+    loadContent("banners/launch-summon.json") as unknown as BannerJson;
+  const file = "banners/launch-summon.json";
+
+  it.each(bannerFiles)("%s is valid", (name) => {
+    expect(
+      validateBannerFile(`banners/${name}`, loadContent(`banners/${name}`), unitForms),
+    ).toEqual([]);
+  });
+
+  it("the launch banner features Aurelle and Vespera at 5★, 3% combined, 80-pull pity", () => {
+    const banner = launch();
+    expect(banner.featured).toEqual([
+      { unit: "aurelle", form: "aurelle-5", rateBp: 150 },
+      { unit: "vespera", form: "vespera-5", rateBp: 150 },
+    ]);
+    expect(banner.pityPulls).toBe(80);
+    const all = [...banner.featured, ...banner.pool];
+    expect(all.reduce((total, entry) => total + entry.rateBp, 0)).toBe(10_000);
+    // The rest of the pool is BFR-original low-rarity filler (RESOLVED-14).
+    for (const entry of banner.pool) {
+      const unit = loadUnit(`${entry.unit}.json`) as {
+        source: unknown;
+        forms: Array<{ id: string; rarity: number | string }>;
+      };
+      // The public mirror strips `source` (RESOLVED-61); where present it marks BFR-original.
+      expect([undefined, { original: true }]).toContainEqual(unit.source);
+      const form = unit.forms.find((f) => f.id === entry.form);
+      expect(form?.rarity).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it("rejects rates that do not sum to 100%", () => {
+    const banner = launch();
+    (banner.pool[0] as { rateBp: number }).rateBp += 1;
+    expect(validateBannerFile(file, banner, unitForms)).toEqual([
+      `${file}: (root): rates must sum to 10000 bp (100%) (got 10001)`,
+    ]);
+  });
+
+  it("rejects unknown units, unknown forms, and duplicate forms", () => {
+    const unknownUnit = launch();
+    (unknownUnit.pool[0] as { unit: string }).unit = "missing-unit";
+    expect(validateBannerFile(file, unknownUnit, unitForms)).toEqual([
+      `${file}: pool[0].unit: unknown unit "missing-unit"`,
+    ]);
+
+    const unknownForm = launch();
+    (unknownForm.featured[0] as { form: string }).form = "aurelle-2";
+    expect(validateBannerFile(file, unknownForm, unitForms)).toEqual([
+      `${file}: featured[0].form: unit "aurelle" has no form "aurelle-2"`,
+    ]);
+
+    const duplicate = launch();
+    const moved = duplicate.pool.pop() as { unit: string; form: string; rateBp: number };
+    duplicate.pool.push({ ...(duplicate.pool[0] as typeof moved), rateBp: moved.rateBp });
+    expect(validateBannerFile(file, duplicate, unitForms)).toEqual([
+      `${file}: pool[${duplicate.pool.length - 1}].form: duplicate banner form "cinder-sprite-2"`,
+    ]);
+  });
+
+  it("requires at least one featured entry", () => {
+    const banner = launch();
+    const featured = banner.featured.splice(0);
+    (banner.pool[0] as { rateBp: number }).rateBp += featured.reduce((t, e) => t + e.rateBp, 0);
+    expect(validateBannerFile(file, banner, unitForms)[0]).toMatch(
+      /^banners\/launch-summon\.json: featured: /,
+    );
+  });
+});

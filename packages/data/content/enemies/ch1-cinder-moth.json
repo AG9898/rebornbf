@@ -1,0 +1,33 @@
+{
+  "id": "ch1-cinder-moth",
+  "name": "Cinder Moth",
+  "element": "fire",
+  "stats": {
+    "hp": 1800,
+    "atk": 280,
+    "def": 110,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 22,
+    "hitFrames": [0, 8],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 30
+    }
+  }
+}

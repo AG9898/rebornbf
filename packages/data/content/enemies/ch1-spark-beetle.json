@@ -1,0 +1,33 @@
+{
+  "id": "ch1-spark-beetle",
+  "name": "Spark Beetle",
+  "element": "thunder",
+  "stats": {
+    "hp": 2000,
+    "atk": 280,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 12],
+    "damageDistribution": [40, 60],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}

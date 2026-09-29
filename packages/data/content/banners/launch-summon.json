@@ -1,0 +1,59 @@
+{
+  "id": "launch-summon",
+  "name": "First Summons",
+  "pityPulls": 80,
+  "featured": [
+    {
+      "unit": "aurelle",
+      "form": "aurelle-5",
+      "rateBp": 150
+    },
+    {
+      "unit": "vespera",
+      "form": "vespera-5",
+      "rateBp": 150
+    }
+  ],
+  "pool": [
+    {
+      "unit": "cinder-sprite",
+      "form": "cinder-sprite-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "rill-sprite",
+      "form": "rill-sprite-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "moss-sprite",
+      "form": "moss-sprite-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "volt-sprite",
+      "form": "volt-sprite-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "glint-sprite",
+      "form": "glint-sprite-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "dusk-sprite",
+      "form": "dusk-sprite-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "brass-crucible",
+      "form": "brass-crucible-2",
+      "rateBp": 1300
+    },
+    {
+      "unit": "silver-crucible",
+      "form": "silver-crucible-3",
+      "rateBp": 600
+    }
+  ]
+}

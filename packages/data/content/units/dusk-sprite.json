@@ -1,0 +1,57 @@
+{
+  "id": "dusk-sprite",
+  "name": "Dusk Sprite",
+  "element": "dark",
+  "forms": [
+    {
+      "id": "dusk-sprite-2",
+      "name": "Dusk Sprite",
+      "rarity": 2,
+      "maxLevel": 12,
+      "stats": {
+        "base": {
+          "hp": 700,
+          "atk": 300,
+          "def": 260,
+          "rec": 240
+        },
+        "max": {
+          "hp": 1200,
+          "atk": 420,
+          "def": 360,
+          "rec": 330
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 12],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Dusk Wisp",
+          "cost": 12,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [30, 30, 40],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.2,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+/* The game look shared by the docs shell and MDX elements (docs/design/product-site/docs.mock.html). */
+
+.display {
+  font-family: var(--font-menu), system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.goldText {
+  background: linear-gradient(180deg, #fff6dc 0%, #ffd98a 45%, #d9922e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #2a1606);
+}
+
+.slate {
+  background: #131a2c url("/assets/ui/bg-slate.webp");
+  background-size: 256px;
+  background-blend-mode: multiply;
+}
+
+.frame {
+  border: 2px solid #c9953c;
+  box-shadow:
+    0 0 0 2px #2a1606,
+    inset 0 0 0 1px rgb(255 226 150 / 0.25);
+}
+
+.btnGold {
+  background: linear-gradient(180deg, #ffe8a6 0%, #f0bd55 55%, #c98a2c 100%);
+  color: #2a1606;
+  border: 2px solid #2a1606;
+  box-shadow:
+    0 3px 0 #6b3f0e,
+    inset 0 2px 0 rgb(255 255 255 / 0.6);
+}
+
+.btnGold:hover {
+  filter: brightness(1.06);
+}

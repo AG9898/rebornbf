@@ -1,0 +1,775 @@
+{
+  "id": "morrick",
+  "name": "Morrick",
+  "element": "dark",
+  "forms": [
+    {
+      "id": "morrick-2",
+      "name": "Oar Apprentice",
+      "rarity": 2,
+      "maxLevel": 30,
+      "stats": {
+        "base": {
+          "hp": 1500,
+          "atk": 430,
+          "def": 530,
+          "rec": 120
+        },
+        "max": {
+          "hp": 2775,
+          "atk": 602,
+          "def": 795,
+          "rec": 216
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 55,
+        "hitFrames": [0],
+        "damageDistribution": [100],
+        "dropChecks": 8
+      },
+      "bursts": {
+        "bb": {
+          "name": "Oar Swing",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 61,
+              "hitFrames": [0, 15, 30],
+              "damageDistribution": [33, 33, 34],
+              "dropChecks": 3
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.75,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Driftwood Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.25,
+            "target": "party",
+            "element": "dark"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "morrick-3",
+      "name": "Driftwood Wisp",
+      "rarity": 3,
+      "maxLevel": 40,
+      "stats": {
+        "base": {
+          "hp": 2228,
+          "atk": 542,
+          "def": 715,
+          "rec": 195
+        },
+        "max": {
+          "hp": 3245,
+          "atk": 826,
+          "def": 956,
+          "rec": 423
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 55,
+        "hitFrames": [0],
+        "damageDistribution": [100],
+        "dropChecks": 8
+      },
+      "bursts": {
+        "bb": {
+          "name": "Driftwood Swing",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 61,
+              "hitFrames": [0, 12, 24, 36],
+              "damageDistribution": [25, 25, 25, 25],
+              "dropChecks": 4
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.85,
+              "target": "enemies",
+              "flatAtk": 30
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Driftwood Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.25,
+            "target": "party",
+            "element": "dark"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "morrick-4",
+      "name": "Shade Oarsman",
+      "rarity": 4,
+      "maxLevel": 60,
+      "stats": {
+        "base": {
+          "hp": 2651,
+          "atk": 743,
+          "def": 860,
+          "rec": 381
+        },
+        "max": {
+          "hp": 3979,
+          "atk": 995,
+          "def": 1190,
+          "rec": 572
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 55,
+        "hitFrames": [0, 6],
+        "damageDistribution": [70, 30],
+        "dropChecks": 12
+      },
+      "bursts": {
+        "bb": {
+          "name": "Shade Wake",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 61,
+              "hitFrames": [0, 6, 12, 18],
+              "damageDistribution": [25, 25, 25, 25],
+              "dropChecks": 4
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.4,
+              "target": "enemies",
+              "flatAtk": 50
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Shade Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "dark"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "morrick-5",
+      "name": "Shade Boatman",
+      "rarity": 5,
+      "maxLevel": 80,
+      "stats": {
+        "base": {
+          "hp": 3127,
+          "atk": 845,
+          "def": 1011,
+          "rec": 487
+        },
+        "max": {
+          "hp": 4876,
+          "atk": 1198,
+          "def": 1400,
+          "rec": 755
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 55,
+        "hitFrames": [0, 6, 12],
+        "damageDistribution": [70, 15, 15],
+        "dropChecks": 18
+      },
+      "bursts": {
+        "bb": {
+          "name": "Shade Undertow",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 55,
+              "hitFrames": [0, 6, 12, 18, 24, 30],
+              "damageDistribution": [15, 15, 15, 15, 20, 20],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.6,
+              "target": "enemies",
+              "flatAtk": 60
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Shade Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "dark"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "morrick-6",
+      "name": "Dusk Ferryman",
+      "rarity": 6,
+      "maxLevel": 100,
+      "stats": {
+        "base": {
+          "hp": 4118,
+          "atk": 1077,
+          "def": 1260,
+          "rec": 678
+        },
+        "max": {
+          "hp": 5942,
+          "atk": 1483,
+          "def": 1659,
+          "rec": 960
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 55,
+        "hitFrames": [0, 6, 12, 15],
+        "damageDistribution": [70, 10, 10, 10],
+        "dropChecks": 24
+      },
+      "bursts": {
+        "bb": {
+          "name": "Dusk Undertow",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 55,
+              "hitFrames": [0, 6, 12, 18, 24, 30, 41, 51],
+              "damageDistribution": [15, 15, 10, 10, 15, 15, 10, 10],
+              "dropChecks": 8
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.9,
+              "target": "enemies",
+              "flatAtk": 80
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Ferryman's Toll",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 55,
+              "hitFrames": [0, 6, 12, 18, 24, 28, 34, 40, 45],
+              "damageDistribution": [15, 15, 10, 10, 10, 10, 10, 10, 10],
+              "dropChecks": 9
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 4.5,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 0.6,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Ferryman's Oath",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.1,
+            "target": "party",
+            "element": "dark"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "dark"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "morrick-7",
+      "name": "Duskwater Legend",
+      "rarity": 7,
+      "maxLevel": 120,
+      "stats": {
+        "base": {
+          "hp": 4750,
+          "atk": 1190,
+          "def": 1330,
+          "rec": 770
+        },
+        "max": {
+          "hp": 7000,
+          "atk": 2000,
+          "def": 2400,
+          "rec": 1700
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 52,
+        "hitFrames": [0, 4, 8, 12, 16, 20, 24],
+        "damageDistribution": [40, 10, 10, 10, 10, 10, 10],
+        "dropChecks": 42
+      },
+      "bursts": {
+        "bb": {
+          "name": "Duskwater Undertow",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 52,
+              "hitFrames": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54],
+              "damageDistribution": [20, 10, 10, 10, 10, 10, 10, 10, 5, 5],
+              "dropChecks": 10
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 2.5,
+              "target": "enemies",
+              "flatAtk": 80
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Duskwater Toll",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 52,
+              "hitFrames": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66],
+              "damageDistribution": [20, 10, 10, 10, 10, 10, 5, 5, 5, 5, 5, 5],
+              "dropChecks": 12
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 5.0,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 1.1,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        },
+        "ubb": {
+          "name": "Last Crossing",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 52,
+              "hitFrames": [
+                0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114,
+                120, 126
+              ],
+              "damageDistribution": [
+                10, 10, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+              ],
+              "dropChecks": 22
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 10.0,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 2.0,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "mitigation",
+              "value": 1.0,
+              "turns": 1,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Duskwater Vow",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party",
+            "element": "dark"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 1.0,
+            "target": "party",
+            "element": "dark"
+          }
+        ]
+      },
+      "extraSkill": {
+        "name": "Toll Unpaid",
+        "effects": [
+          {
+            "id": "cond.signature_sphere",
+            "value": 0,
+            "target": "self",
+            "effects": [
+              {
+                "id": "passive.stat_pct",
+                "stat": "hp",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "atk",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "def",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "rec",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "attack.def_ignore",
+                "value": 50,
+                "target": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "morrick-omni",
+      "name": "Nightshore Sovereign",
+      "rarity": "omni",
+      "maxLevel": 150,
+      "stats": {
+        "base": {
+          "hp": 5950,
+          "atk": 1700,
+          "def": 2040,
+          "rec": 1445
+        },
+        "max": {
+          "hp": 7725,
+          "atk": 2540,
+          "def": 2740,
+          "rec": 2000
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 14,
+        "hitFrames": [0, 4, 21, 25, 70, 74, 78, 82, 86, 90, 94, 98],
+        "damageDistribution": [9, 5, 9, 5, 30, 6, 6, 6, 6, 6, 6, 6],
+        "dropChecks": 48
+      },
+      "bursts": {
+        "bb": {
+          "name": "Nightshore Wake",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 14,
+              "hitFrames": [0, 4, 21, 25, 70, 74, 78, 82, 86, 90, 94, 98, 102],
+              "damageDistribution": [9, 4, 9, 4, 30, 6, 5, 6, 5, 6, 5, 6, 5],
+              "dropChecks": 13
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 3.5,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 1.5,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "guard_mitigation",
+              "value": 0.1,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Nightshore Toll",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 16,
+              "hitFrames": [0, 4, 21, 25, 70, 74, 78, 82, 86, 90, 94, 98, 102, 106, 110],
+              "damageDistribution": [8, 4, 8, 4, 29, 5, 5, 4, 5, 5, 4, 5, 5, 4, 5],
+              "dropChecks": 15
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 5.6,
+              "target": "enemies",
+              "flatAtk": 200
+            },
+            {
+              "id": "buff.def",
+              "value": 1.5,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "guard_mitigation",
+              "value": 0.1,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "hp_drain",
+              "value": 0,
+              "min": 0.03,
+              "max": 0.06,
+              "chance": 50,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "buff.elem_weak_dmg",
+              "value": 0.75,
+              "turns": 3,
+              "target": "party",
+              "element": "dark"
+            }
+          ]
+        },
+        "ubb": {
+          "name": "The Far Shore",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 14,
+              "hitFrames": [
+                0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 70, 74, 78, 82, 86, 90, 94, 98,
+                102, 106, 110, 114, 118, 122
+              ],
+              "damageDistribution": [
+                5, 3, 3, 3, 3, 3, 3, 5, 3, 3, 3, 3, 3, 3, 14, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+              ],
+              "dropChecks": 28
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 15.0,
+              "target": "enemies",
+              "flatAtk": 200
+            },
+            {
+              "id": "buff.def",
+              "value": 3.0,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "mitigation",
+              "value": 1.0,
+              "turns": 1,
+              "target": "party"
+            },
+            {
+              "id": "guard_mitigation",
+              "value": 0.3,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Nightshore Decree",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 1.0,
+            "target": "party"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party",
+            "element": "dark"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "dark"
+          },
+          {
+            "id": "elem_weak_resist",
+            "value": 1.0,
+            "target": "party"
+          },
+          {
+            "id": "bb.fill_on_damage_dealt",
+            "value": 8,
+            "threshold": 50000,
+            "target": "party"
+          }
+        ]
+      },
+      "extraSkill": {
+        "name": "Silent Passage",
+        "effects": [
+          {
+            "id": "cond.signature_sphere",
+            "value": 0,
+            "target": "self",
+            "effects": [
+              {
+                "id": "passive.stat_pct",
+                "stat": "hp",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "atk",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "def",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "rec",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "attack.def_ignore",
+                "value": 80,
+                "target": "self"
+              },
+              {
+                "id": "crit_resist",
+                "value": 1.0,
+                "target": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

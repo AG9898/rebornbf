@@ -1,0 +1,65 @@
+{
+  "id": "placeholder-tide",
+  "name": "Placeholder Tide",
+  "element": "water",
+  "forms": [
+    {
+      "id": "placeholder-tide-6",
+      "name": "Placeholder Tide",
+      "rarity": 6,
+      "maxLevel": 100,
+      "stats": {
+        "base": { "hp": 1800, "atk": 450, "def": 500, "rec": 400 },
+        "max": { "hp": 5000, "atk": 1300, "def": 1400, "rec": 1200 }
+      },
+      "normalAttack": {
+        "moveType": "ranged",
+        "startDelayFrames": 10,
+        "hitFrames": [0, 15],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Placeholder Current",
+          "cost": 18,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 10,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [33, 33, 34],
+              "dropChecks": 12
+            }
+          ],
+          "effects": [
+            { "id": "attack.aoe", "value": 1.2, "target": "enemies" },
+            { "id": "heal.over_time", "value": 800, "turns": 3, "target": "party" }
+          ]
+        },
+        "sbb": {
+          "name": "Placeholder Deluge",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 10,
+              "hitFrames": [0, 8, 16, 24],
+              "damageDistribution": [25, 25, 25, 25],
+              "dropChecks": 16
+            }
+          ],
+          "effects": [
+            { "id": "attack.aoe", "value": 2.8, "target": "enemies" },
+            { "id": "mitigation", "value": 0.5, "turns": 2, "target": "party" }
+          ]
+        }
+      },
+      "extraSkill": {
+        "name": "Placeholder Undertow",
+        "effects": [{ "id": "bb.fill_per_turn", "value": 2, "target": "party" }]
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@bfr/data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./content/*": "./content/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "validate": "node scripts/validate.ts",
+    "seed": "node scripts/seed.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "placeholder-ember",
+  "name": "Placeholder Ember",
+  "element": "fire",
+  "forms": [
+    {
+      "id": "placeholder-ember-5",
+      "name": "Placeholder Ember",
+      "rarity": 5,
+      "maxLevel": 80,
+      "stats": {
+        "base": { "hp": 1500, "atk": 500, "def": 400, "rec": 300 },
+        "max": { "hp": 4000, "atk": 1400, "def": 1100, "rec": 900 }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 10, 20],
+        "damageDistribution": [30, 30, 40],
+        "dropChecks": 6
+      },
+      "bursts": {
+        "bb": {
+          "name": "Placeholder Flare",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 6, 12, 18, 24],
+              "damageDistribution": [20, 20, 20, 20, 20],
+              "dropChecks": 20
+            }
+          ],
+          "effects": [
+            { "id": "attack.aoe", "value": 1.5, "target": "enemies" },
+            { "id": "buff.atk", "value": 0.5, "turns": 3, "target": "party" }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Placeholder Blaze",
+        "effects": [{ "id": "passive.stat_pct", "stat": "atk", "value": 0.3, "target": "party" }]
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

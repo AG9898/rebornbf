@@ -1,0 +1,33 @@
+{
+  "id": "ch1-bramble-pup",
+  "name": "Bramble Pup",
+  "element": "earth",
+  "stats": {
+    "hp": 1600,
+    "atk": 220,
+    "def": 120,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 10],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 30
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "id": "glint-athanor",
+  "name": "Glint Athanor",
+  "element": "light",
+  "forms": [
+    {
+      "id": "glint-athanor-5",
+      "name": "Glint Athanor",
+      "rarity": 5,
+      "maxLevel": 1,
+      "stats": {
+        "base": {
+          "hp": 1000,
+          "atk": 250,
+          "def": 1600,
+          "rec": 250
+        },
+        "max": {
+          "hp": 1000,
+          "atk": 250,
+          "def": 1600,
+          "rec": 250
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 12],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Athanor Clang",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [30, 30, 40],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.8,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "sphereSlots": 1,
+      "fusionExp": 51518
+    }
+  ]
+}

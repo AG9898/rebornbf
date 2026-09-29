@@ -1,0 +1,577 @@
+{
+  "size": 1024,
+  "units": {
+    "aurelle": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [138, 83],
+          "scale": 0.804159,
+          "offset": [81, 48]
+        },
+        "guess": {
+          "leftEye": [363.8, 307.3],
+          "rightEye": [424.2, 307.3],
+          "chin": [394.0, 347.6]
+        }
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [234, 22],
+          "scale": 0.763786,
+          "offset": [133, 48]
+        },
+        "guess": null
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [259, 84],
+          "scale": 0.807659,
+          "offset": [178, 48]
+        },
+        "guess": {
+          "leftEye": [420.9, 407.3],
+          "rightEye": [468.1, 407.3],
+          "chin": [444.5, 438.7]
+        }
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [8, 47],
+          "scale": 0.744783,
+          "offset": [48, 83]
+        },
+        "guess": {
+          "leftEye": [447.0, 381.9],
+          "rightEye": [475.0, 381.9],
+          "chin": [461.0, 400.6]
+        }
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [38, 39],
+          "scale": 0.778523,
+          "offset": [48, 52]
+        },
+        "guess": {
+          "leftEye": [404.4, 670.1],
+          "rightEye": [439.6, 670.1],
+          "chin": [422.0, 693.6]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [20, 12],
+          "scale": 0.764415,
+          "offset": [48, 48]
+        },
+        "guess": {
+          "leftEye": [494.1, 358.2],
+          "rightEye": [527.9, 358.2],
+          "chin": [511.0, 380.8]
+        }
+      }
+    },
+    "brand": {
+      "3star": {
+        "frame": {
+          "masterSize": [1223, 1286],
+          "origin": [17, 23],
+          "scale": 0.741807,
+          "offset": [77, 48]
+        },
+        "guess": null
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1223, 1286],
+          "origin": [13, 22],
+          "scale": 0.739442,
+          "offset": [72, 48]
+        },
+        "guess": null
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1223, 1286],
+          "origin": [41, 49],
+          "scale": 0.791809,
+          "offset": [69, 48]
+        },
+        "guess": {
+          "leftEye": [865.7, 317.2],
+          "rightEye": [900.3, 317.2],
+          "chin": [883.0, 340.2]
+        }
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [11, 10],
+          "scale": 0.754472,
+          "offset": [48, 53]
+        },
+        "guess": null
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [50, 14],
+          "scale": 0.752636,
+          "offset": [72, 48]
+        },
+        "guess": {
+          "leftEye": [492.3, 505.8],
+          "rightEye": [529.7, 505.8],
+          "chin": [511.0, 530.8]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [41, 10],
+          "scale": 0.756933,
+          "offset": [55, 48]
+        },
+        "guess": {
+          "leftEye": [470.1, 118.7],
+          "rightEye": [494.9, 118.7],
+          "chin": [482.5, 135.3]
+        }
+      }
+    },
+    "garrick": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [168, 79],
+          "scale": 0.824889,
+          "offset": [77, 48]
+        },
+        "guess": {
+          "leftEye": [448.2, 245.6],
+          "rightEye": [541.8, 245.6],
+          "chin": [495.0, 308.0]
+        }
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [270, 296],
+          "scale": 1.108722,
+          "offset": [82, 48]
+        },
+        "guess": {
+          "leftEye": [451.6, 239.7],
+          "rightEye": [544.4, 239.7],
+          "chin": [498.0, 301.6]
+        }
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [257, 165],
+          "scale": 0.991453,
+          "offset": [107, 48]
+        },
+        "guess": {
+          "leftEye": [444.3, 354.8],
+          "rightEye": [517.7, 354.8],
+          "chin": [481.0, 403.8]
+        }
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [14, 128],
+          "scale": 0.756316,
+          "offset": [48, 97]
+        },
+        "guess": null
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [39, 42],
+          "scale": 0.775272,
+          "offset": [48, 57]
+        },
+        "guess": {
+          "leftEye": [474.0, 382.9],
+          "rightEye": [538.0, 382.9],
+          "chin": [506.0, 425.6]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1350, 1350],
+          "origin": [52, 52],
+          "scale": 0.742994,
+          "offset": [48, 52]
+        },
+        "guess": {
+          "leftEye": [496.0, 368.5],
+          "rightEye": [559.0, 368.5],
+          "chin": [527.5, 410.5]
+        }
+      }
+    },
+    "maren": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [206, 26],
+          "scale": 0.767577,
+          "offset": [181, 48]
+        },
+        "guess": {
+          "leftEye": [523.6, 240.3],
+          "rightEye": [597.4, 240.3],
+          "chin": [560.5, 289.5]
+        }
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [169, 19],
+          "scale": 0.753859,
+          "offset": [160, 48]
+        },
+        "guess": {
+          "leftEye": [533.2, 253.2],
+          "rightEye": [607.8, 253.2],
+          "chin": [570.5, 302.9]
+        }
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [79, 2],
+          "scale": 0.748991,
+          "offset": [92, 48]
+        },
+        "guess": {
+          "leftEye": [529.5, 318.9],
+          "rightEye": [597.5, 318.9],
+          "chin": [563.5, 364.3]
+        }
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [50, 15],
+          "scale": 0.768848,
+          "offset": [60, 48]
+        },
+        "guess": {
+          "leftEye": [486.7, 340.0],
+          "rightEye": [549.3, 340.0],
+          "chin": [518.0, 381.8]
+        }
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [24, 36],
+          "scale": 0.759411,
+          "offset": [48, 67]
+        },
+        "guess": {
+          "leftEye": [834.3, 790.8],
+          "rightEye": [853.7, 790.8],
+          "chin": [844.0, 803.8]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [38, 10],
+          "scale": 0.754472,
+          "offset": [63, 48]
+        },
+        "guess": {
+          "leftEye": [491.9, 314.1],
+          "rightEye": [531.1, 314.1],
+          "chin": [511.5, 340.3]
+        }
+      }
+    },
+    "morrick": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [222, 40],
+          "scale": 0.78511,
+          "offset": [133, 48]
+        },
+        "guess": {
+          "leftEye": [502.8, 499.3],
+          "rightEye": [563.2, 499.3],
+          "chin": [533.0, 539.6]
+        }
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [227, 114],
+          "scale": 0.874647,
+          "offset": [97, 48]
+        },
+        "guess": null
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [136, 179],
+          "scale": 0.926148,
+          "offset": [48, 50]
+        },
+        "guess": null
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [37, 67],
+          "scale": 0.773333,
+          "offset": [48, 66]
+        },
+        "guess": null
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [129, 57],
+          "scale": 0.787776,
+          "offset": [81, 48]
+        },
+        "guess": null
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [52, 20],
+          "scale": 0.764415,
+          "offset": [68, 48]
+        },
+        "guess": null
+      }
+    },
+    "rook": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [88, 34],
+          "scale": 0.783122,
+          "offset": [57, 48]
+        },
+        "guess": null
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [76, 17],
+          "scale": 0.766942,
+          "offset": [61, 48]
+        },
+        "guess": null
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [63, 0],
+          "scale": 0.748387,
+          "offset": [67, 48]
+        },
+        "guess": {
+          "leftEye": [503.6, 217.7],
+          "rightEye": [542.4, 217.7],
+          "chin": [523.0, 243.6]
+        }
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [35, 14],
+          "scale": 0.763786,
+          "offset": [49, 48]
+        },
+        "guess": null
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [15, 10],
+          "scale": 0.751417,
+          "offset": [48, 49]
+        },
+        "guess": {
+          "leftEye": [506.2, 328.0],
+          "rightEye": [528.8, 328.0],
+          "chin": [517.5, 343.1]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [35, 12],
+          "scale": 0.769486,
+          "offset": [48, 48]
+        },
+        "guess": {
+          "leftEye": [543.0, 296.9],
+          "rightEye": [571.0, 296.9],
+          "chin": [557.0, 315.6]
+        }
+      }
+    },
+    "solen": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [283, 18],
+          "scale": 0.762531,
+          "offset": [241, 48]
+        },
+        "guess": null
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [210, 83],
+          "scale": 0.835284,
+          "offset": [145, 48]
+        },
+        "guess": null
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [220, 64],
+          "scale": 0.824889,
+          "offset": [159, 48]
+        },
+        "guess": null
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [116, 58],
+          "scale": 0.80069,
+          "offset": [77, 48]
+        },
+        "guess": null
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [40, 8],
+          "scale": 0.76128,
+          "offset": [59, 48]
+        },
+        "guess": {
+          "leftEye": [413.7, 331.7],
+          "rightEye": [439.3, 331.7],
+          "chin": [426.5, 348.7]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [18, 6],
+          "scale": 0.752026,
+          "offset": [50, 48]
+        },
+        "guess": {
+          "leftEye": [491.4, 304.3],
+          "rightEye": [524.6, 304.3],
+          "chin": [508.0, 326.4]
+        }
+      }
+    },
+    "vespera": {
+      "3star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [330, 72],
+          "scale": 0.80069,
+          "offset": [218, 48]
+        },
+        "guess": {
+          "leftEye": [363.1, 221.9],
+          "rightEye": [449.9, 221.9],
+          "chin": [406.5, 279.7]
+        }
+      },
+      "4star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [269, 55],
+          "scale": 0.81475,
+          "offset": [144, 48]
+        },
+        "guess": {
+          "leftEye": [391.6, 332.8],
+          "rightEye": [456.4, 332.8],
+          "chin": [424.0, 376.0]
+        }
+      },
+      "5star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [197, 174],
+          "scale": 0.95082,
+          "offset": [97, 48]
+        },
+        "guess": {
+          "leftEye": [454.5, 303.1],
+          "rightEye": [512.5, 303.1],
+          "chin": [483.5, 341.7]
+        }
+      },
+      "6star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [48, 35],
+          "scale": 0.778523,
+          "offset": [55, 48]
+        },
+        "guess": {
+          "leftEye": [459.6, 359.2],
+          "rightEye": [507.4, 359.2],
+          "chin": [483.5, 391.1]
+        }
+      },
+      "7star": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [49, 59],
+          "scale": 0.8,
+          "offset": [48, 49]
+        },
+        "guess": {
+          "leftEye": [734.0, 574.0],
+          "rightEye": [788.0, 574.0],
+          "chin": [761.0, 610.0]
+        }
+      },
+      "omni": {
+        "frame": {
+          "masterSize": [1254, 1254],
+          "origin": [16, 18],
+          "scale": 0.759411,
+          "offset": [48, 68]
+        },
+        "guess": {
+          "leftEye": [482.6, 355.2],
+          "rightEye": [530.4, 355.2],
+          "chin": [506.5, 387.1]
+        }
+      }
+    }
+  }
+}

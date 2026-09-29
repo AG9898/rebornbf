@@ -1,0 +1,766 @@
+{
+  "id": "garrick",
+  "name": "Garrick",
+  "element": "earth",
+  "forms": [
+    {
+      "id": "garrick-2",
+      "name": "Quarry Apprentice",
+      "rarity": 2,
+      "maxLevel": 12,
+      "stats": {
+        "base": {
+          "hp": 1010,
+          "atk": 500,
+          "def": 500,
+          "rec": 150
+        },
+        "max": {
+          "hp": 1876,
+          "atk": 720,
+          "def": 700,
+          "rec": 248
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 26,
+        "hitFrames": [0, 6, 12],
+        "damageDistribution": [50, 20, 30],
+        "dropChecks": 9
+      },
+      "bursts": {
+        "bb": {
+          "name": "Pike Sweep",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 26,
+              "hitFrames": [0, 6, 12, 18],
+              "damageDistribution": [25, 25, 25, 25],
+              "dropChecks": 4
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.75,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Quarry Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.25,
+            "target": "party",
+            "element": "earth"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "garrick-3",
+      "name": "Quarry Hand",
+      "rarity": 3,
+      "maxLevel": 40,
+      "stats": {
+        "base": {
+          "hp": 1419,
+          "atk": 648,
+          "def": 630,
+          "rec": 223
+        },
+        "max": {
+          "hp": 2500,
+          "atk": 924,
+          "def": 938,
+          "rec": 455
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 26,
+        "hitFrames": [0, 6, 12],
+        "damageDistribution": [50, 20, 30],
+        "dropChecks": 9
+      },
+      "bursts": {
+        "bb": {
+          "name": "Rootline Sweep",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 26,
+              "hitFrames": [0, 6, 12, 18, 24],
+              "damageDistribution": [20, 20, 20, 20, 20],
+              "dropChecks": 5
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.85,
+              "target": "enemies",
+              "flatAtk": 30
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Quarry Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.25,
+            "target": "party",
+            "element": "earth"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "garrick-4",
+      "name": "Stone Guard",
+      "rarity": 4,
+      "maxLevel": 60,
+      "stats": {
+        "base": {
+          "hp": 1980,
+          "atk": 832,
+          "def": 844,
+          "rec": 410
+        },
+        "max": {
+          "hp": 3173,
+          "atk": 1188,
+          "def": 1162,
+          "rec": 613
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 26,
+        "hitFrames": [0, 6, 12, 18],
+        "damageDistribution": [50, 20, 20, 10],
+        "dropChecks": 12
+      },
+      "bursts": {
+        "bb": {
+          "name": "Shale Cyclone",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 26,
+              "hitFrames": [0, 6, 12, 18, 24],
+              "damageDistribution": [20, 20, 20, 20, 20],
+              "dropChecks": 5
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.4,
+              "target": "enemies",
+              "flatAtk": 50
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Stone Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "earth"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "garrick-5",
+      "name": "Bulwark Guard",
+      "rarity": 5,
+      "maxLevel": 80,
+      "stats": {
+        "base": {
+          "hp": 2442,
+          "atk": 1010,
+          "def": 987,
+          "rec": 522
+        },
+        "max": {
+          "hp": 3894,
+          "atk": 1373,
+          "def": 1378,
+          "rec": 805
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 26,
+        "hitFrames": [0, 6, 12, 18],
+        "damageDistribution": [50, 20, 20, 10],
+        "dropChecks": 16
+      },
+      "bursts": {
+        "bb": {
+          "name": "Boulder Cyclone",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 26,
+              "hitFrames": [0, 6, 12, 18, 24, 30],
+              "damageDistribution": [15, 15, 15, 15, 20, 20],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.6,
+              "target": "enemies",
+              "flatAtk": 60
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Stone Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "earth"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "garrick-6",
+      "name": "Stonewall",
+      "rarity": 6,
+      "maxLevel": 100,
+      "stats": {
+        "base": {
+          "hp": 3233,
+          "atk": 1234,
+          "def": 1240,
+          "rec": 724
+        },
+        "max": {
+          "hp": 5272,
+          "atk": 1656,
+          "def": 1603,
+          "rec": 1010
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 34,
+        "hitFrames": [0, 6, 12, 18, 22],
+        "damageDistribution": [50, 20, 10, 10, 10],
+        "dropChecks": 25
+      },
+      "bursts": {
+        "bb": {
+          "name": "Granite Cyclone",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 32,
+              "hitFrames": [0, 6, 14, 20, 32, 44, 56, 68],
+              "damageDistribution": [20, 10, 10, 10, 10, 10, 20, 10],
+              "dropChecks": 8
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.9,
+              "target": "enemies",
+              "flatAtk": 80
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Rampart Rise",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 32,
+              "hitFrames": [0, 6, 14, 20, 32, 40, 48, 56, 68, 80],
+              "damageDistribution": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+              "dropChecks": 10
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 4.5,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 0.6,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Stonewall's Oath",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.1,
+            "target": "party",
+            "element": "earth"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "earth"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "garrick-7",
+      "name": "Bastion Legend",
+      "rarity": 7,
+      "maxLevel": 120,
+      "stats": {
+        "base": {
+          "hp": 4220,
+          "atk": 1325,
+          "def": 1280,
+          "rec": 810
+        },
+        "max": {
+          "hp": 6630,
+          "atk": 2310,
+          "def": 2300,
+          "rec": 1860
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 45,
+        "hitFrames": [0, 3, 6, 9, 12, 15, 18, 21],
+        "damageDistribution": [30, 10, 10, 10, 10, 10, 10, 10],
+        "dropChecks": 40
+      },
+      "bursts": {
+        "bb": {
+          "name": "Bastion Cyclone",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 45,
+              "hitFrames": [0, 3, 6, 9, 12, 15, 18, 21, 25, 29, 33, 37],
+              "damageDistribution": [12, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+              "dropChecks": 12
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 2.5,
+              "target": "enemies",
+              "flatAtk": 80
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Deeproot Rampart",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 46,
+              "hitFrames": [0, 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60, 66],
+              "damageDistribution": [10, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
+              "dropChecks": 16
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 5.0,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 1.1,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        },
+        "ubb": {
+          "name": "Mountain Unbroken",
+          "cost": 35,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 46,
+              "hitFrames": [
+                0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 70, 74, 78, 82, 86, 90, 93, 96, 99
+              ],
+              "damageDistribution": [
+                10, 8, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8
+              ],
+              "dropChecks": 21
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 10.0,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.atk_from_def",
+              "value": 1.5,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Bastion Vow",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party",
+            "element": "earth"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 1.0,
+            "target": "party",
+            "element": "earth"
+          }
+        ]
+      },
+      "extraSkill": {
+        "name": "Rooted Stand",
+        "effects": [
+          {
+            "id": "cond.signature_sphere",
+            "value": 0,
+            "target": "self",
+            "effects": [
+              {
+                "id": "passive.stat_pct",
+                "stat": "hp",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "atk",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "def",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "rec",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "chance_mitigation",
+                "value": 0.2,
+                "chance": 20,
+                "target": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "garrick-omni",
+      "name": "Heartstone Sovereign",
+      "rarity": "omni",
+      "maxLevel": 150,
+      "stats": {
+        "base": {
+          "hp": 5635,
+          "atk": 1964,
+          "def": 1955,
+          "rec": 1580
+        },
+        "max": {
+          "hp": 7452,
+          "atk": 2750,
+          "def": 2600,
+          "rec": 2204
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 15,
+        "hitFrames": [0, 3, 6, 25, 28, 31, 34, 37, 40, 43],
+        "damageDistribution": [18, 8, 8, 20, 8, 8, 8, 8, 7, 7],
+        "dropChecks": 40
+      },
+      "bursts": {
+        "bb": {
+          "name": "Heartstone Sweep",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 16,
+              "hitFrames": [0, 3, 6, 9, 25, 28, 31, 34, 37, 40, 43, 46, 49],
+              "damageDistribution": [15, 7, 6, 4, 18, 8, 7, 7, 6, 6, 6, 5, 5],
+              "dropChecks": 13
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 3.5,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.def",
+              "value": 1.6,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "ailment.cure",
+              "value": 0,
+              "target": "party"
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Sovereign Rampart",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 16,
+              "hitFrames": [0, 3, 6, 9, 12, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58],
+              "damageDistribution": [14, 6, 5, 4, 3, 17, 8, 6, 6, 5, 5, 4, 4, 4, 3, 3, 3],
+              "dropChecks": 17
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 5.6,
+              "target": "enemies",
+              "flatAtk": 200
+            },
+            {
+              "id": "buff.def",
+              "value": 1.6,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "ailment.cure",
+              "value": 0,
+              "target": "party"
+            },
+            {
+              "id": "debuff.null",
+              "value": 0,
+              "turns": 1,
+              "target": "party"
+            },
+            {
+              "id": "barrier",
+              "value": 2000,
+              "element": "earth",
+              "target": "party"
+            }
+          ]
+        },
+        "ubb": {
+          "name": "World-Anchor Aegis",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 16,
+              "hitFrames": [
+                0, 3, 6, 9, 12, 15, 18, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58, 61, 64, 67,
+                70
+              ],
+              "damageDistribution": [
+                11, 5, 4, 3, 3, 3, 3, 15, 7, 6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+              ],
+              "dropChecks": 23
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 15.0,
+              "target": "enemies",
+              "flatAtk": 200
+            },
+            {
+              "id": "buff.atk_from_def",
+              "value": 2.5,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "mitigation",
+              "value": 0.75,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "debuff.null",
+              "value": 0,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Heartstone Decree",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 1.0,
+            "target": "party"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party",
+            "element": "earth"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "earth"
+          },
+          {
+            "id": "crit_resist",
+            "value": 1,
+            "target": "party"
+          },
+          {
+            "id": "bb.fill_on_damage_taken",
+            "value": 8,
+            "threshold": 5000,
+            "target": "party"
+          }
+        ]
+      },
+      "extraSkill": {
+        "name": "Unmoving Heart",
+        "effects": [
+          {
+            "id": "cond.signature_sphere",
+            "value": 0,
+            "target": "self",
+            "effects": [
+              {
+                "id": "passive.stat_pct",
+                "stat": "hp",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "atk",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "def",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "rec",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "chance_mitigation",
+                "value": 0.2,
+                "chance": 20,
+                "target": "self"
+              },
+              {
+                "id": "mitigation_after_damage",
+                "value": 0.25,
+                "threshold": 10000,
+                "turns": 1,
+                "target": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

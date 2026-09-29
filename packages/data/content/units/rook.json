@@ -1,0 +1,761 @@
+{
+  "id": "rook",
+  "name": "Rook",
+  "element": "thunder",
+  "forms": [
+    {
+      "id": "rook-2",
+      "name": "Wire Apprentice",
+      "rarity": 2,
+      "maxLevel": 12,
+      "stats": {
+        "base": {
+          "hp": 1180,
+          "atk": 580,
+          "def": 320,
+          "rec": 120
+        },
+        "max": {
+          "hp": 2070,
+          "atk": 812,
+          "def": 420,
+          "rec": 210
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 30,
+        "hitFrames": [0],
+        "damageDistribution": [100],
+        "dropChecks": 8
+      },
+      "bursts": {
+        "bb": {
+          "name": "Arc Jab",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 30,
+              "hitFrames": [0, 10],
+              "damageDistribution": [50, 50],
+              "dropChecks": 2
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.75,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Charged Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.25,
+            "target": "party",
+            "element": "thunder"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "rook-3",
+      "name": "Spark Rigger",
+      "rarity": 3,
+      "maxLevel": 40,
+      "stats": {
+        "base": {
+          "hp": 1593,
+          "atk": 731,
+          "def": 378,
+          "rec": 189
+        },
+        "max": {
+          "hp": 2749,
+          "atk": 1007,
+          "def": 687,
+          "rec": 426
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 30,
+        "hitFrames": [0],
+        "damageDistribution": [100],
+        "dropChecks": 8
+      },
+      "bursts": {
+        "bb": {
+          "name": "Arc Lash",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 30,
+              "hitFrames": [0, 10],
+              "damageDistribution": [50, 50],
+              "dropChecks": 2
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.85,
+              "target": "enemies",
+              "flatAtk": 30
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Charged Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.25,
+            "target": "party",
+            "element": "thunder"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "rook-4",
+      "name": "Storm Rigger",
+      "rarity": 4,
+      "maxLevel": 60,
+      "stats": {
+        "base": {
+          "hp": 2205,
+          "atk": 906,
+          "def": 618,
+          "rec": 384
+        },
+        "max": {
+          "hp": 3509,
+          "atk": 1294,
+          "def": 838,
+          "rec": 565
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 30,
+        "hitFrames": [0, 10],
+        "damageDistribution": [80, 20],
+        "dropChecks": 14
+      },
+      "bursts": {
+        "bb": {
+          "name": "Coil Surge",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 30,
+              "hitFrames": [0, 10, 30, 45, 60],
+              "damageDistribution": [25, 30, 15, 15, 15],
+              "dropChecks": 5
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.4,
+              "target": "enemies",
+              "flatAtk": 50
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Storm Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "thunder"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "rook-5",
+      "name": "Thunder Rigger",
+      "rarity": 5,
+      "maxLevel": 80,
+      "stats": {
+        "base": {
+          "hp": 2728,
+          "atk": 1100,
+          "def": 712,
+          "rec": 480
+        },
+        "max": {
+          "hp": 4233,
+          "atk": 1460,
+          "def": 1006,
+          "rec": 770
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 30,
+        "hitFrames": [0, 10, 15],
+        "damageDistribution": [80, 10, 10],
+        "dropChecks": 18
+      },
+      "bursts": {
+        "bb": {
+          "name": "Coil Tempest",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 30,
+              "hitFrames": [0, 10, 15, 30, 40, 50, 60],
+              "damageDistribution": [20, 20, 20, 10, 10, 10, 10],
+              "dropChecks": 7
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.6,
+              "target": "enemies",
+              "flatAtk": 60
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Storm Resolve",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "thunder"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "rook-6",
+      "name": "Stormcaller",
+      "rarity": 6,
+      "maxLevel": 100,
+      "stats": {
+        "base": {
+          "hp": 3538,
+          "atk": 1313,
+          "def": 905,
+          "rec": 692
+        },
+        "max": {
+          "hp": 5460,
+          "atk": 1806,
+          "def": 1230,
+          "rec": 971
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 34,
+        "hitFrames": [0, 10, 14],
+        "damageDistribution": [80, 10, 10],
+        "dropChecks": 24
+      },
+      "bursts": {
+        "bb": {
+          "name": "Stormline Break",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 30,
+              "hitFrames": [0, 10, 15, 30, 48, 58, 68, 78],
+              "damageDistribution": [20, 20, 10, 10, 10, 10, 10, 10],
+              "dropChecks": 8
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 1.9,
+              "target": "enemies",
+              "flatAtk": 80
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Calling Thunder",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 30,
+              "hitFrames": [0, 10, 15, 30, 40, 54, 68, 82, 96, 124],
+              "damageDistribution": [20, 7, 7, 6, 10, 10, 10, 10, 10, 10],
+              "dropChecks": 10
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 4.5,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.atk",
+              "value": 0.6,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Stormcaller's Oath",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.1,
+            "target": "party",
+            "element": "thunder"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "thunder"
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "rook-7",
+      "name": "Storm Legend",
+      "rarity": 7,
+      "maxLevel": 120,
+      "stats": {
+        "base": {
+          "hp": 4250,
+          "atk": 1330,
+          "def": 1165,
+          "rec": 1100
+        },
+        "max": {
+          "hp": 6800,
+          "atk": 2500,
+          "def": 2000,
+          "rec": 1800
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 46,
+        "hitFrames": [0],
+        "damageDistribution": [100],
+        "dropChecks": 30
+      },
+      "bursts": {
+        "bb": {
+          "name": "Stormline Cascade",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 40,
+              "hitFrames": [0, 4, 8, 22, 35, 48, 61, 74, 87, 100, 113, 126],
+              "damageDistribution": [12, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+              "dropChecks": 12
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 2.5,
+              "target": "enemies",
+              "flatAtk": 80
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Legend Squall",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 41,
+              "hitFrames": [0, 4, 8, 12, 32, 42, 52, 62, 72, 82, 92, 102, 112, 122, 132],
+              "damageDistribution": [10, 8, 8, 8, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
+              "dropChecks": 15
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 5.0,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.atk",
+              "value": 1.1,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        },
+        "ubb": {
+          "name": "Skyfall Relay",
+          "cost": 35,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 41,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [50, 30, 20],
+              "dropChecks": 3
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 10.0,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.spark_dmg",
+              "value": 1.5,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Legend Current",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party",
+            "element": "thunder"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 1.0,
+            "target": "party",
+            "element": "thunder"
+          }
+        ]
+      },
+      "extraSkill": {
+        "name": "Live Wire",
+        "effects": [
+          {
+            "id": "cond.signature_sphere",
+            "value": 0,
+            "target": "self",
+            "effects": [
+              {
+                "id": "passive.stat_pct",
+                "stat": "hp",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "atk",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "def",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "rec",
+                "value": 0.2,
+                "target": "self"
+              },
+              {
+                "id": "buff.crit_dmg",
+                "value": 0.5,
+                "target": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "sphereSlots": 1
+    },
+    {
+      "id": "rook-omni",
+      "name": "Tempest Sovereign",
+      "rarity": "omni",
+      "maxLevel": 150,
+      "stats": {
+        "base": {
+          "hp": 5780,
+          "atk": 2125,
+          "def": 1700,
+          "rec": 1530
+        },
+        "max": {
+          "hp": 7602,
+          "atk": 3000,
+          "def": 2354,
+          "rec": 2050
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 12,
+        "hitFrames": [0, 55],
+        "damageDistribution": [10, 90],
+        "dropChecks": 44
+      },
+      "bursts": {
+        "bb": {
+          "name": "Tempest Twinstrike",
+          "cost": 25,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 14,
+              "hitFrames": [0, 55],
+              "damageDistribution": [10, 90],
+              "dropChecks": 30
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 3.5,
+              "target": "enemies",
+              "flatAtk": 100
+            },
+            {
+              "id": "buff.atk",
+              "value": 1.5,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "buff.spark_dmg",
+              "value": 0.9,
+              "turns": 3,
+              "target": "party"
+            }
+          ]
+        },
+        "sbb": {
+          "name": "Sovereign Squall",
+          "cost": 20,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 16,
+              "hitFrames": [
+                0, 3, 6, 9, 12, 15, 18, 21, 55, 58, 61, 64, 67, 70, 72, 75, 78, 81, 84, 87
+              ],
+              "damageDistribution": [8, 3, 2, 3, 2, 3, 46, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3],
+              "dropChecks": 20
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 5.6,
+              "target": "enemies",
+              "flatAtk": 200
+            },
+            {
+              "id": "buff.atk",
+              "value": 1.5,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "buff.spark_dmg",
+              "value": 0.9,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "buff.spark_crit",
+              "value": 0.5,
+              "chance": 20,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "buff.elem_weak_dmg",
+              "value": 0.75,
+              "turns": 3,
+              "target": "party",
+              "element": "thunder"
+            }
+          ]
+        },
+        "ubb": {
+          "name": "Crownbolt Verdict",
+          "cost": 30,
+          "attacks": [
+            {
+              "moveType": "melee",
+              "startDelayFrames": 15,
+              "hitFrames": [0, 55],
+              "damageDistribution": [10, 90],
+              "dropChecks": 60
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 15.0,
+              "target": "enemies",
+              "flatAtk": 200
+            },
+            {
+              "id": "buff.spark_dmg",
+              "value": 2.5,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "buff.spark_crit",
+              "value": 0.5,
+              "chance": 50,
+              "turns": 3,
+              "target": "party"
+            },
+            {
+              "id": "debuff.spark_vuln",
+              "value": 1.0,
+              "turns": 1,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "leaderSkill": {
+        "name": "Tempest Decree",
+        "effects": [
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 1.0,
+            "target": "party"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "hp",
+            "value": 0.3,
+            "target": "party",
+            "element": "thunder"
+          },
+          {
+            "id": "passive.stat_pct",
+            "stat": "atk",
+            "value": 0.5,
+            "target": "party",
+            "element": "thunder"
+          },
+          {
+            "id": "buff.spark_dmg",
+            "value": 1.2,
+            "target": "party"
+          },
+          {
+            "id": "bb.fill_on_spark",
+            "value": 0,
+            "min": 2,
+            "max": 3,
+            "target": "party"
+          }
+        ]
+      },
+      "extraSkill": {
+        "name": "Grounded Arc",
+        "effects": [
+          {
+            "id": "cond.signature_sphere",
+            "value": 0,
+            "target": "self",
+            "effects": [
+              {
+                "id": "passive.stat_pct",
+                "stat": "hp",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "atk",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "def",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "passive.stat_pct",
+                "stat": "rec",
+                "value": 0.3,
+                "target": "self"
+              },
+              {
+                "id": "buff.crit_dmg",
+                "value": 0.5,
+                "target": "self"
+              },
+              {
+                "id": "buff.spark_dmg",
+                "value": 0.5,
+                "target": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

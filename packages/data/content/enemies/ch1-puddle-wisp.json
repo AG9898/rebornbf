@@ -1,0 +1,60 @@
+{
+  "id": "ch1-puddle-wisp",
+  "name": "Puddle Wisp",
+  "element": "water",
+  "stats": {
+    "hp": 1400,
+    "atk": 230,
+    "def": 100,
+    "rec": 150
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 24,
+    "hitFrames": [0],
+    "damageDistribution": [100],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "drizzle",
+      "name": "Drizzle",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 28,
+          "hitFrames": [0, 8, 16],
+          "damageDistribution": [30, 30, 40],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.6,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "drizzle",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 30
+    }
+  }
+}

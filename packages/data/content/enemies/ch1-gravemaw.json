@@ -1,0 +1,92 @@
+{
+  "id": "ch1-gravemaw",
+  "name": "Gravemaw",
+  "element": "dark",
+  "stats": {
+    "hp": 24000,
+    "atk": 380,
+    "def": 250,
+    "rec": 300
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 30,
+    "hitFrames": [0, 12, 24],
+    "damageDistribution": [30, 30, 40],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "maw-sweep",
+      "name": "Maw Sweep",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 36,
+          "hitFrames": [0, 10, 20, 30],
+          "damageDistribution": [25, 25, 25, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.9,
+          "target": "enemies"
+        }
+      ]
+    },
+    {
+      "id": "hungering-howl",
+      "name": "Hungering Howl",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 48,
+          "hitFrames": [0, 8, 16, 24, 32, 40],
+          "damageDistribution": [15, 15, 15, 15, 15, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "buff.atk",
+          "value": 0.3,
+          "turns": 4,
+          "target": "self"
+        },
+        {
+          "id": "attack.aoe",
+          "value": 1.1,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "hp_threshold_once",
+      "hpPercent": 50,
+      "skill": "hungering-howl",
+      "target": "random"
+    },
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "maw-sweep",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "lowest_hp"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.1,
+    "zel": {
+      "rate": 100,
+      "amount": 800
+    }
+  }
+}

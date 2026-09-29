@@ -1,0 +1,31 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import styles from "../../../components/menu/menu.module.css";
+
+export const metadata: Metadata = { title: "Other · BFR" };
+
+const LINKS = [
+  { href: "/account", label: "Account" },
+  { href: "/gallery", label: "Art gallery" },
+  { href: "/battle", label: "Demo battle" },
+];
+
+export default function OtherPage(): ReactNode {
+  return (
+    <div className={styles.placeholder}>
+      <section className={styles.panel}>
+        <h1 className={`${styles.panelTitle} ${styles.gold}`}>Other</h1>
+        <p className={styles.panelText}>Settings and credits are coming soon.</p>
+        {LINKS.map((link) => (
+          <div key={link.href}>
+            <Link href={link.href} className={styles.panelLink}>
+              {link.label}
+            </Link>
+          </div>
+        ))}
+        <p className={styles.panelText}>A free, non-commercial fan tribute.</p>
+      </section>
+    </div>
+  );
+}

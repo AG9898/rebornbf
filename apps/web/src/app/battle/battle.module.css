@@ -1,0 +1,13 @@
+.canvasHost canvas {
+  display: block;
+}
+
+/* The same painting bleeds behind the 9:16 column, blurred and dimmed. */
+.backdrop {
+  position: absolute;
+  inset: -48px;
+  background-color: #253453;
+  background-position: center;
+  background-size: cover;
+  filter: blur(24px) brightness(0.45);
+}

@@ -1,0 +1,58 @@
+{
+  "id": "silver-crucible",
+  "name": "Silver Crucible",
+  "element": "light",
+  "forms": [
+    {
+      "id": "silver-crucible-3",
+      "name": "Silver Crucible",
+      "rarity": 3,
+      "maxLevel": 40,
+      "stats": {
+        "base": {
+          "hp": 600,
+          "atk": 150,
+          "def": 1000,
+          "rec": 150
+        },
+        "max": {
+          "hp": 900,
+          "atk": 220,
+          "def": 1400,
+          "rec": 220
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 12],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Silver Clang",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [30, 30, 40],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.8,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "sphereSlots": 1,
+      "fusionExp": 1000
+    }
+  ]
+}

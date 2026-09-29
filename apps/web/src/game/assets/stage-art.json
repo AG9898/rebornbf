@@ -1,0 +1,44 @@
+{
+  "note": "Battle art the app selects by stage, derived from art/backgrounds/backgrounds.json (chapters, stages) and art/enemies/enemies.json (canvas). stage-art.test.ts fails when they drift; copy the changed fields here.",
+  "backgrounds": {
+    "plains": {
+      "chapters": [1],
+      "stages": ["demo-stage", "placeholder-stage"]
+    }
+  },
+  "enemies": {
+    "ch1-bramble-pup": {
+      "canvas": 128
+    },
+    "ch1-puddle-wisp": {
+      "canvas": 128
+    },
+    "ch1-cinder-moth": {
+      "canvas": 128
+    },
+    "ch1-spark-beetle": {
+      "canvas": 128
+    },
+    "ch1-ashbound-sentry": {
+      "canvas": 128
+    },
+    "ch1-gravemaw": {
+      "canvas": 256
+    },
+    "demo-thornling": {
+      "canvas": 128
+    },
+    "demo-rillwisp": {
+      "canvas": 128
+    },
+    "demo-ashen-warden": {
+      "canvas": 256
+    },
+    "trial1-locke": {
+      "canvas": 256
+    },
+    "trial1-locke-p2": {
+      "canvas": 256
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "id": "ch1-ashbound-sentry",
+  "name": "Ashbound Sentry",
+  "element": "dark",
+  "stats": {
+    "hp": 6000,
+    "atk": 340,
+    "def": 220,
+    "rec": 200
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 26,
+    "hitFrames": [0, 12, 24],
+    "damageDistribution": [30, 30, 40],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "grave-cleave",
+      "name": "Grave Cleave",
+      "attacks": [
+        {
+          "moveType": "melee",
+          "startDelayFrames": 32,
+          "hitFrames": [0, 10, 20],
+          "damageDistribution": [30, 30, 40],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.8,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "grave-cleave",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "lowest_hp"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.08,
+    "zel": {
+      "rate": 60,
+      "amount": 150
+    }
+  }
+}

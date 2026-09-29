@@ -1,0 +1,58 @@
+{
+  "id": "moss-flask",
+  "name": "Moss Flask",
+  "element": "earth",
+  "forms": [
+    {
+      "id": "moss-flask-3",
+      "name": "Moss Flask",
+      "rarity": 3,
+      "maxLevel": 1,
+      "stats": {
+        "base": {
+          "hp": 600,
+          "atk": 150,
+          "def": 1000,
+          "rec": 150
+        },
+        "max": {
+          "hp": 600,
+          "atk": 150,
+          "def": 1000,
+          "rec": 150
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 12],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Flask Clang",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [30, 30, 40],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.8,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "sphereSlots": 1,
+      "fusionExp": 1506
+    }
+  ]
+}

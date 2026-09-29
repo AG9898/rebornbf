@@ -1,0 +1,97 @@
+import { CONTENT_VERSION } from "@bfr/data";
+import { createBattle } from "@bfr/engine";
+import { describe, expect, it } from "vitest";
+import { STORY_STAGES } from "../quests/quest-map.ts";
+import { unitContent } from "../units/owned-units.ts";
+import {
+  type BattleSessionRow,
+  isBattleSessionId,
+  type SnapshotUnit,
+  sessionBattle,
+  sessionProblem,
+} from "./session-battle.ts";
+
+const NOW = new Date("2026-09-28T12:00:00Z");
+
+function snap(unitId: string, formId: string, level = 1): SnapshotUnit {
+  return { owned_unit_id: `id-${unitId}`, unit_id: unitId, form_id: formId, level };
+}
+
+function row(overrides: Partial<BattleSessionRow> = {}): BattleSessionRow {
+  return {
+    id: "00000000-0000-0000-0000-000000000001",
+    stage_id: STORY_STAGES[0]?.id ?? "",
+    seed: 4294967295,
+    squad: {
+      leader_index: 1,
+      units: [snap("maren", "maren-3"), snap("brand", "brand-3")],
+      ally: snap("rook", "rook-3"),
+    },
+    content_version: CONTENT_VERSION,
+    expires_at: "2026-09-28T13:00:00Z",
+    finished_at: null,
+    ...overrides,
+  };
+}
+
+describe("session battle (M3-04B)", () => {
+  it("builds the stage's waves and the snapshotted squad at level-1 stats", () => {
+    const result = sessionBattle(row());
+    if (!result.ok) throw new Error(result.message);
+    const { setup, seed, stage, partyArt, partyArtForms } = result.battle;
+    expect(stage.id).toBe(STORY_STAGES[0]?.id);
+    expect(seed).toBe(4294967295);
+    expect(setup.squad.map((m) => m.formId)).toEqual(["maren-3", "brand-3"]);
+    expect(setup.leaderIndex).toBe(1);
+    expect(setup.ally).toMatchObject({ formId: "rook-3", kind: "duplicate" });
+    const maren = unitContent("maren")?.forms.find((f) => f.id === "maren-3");
+    expect(setup.squad[0]?.stats).toEqual(maren?.stats.base);
+    expect(setup.waves.map((w) => w.map((e) => e.id))).toEqual(
+      STORY_STAGES[0]?.waves.map((w) => w.enemies.map((e) => e.enemy)),
+    );
+    expect(partyArt).toEqual(["maren", "brand", "rook"]);
+    expect(partyArtForms).toEqual(["3star", "3star", "3star"]);
+    // The engine accepts the setup and the session seed.
+    expect(createBattle(setup, seed).party).toHaveLength(3);
+  });
+
+  it("builds every chapter 1 stage", () => {
+    for (const stage of STORY_STAGES) {
+      expect(sessionBattle(row({ stage_id: stage.id })).ok).toBe(true);
+    }
+  });
+
+  it("omits the ally when the squad has none", () => {
+    const result = sessionBattle(
+      row({ squad: { leader_index: 0, units: [snap("brand", "brand-3")], ally: null } }),
+    );
+    expect(result.ok && result.battle.setup.ally).toBeUndefined();
+  });
+
+  it("rejects stages and units this build does not have", () => {
+    expect(sessionBattle(row({ stage_id: "demo-stage" })).ok).toBe(false);
+    const unknown = row({
+      squad: { leader_index: 0, units: [snap("nobody", "nobody-3")], ally: null },
+    });
+    expect(sessionBattle(unknown).ok).toBe(false);
+  });
+
+  it("rejects levels whose stats wait for the growth curve (M1-08D)", () => {
+    const mid = row({
+      squad: { leader_index: 0, units: [snap("brand", "brand-3", 5)], ally: null },
+    });
+    expect(sessionBattle(mid)).toMatchObject({ ok: false });
+  });
+
+  it("refuses finished, expired, and other-content sessions", () => {
+    expect(sessionProblem(row(), NOW)).toBeNull();
+    expect(sessionProblem(row({ finished_at: "2026-09-28T12:10:00Z" }), NOW)).toMatch(/finished/);
+    expect(sessionProblem(row({ expires_at: "2026-09-28T12:00:00Z" }), NOW)).toMatch(/expired/);
+    expect(sessionProblem(row({ content_version: "0000000000000000" }), NOW)).toMatch(/updated/);
+  });
+
+  it("accepts only uuid session ids", () => {
+    expect(isBattleSessionId("00000000-0000-0000-0000-000000000001")).toBe(true);
+    expect(isBattleSessionId("1; drop table")).toBe(false);
+  });
+});

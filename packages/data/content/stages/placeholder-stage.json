@@ -1,0 +1,8 @@
+{
+  "id": "placeholder-stage",
+  "name": "Placeholder Stage",
+  "waves": [
+    { "enemies": [{ "enemy": "placeholder-grunt" }, { "enemy": "placeholder-grunt" }] },
+    { "enemies": [{ "enemy": "placeholder-grunt" }, { "enemy": "placeholder-brute" }] }
+  ]
+}

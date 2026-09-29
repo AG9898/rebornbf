@@ -1,0 +1,52 @@
+{
+  "id": "placeholder-brute",
+  "name": "Placeholder Brute",
+  "element": "water",
+  "stats": { "hp": 12000, "atk": 900, "def": 500, "rec": 300 },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "tidal-slam",
+      "name": "Tidal Slam",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 30,
+          "hitFrames": [0, 8, 16],
+          "damageDistribution": [30, 30, 40],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [{ "id": "attack.aoe", "value": 1.5, "target": "enemies" }]
+    },
+    {
+      "id": "brace",
+      "name": "Brace",
+      "attacks": [],
+      "effects": [{ "id": "buff.def", "value": 0.5, "turns": 2, "target": "self" }]
+    }
+  ],
+  "ai": [
+    { "when": "hp_threshold_once", "hpPercent": 50, "skill": "brace", "target": "random" },
+    {
+      "when": "condition",
+      "condition": { "type": "party_lacks_effect", "effect": "mitigation" },
+      "skill": "tidal-slam",
+      "target": "random"
+    },
+    { "when": "every_n_turns", "n": 3, "skill": "tidal-slam", "target": "random" },
+    { "when": "default", "skill": "normal", "target": "lowest_hp" }
+  ],
+  "drops": {
+    "bcResistance": 0.1,
+    "zel": { "rate": 80, "amount": 100 },
+    "karma": { "rate": 50, "amount": 30 },
+    "items": [{ "item": "placeholder-material", "rate": 10 }]
+  }
+}

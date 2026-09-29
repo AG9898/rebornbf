@@ -1,0 +1,23 @@
+node_modules/
+.next/
+next-env.d.ts
+dist/
+coverage/
+.turbo/
+*.tsbuildinfo
+.env
+.env*.local
+!.env.example
+supabase/.branches/
+supabase/.temp/
+playwright-report/
+test-results/
+.DS_Store
+*:Zone.Identifier
+.vercel
+
+# Playwright MCP page snapshots (may contain secrets)
+.playwright-mcp/
+
+# BFR art generation scratch (prompts, logs, all outputs)
+art/work/

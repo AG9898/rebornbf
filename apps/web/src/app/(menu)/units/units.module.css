@@ -1,0 +1,192 @@
+/* Unit collection and detail (M3-03A). Sizes use the menu frame's logical pixel, --u. */
+
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: calc(var(--u) * 20) calc(var(--u) * 24) calc(var(--u) * 32);
+  user-select: text;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: calc(var(--u) * 18);
+}
+
+.title {
+  font-size: calc(var(--u) * 48);
+  line-height: 1.1;
+}
+
+.count {
+  font-size: calc(var(--u) * 22);
+  color: #f6d88a;
+}
+
+.back {
+  font-size: calc(var(--u) * 28);
+  color: #f6d88a;
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--u) * 14);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(var(--u) * 8) calc(var(--u) * 6) calc(var(--u) * 12);
+  border: calc(var(--u) * 3) solid #c99a3a;
+  border-radius: calc(var(--u) * 14);
+  background: rgb(10 14 26 / 0.75);
+  color: #fff;
+  text-decoration: none;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: #fbe39a;
+}
+
+.portrait {
+  --element: #6b6456;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: calc(var(--u) * 3) solid var(--element);
+  border-radius: calc(var(--u) * 10);
+  background: #10131d;
+  overflow: hidden;
+}
+
+/* Element frame: a CSS stand-in until element frame art exists (ART_GUIDE → Illustrations). */
+.portrait[data-element="fire"] {
+  --element: #e0562a;
+}
+.portrait[data-element="water"] {
+  --element: #3f8fe8;
+}
+.portrait[data-element="earth"] {
+  --element: #4fae4a;
+}
+.portrait[data-element="thunder"] {
+  --element: #f2cf3a;
+}
+.portrait[data-element="light"] {
+  --element: #f4ecd2;
+}
+.portrait[data-element="dark"] {
+  --element: #9a4fd0;
+}
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sprite {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.noArt {
+  font-size: calc(var(--u) * 64);
+  color: #6b6456;
+}
+
+.rarity {
+  position: absolute;
+  right: calc(var(--u) * 4);
+  top: calc(var(--u) * 4);
+  padding: calc(var(--u) * 2) calc(var(--u) * 8);
+  border-radius: calc(var(--u) * 10);
+  background: rgb(0 0 0 / 0.6);
+  font-size: calc(var(--u) * 18);
+  color: #fbe39a;
+}
+
+.cardName {
+  margin-top: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 24);
+}
+
+.cardMeta {
+  margin-top: calc(var(--u) * 4);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  color: #d8d0bc;
+}
+
+.splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: calc(var(--u) * 3) solid #c99a3a;
+  border-radius: calc(var(--u) * 16);
+  background: radial-gradient(circle at 50% 55%, #3a2f22 0%, #1d1c2a 55%, #10131d 85%);
+  overflow: hidden;
+}
+
+.splashImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.detail {
+  margin-top: calc(var(--u) * 18);
+}
+
+.formName {
+  margin-top: calc(var(--u) * 4);
+  font-size: calc(var(--u) * 26);
+  color: #f6d88a;
+}
+
+.stats {
+  width: 100%;
+  margin-top: calc(var(--u) * 18);
+  border-collapse: collapse;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 22);
+  color: #f2ead6;
+}
+
+.stats th,
+.stats td {
+  padding: calc(var(--u) * 8) calc(var(--u) * 10);
+  border-bottom: calc(var(--u) * 2) solid rgb(201 154 58 / 0.35);
+  text-align: right;
+}
+
+.stats th:first-child {
+  text-align: left;
+  color: #f6d88a;
+}
+
+.stats thead th {
+  font-size: calc(var(--u) * 18);
+  color: #d8d0bc;
+}
+
+.note {
+  margin-top: calc(var(--u) * 12);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  color: #a9a08c;
+}

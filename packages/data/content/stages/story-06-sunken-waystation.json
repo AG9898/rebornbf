@@ -1,0 +1,50 @@
+{
+  "id": "story-06-sunken-waystation",
+  "name": "Sunken Waystation",
+  "story": {
+    "chapter": 1,
+    "number": 6,
+    "text": "The waystation's keepers are gone. Their lanterns point the way down."
+  },
+  "firstClear": {
+    "gems": 30
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch1-puddle-wisp"
+        },
+        {
+          "enemy": "ch1-bramble-pup"
+        },
+        {
+          "enemy": "ch1-puddle-wisp"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch1-cinder-moth"
+        },
+        {
+          "enemy": "ch1-spark-beetle"
+        },
+        {
+          "enemy": "ch1-cinder-moth"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch1-ashbound-sentry"
+        },
+        {
+          "enemy": "ch1-puddle-wisp"
+        }
+      ]
+    }
+  ]
+}

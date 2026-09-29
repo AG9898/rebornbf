@@ -1,0 +1,45 @@
+{
+  "id": "story-08-beacon-hollow",
+  "name": "Beacon Hollow",
+  "story": {
+    "chapter": 1,
+    "number": 8,
+    "text": "Gravemaw coils around the dead beacon. Break its hold and the Ember Road burns bright again."
+  },
+  "firstClear": {
+    "gems": 150
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch1-bramble-pup"
+        },
+        {
+          "enemy": "ch1-cinder-moth"
+        },
+        {
+          "enemy": "ch1-puddle-wisp"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch1-ashbound-sentry"
+        },
+        {
+          "enemy": "ch1-spark-beetle"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch1-gravemaw",
+          "boss": true
+        }
+      ]
+    }
+  ]
+}
