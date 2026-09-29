@@ -2,6 +2,7 @@
 
 /** Pixel size of each exported UI piece in public/assets/ui/<name>.webp (2x logical). */
 export const UI_ASSETS = {
+  "title-keyart": { width: 1024, height: 1536 },
   "nav-home": { width: 180, height: 157 },
   "nav-unit": { width: 180, height: 172 },
   "nav-squad": { width: 180, height: 176 },
@@ -96,7 +97,21 @@ export const UI_ASSETS = {
   "cutin-ribbon-sbb": { width: 1140, height: 335 },
   "cutin-ribbon-ubb": { width: 1140, height: 332 },
   "cutin-streaks": { width: 1280, height: 853 },
-  "title-keyart": { width: 1024, height: 1536 },
+  "unit-frame-fire": { width: 240, height: 241 },
+  "unit-frame-water": { width: 240, height: 234 },
+  "unit-frame-thunder": { width: 240, height: 235 },
+  "unit-frame-earth": { width: 240, height: 238 },
+  "unit-frame-light": { width: 240, height: 235 },
+  "unit-frame-dark": { width: 240, height: 237 },
+  "bg-olive": { width: 512, height: 512 },
+  "title-plate": { width: 640, height: 111 },
+  "squad-pedestal": { width: 340, height: 114 },
+  "stat-plate": { width: 440, height: 92 },
+  "squad-arrow": { width: 112, height: 119 },
+  "leader-ribbon": { width: 260, height: 79 },
+  "skill-tag-red": { width: 340, height: 70 },
+  "skill-tag-violet": { width: 340, height: 59 },
+  "skill-tag-blue": { width: 340, height: 59 },
 } as const;
 
 export type UiAsset = keyof typeof UI_ASSETS;
