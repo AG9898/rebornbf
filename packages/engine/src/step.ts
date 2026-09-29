@@ -1,4 +1,5 @@
 import type { Attack, Effect } from "@bfr/data";
+import { useItem } from "./actions/item.ts";
 import { bcDropRate, hcDropRate } from "./drops/rates.ts";
 import { collectCrystals, rollHitDrops } from "./drops/roll.ts";
 import {
@@ -81,9 +82,15 @@ import {
   OVERDRIVE_TURNS,
 } from "./gauge/overdrive.ts";
 import { nextInt, type RngState } from "./rng.ts";
-import type { BattleEnemy, BattleState, BattleUnit, EnemySlotId } from "./state/types.ts";
+import type {
+  BattleEnemy,
+  BattleItemStack,
+  BattleState,
+  BattleUnit,
+  EnemySlotId,
+} from "./state/types.ts";
 import { cloneExtraHits, type HitOrigin, insertHits, scheduleHit } from "./timeline/schedule.ts";
-import { detectSparks } from "./timeline/spark.ts";
+import { detectSparks, rememberSparkHits, type SparkMark } from "./timeline/spark.ts";
 import type {
   AttackDamage,
   AttackInput,
@@ -120,9 +127,11 @@ interface Mutable {
   party: BattleUnit[];
   enemies: BattleEnemy[];
   timeline: ScheduledHit[];
+  recentHits: SparkMark[];
   nextActionId: number;
   od: OdGauge;
   acted: BattleState["acted"][number][];
+  items: BattleItemStack[];
 }
 
 /** Overdrive Mode adds +100% to ATK, DEF, and REC `stat_mods` (RESOLVED-38 item 10). */
@@ -462,6 +471,8 @@ function startAction(m: Mutable, input: BattleInput, events: BattleEvent[], over
     startGuard(m, input, events);
   } else if (input.type === "overdrive") {
     startOverdrive(m, input, events);
+  } else if (input.type === "item") {
+    useItem(m, input, events);
   } else {
     startAttack(m, input, events);
   }
@@ -955,17 +966,19 @@ function dropCrystals(
 
 /**
  * Resolves every hit due this tick: detects sparks across the whole batch first (a spark needs
- * two hits on one target in the window), emits one `Sparked` event per sparking target, then
+ * two hits on one target in the window; with spark assist, pending and remembered hits within
+ * `window` ticks count too), emits one `Sparked` event per sparking target, then
  * resolves the hits in timeline order. Per sparked hit the RNG order is: spark-critical draws,
  * then the crystal drop draws, then BC-fill-on-spark range draws (GAME_DESIGN §4 M2-04D).
  */
-function resolveTick(m: Mutable, now: number, events: BattleEvent[]): void {
+function resolveTick(m: Mutable, now: number, window: number, events: BattleEvent[]): void {
   let count = 0;
   while (m.timeline[count]?.tick === now) {
     count += 1;
   }
   const batch = m.timeline.splice(0, count);
-  const sparked = detectSparks(batch);
+  const sparked = detectSparks(batch, { window, recent: m.recentHits, pending: m.timeline });
+  m.recentHits = rememberSparkHits(m.recentHits, batch, now, window);
   const groups = new Map<ScheduledHit["target"], SparkedEvent["actors"][number][]>();
   batch.forEach((hit, i) => {
     if (sparked[i] && !hit.extra) {
@@ -1011,9 +1024,11 @@ export function step(
     party: [...state.party],
     enemies: [...state.enemies],
     timeline: [...state.timeline],
+    recentHits: [...state.recentHits],
     nextActionId: state.nextActionId,
     od: state.od,
     acted: [...state.acted],
+    items: [...state.items],
   };
   const events: BattleEvent[] = [];
   let tick = state.tick;
@@ -1037,7 +1052,7 @@ export function step(
       startAction(m, input, events, state.result !== undefined);
       inputIndex += 1;
     }
-    resolveTick(m, now, events);
+    resolveTick(m, now, state.sparkWindowTicks, events);
   }
 
   return {
@@ -1048,9 +1063,11 @@ export function step(
       party: m.party,
       enemies: m.enemies,
       timeline: m.timeline,
+      recentHits: m.recentHits,
       nextActionId: m.nextActionId,
       od: m.od,
       acted: m.acted,
+      items: m.items,
     },
     events,
   };

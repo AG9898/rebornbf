@@ -111,7 +111,7 @@ export default async function UnitDetailPage({
         )}
         {unit.stats && !unit.currentStats ? (
           <p className={units.note}>
-            Stats grow from the Lv 1 values to the Lv {unit.maxLevel} values as the unit levels.
+            This unit's level is outside its form's range, so its current stats are not shown.
           </p>
         ) : null}
       </section>

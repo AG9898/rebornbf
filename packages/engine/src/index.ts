@@ -3,6 +3,7 @@ import { DATA_SCHEMA_VERSION } from "@bfr/data";
 /** Engine version string; ties the engine to the content schema it reads. */
 export const ENGINE_VERSION: string = `0.0.0+data${DATA_SCHEMA_VERSION}`;
 
+export * from "./actions/index.ts";
 export * from "./ai/index.ts";
 export * from "./auto.ts";
 export * from "./drops/index.ts";

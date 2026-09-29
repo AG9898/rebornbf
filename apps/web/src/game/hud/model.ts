@@ -185,6 +185,8 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
       return patchUnit(hud, event.target, { hp: event.unitHp });
     case "UnitDefeated":
       return patchUnit(hud, event.target, { hp: 0 });
+    case "UnitRevived":
+      return patchUnit(hud, event.target, { hp: event.hp });
     case "OdGained":
       return { ...hud, od: { points: event.points, limit: event.limit } };
     case "OverdriveActivated":
@@ -218,6 +220,11 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
       };
     case "BattleEnded":
       return { ...hud, result: event.result };
+    case "BattleContinued": {
+      // The continue UI arrives with M3-04E; the HUD only drops the defeat result here.
+      const { result: _lost, ...rest } = hud;
+      return rest;
+    }
     case "EffectApplied":
     case "EnemyEffectApplied":
       return patchEffects(hud, event.target, event.effect.id, true);
@@ -230,6 +237,9 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
     case "Sparked":
     case "EnemyActionStarted":
     case "WaveCleared":
+    case "ContinueRejected":
+    // The item bar and its counts arrive with M2-02D.
+    case "ItemUsed":
       return hud;
   }
 }

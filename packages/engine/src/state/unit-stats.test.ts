@@ -104,6 +104,80 @@ describe("formStatsAtLevel", () => {
   });
 });
 
+describe("formStatsAtLevel reference table (M1-08D)", () => {
+  // Brand 3★ (M = 40) at level 1, two intermediate levels, and max, for one persisted roll per
+  // type: [hp, atk, def, rec] from GAME_DESIGN §6 `max(1, lord(L) + gain × (L − 1))`.
+  type Row = readonly [number, number, number, number];
+  const CASES: readonly {
+    roll: UnitTypeRoll;
+    expected: Readonly<Record<1 | 10 | 30 | 40, Row>>;
+  }[] = [
+    {
+      roll: LORD_ROLL,
+      expected: {
+        1: [1484, 630, 517, 404],
+        10: [1722, 696, 583, 472],
+        30: [2252, 843, 731, 625],
+        40: [2517, 917, 806, 702],
+      },
+    },
+    {
+      roll: ANIMA,
+      expected: {
+        1: [1484, 630, 517, 404],
+        10: [1785, 696, 583, 454],
+        30: [2455, 843, 731, 567],
+        40: [2790, 917, 806, 624],
+      },
+    },
+    {
+      roll: { type: "breaker", gains: { hp: 0, atk: 3, def: -1, rec: 0 } },
+      expected: {
+        1: [1484, 630, 517, 404],
+        10: [1722, 723, 574, 472],
+        30: [2252, 930, 702, 625],
+        40: [2517, 1034, 767, 702],
+      },
+    },
+    {
+      roll: { type: "guardian", gains: { hp: 0, atk: 0, def: 2, rec: -1 } },
+      expected: {
+        1: [1484, 630, 517, 404],
+        10: [1722, 696, 601, 463],
+        30: [2252, 843, 789, 596],
+        40: [2517, 917, 884, 663],
+      },
+    },
+    {
+      roll: { type: "oracle", gains: { hp: 0, atk: 0, def: -2, rec: 4 } },
+      expected: {
+        1: [1484, 630, 517, 404],
+        10: [1722, 696, 565, 508],
+        30: [2252, 843, 673, 741],
+        40: [2517, 917, 728, 858],
+      },
+    },
+    {
+      roll: { type: "rex", gains: { hp: 12, atk: 2, def: 1, rec: 2 } },
+      expected: {
+        1: [1484, 630, 517, 404],
+        10: [1830, 714, 592, 490],
+        30: [2600, 901, 760, 683],
+        40: [2985, 995, 845, 780],
+      },
+    },
+  ];
+
+  for (const { roll, expected } of CASES) {
+    it(`pins ${roll.type} at levels 1, 10, 30, and 40 using the stored roll`, () => {
+      expect(typeRollProblem(roll)).toBeUndefined();
+      for (const [level, [hp, atk, def, rec]] of Object.entries(expected)) {
+        expect(formStatsAtLevel(brand3, Number(level), roll)).toEqual({ hp, atk, def, rec });
+      }
+    });
+  }
+});
+
 describe("typeRollProblem", () => {
   it("accepts every type's range endpoints", () => {
     for (const [type, ranges] of Object.entries(TYPE_GAIN_RANGES)) {

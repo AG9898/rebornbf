@@ -3,6 +3,7 @@ import {
   AttackSchema,
   EnemySkillSchema,
   type Form,
+  ItemSchema,
   type Stats,
   StatsSchema,
   UnitSchema,
@@ -12,10 +13,12 @@ import { assertKnownEffect, passiveStatTotal, refreshPassives } from "../effects
 import { attackTotal } from "../formulas/attack-stat.ts";
 import { createOdGauge } from "../gauge/overdrive.ts";
 import { createRng } from "../rng.ts";
+import { sparkWindowTicks } from "../timeline/spark.ts";
 import { formAtBurstLevels, MAX_BURST_LEVEL, MIN_BURST_LEVEL } from "./burst-levels.ts";
 import {
   type AllySetup,
   type BattleEnemy,
+  type BattleItemStack,
   type BattleSetup,
   type BattleState,
   type BattleUnit,
@@ -200,13 +203,37 @@ function checkWaves(waves: BattleSetup["waves"]): void {
   });
 }
 
+/** The per-battle item inventory: valid items, each ID once, with positive integer counts. */
+function checkItems(items: BattleSetup["items"]): BattleItemStack[] {
+  const seen = new Set<string>();
+  return (items ?? []).map((stack, i) => {
+    const parsed = ItemSchema.safeParse(stack.item);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      throw new BattleSetupError(`items[${i}].item: ${issue?.path.join(".")} ${issue?.message}`);
+    }
+    if (seen.has(parsed.data.id)) {
+      throw new BattleSetupError(
+        `items[${i}].item: "${parsed.data.id}" is already in the inventory`,
+      );
+    }
+    seen.add(parsed.data.id);
+    if (!Number.isSafeInteger(stack.count) || stack.count <= 0) {
+      throw new BattleSetupError(
+        `items[${i}].count: must be a positive integer (got ${stack.count})`,
+      );
+    }
+    return { item: parsed.data, count: stack.count };
+  });
+}
+
 /**
  * Builds the initial `BattleState` from a squad snapshot and a seed (GAME_DESIGN §2 Battle
  * Structure). Rejects squads outside 1–5 units plus one ally, a missing leader, unknown forms,
  * invalid unit content (including unknown effect IDs), and empty waves. No combat happens here.
  */
 export function createBattle(setup: BattleSetup, seed: number): BattleState {
-  const { squad, leaderIndex, ally, waves } = setup;
+  const { squad, leaderIndex, ally, waves, sparkAssist } = setup;
   if (squad.length === 0 || squad.length > MAX_SQUAD_UNITS) {
     throw new BattleSetupError(
       `squad: must have 1–${MAX_SQUAD_UNITS} units plus an optional ally (got ${squad.length})`,
@@ -216,6 +243,13 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
     throw new BattleSetupError(`leaderIndex: ${leaderIndex} is not a squad index`);
   }
   checkWaves(waves);
+  if (sparkAssist !== undefined && typeof sparkAssist !== "boolean") {
+    throw new BattleSetupError("sparkAssist: must be a boolean");
+  }
+  const items = checkItems(setup.items);
+  if (setup.trial !== undefined && typeof setup.trial !== "boolean") {
+    throw new BattleSetupError("trial: must be a boolean");
+  }
 
   const party: BattleUnit[] = squad.map((member, i) =>
     toBattleUnit(member, `p${i}`, `squad[${i}]`, i === leaderIndex),
@@ -243,9 +277,14 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
     waveIndex: 0,
     enemies: spawnWave(firstWave),
     timeline: [],
+    sparkWindowTicks: sparkWindowTicks(sparkAssist === true),
+    recentHits: [],
     nextActionId: 0,
     od: createOdGauge(),
     acted: [],
+    items,
+    trial: setup.trial === true,
+    continued: false,
   };
   return withPassiveHp(refreshPassives(state));
 }

@@ -4,6 +4,7 @@ import type {
   Element,
   EnemySkill,
   Form,
+  Item,
   LeaderSkill,
   Stats,
   Unit,
@@ -12,6 +13,7 @@ import type { EnemyAiMemory } from "../ai/evaluate.ts";
 import type { ActiveEffect } from "../effects/buffs.ts";
 import type { OdGauge } from "../gauge/overdrive.ts";
 import type { RngState } from "../rng.ts";
+import type { SparkMark } from "../timeline/spark.ts";
 import type { ScheduledHit } from "../timeline/types.ts";
 import type { BurstLevels } from "./burst-levels.ts";
 import type { UnitTypeRoll } from "./unit-stats.ts";
@@ -88,6 +90,27 @@ export interface BattleSetup {
   readonly ally?: AllySetup;
   /** 1..N waves, each with at least one enemy. */
   readonly waves: readonly (readonly EnemySetup[])[];
+  /**
+   * Spark assist (GAME_DESIGN §2 Sparks, RESOLVED-17): widens the spark window by
+   * `SPARK_ASSIST_FACTOR`. Omitted means off. Part of the setup so replays use the same window.
+   */
+  readonly sparkAssist?: boolean;
+  /**
+   * The per-battle item inventory (GAME_DESIGN §2 → Battle items): each item at most once, with a
+   * positive count. Omitted means no items.
+   */
+  readonly items?: readonly BattleItemStack[];
+  /**
+   * A trial battle (GAME_DESIGN §2 → Continue, RESOLVED-17): continues are refused. Omitted means
+   * not a trial.
+   */
+  readonly trial?: boolean;
+}
+
+/** One item in the battle inventory and how many are left (never negative). */
+export interface BattleItemStack {
+  readonly item: Item;
+  readonly count: number;
 }
 
 /** Battle slot IDs: `p0`–`p4` squad, `ally` for the 6th slot, `e0`… for the current wave. */
@@ -172,12 +195,28 @@ export interface BattleState {
   readonly enemies: readonly BattleEnemy[];
   /** Pending hits in resolution order (see `compareHits`). */
   readonly timeline: readonly ScheduledHit[];
+  /** Spark window in ticks, fixed at setup: 1, or wider with spark assist (`sparkWindowTicks`). */
+  readonly sparkWindowTicks: number;
+  /**
+   * Resolved player hits still inside a widened spark window (empty when the window is one tick);
+   * cleared at the end of each turn, so sparks never cross turns.
+   */
+  readonly recentHits: readonly SparkMark[];
   /** ID given to the next accepted action; action IDs order same-tick hits. */
   readonly nextActionId: number;
   /** The squad-wide OD gauge (GAME_DESIGN §2 Overdrive). */
   readonly od: OdGauge;
   /** Party slots that have acted this player phase (cleared by `endTurn`). */
   readonly acted: readonly PlayerSlotId[];
-  /** Set once the battle is over (GAME_DESIGN §2 Battle end); no further inputs are accepted. */
+  /** The battle item inventory; a used item's count drops by one (entries stay at 0). */
+  readonly items: readonly BattleItemStack[];
+  /** Whether this is a trial battle (no continues). */
+  readonly trial: boolean;
+  /** Whether the one continue per battle has been used. */
+  readonly continued: boolean;
+  /**
+   * Set once the battle is over (GAME_DESIGN §2 Battle end); no further inputs are accepted unless
+   * a continue (`continueBattle`) clears a `lose`.
+   */
   readonly result?: BattleResult;
 }

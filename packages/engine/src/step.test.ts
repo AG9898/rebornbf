@@ -385,6 +385,59 @@ describe("step: sparks", () => {
   });
 });
 
+describe("step: spark assist", () => {
+  // Factory normal attack from tap T hits at T + 20 and T + 30 (see top of file).
+  const offByOne: BattleInput[] = [
+    { type: "attack", tick: 0, actor: "p0" },
+    { type: "attack", tick: 1, actor: "p1" },
+  ];
+  const assisted = (): BattleState => battle({ ...makeSetup(3), sparkAssist: true });
+
+  it("is off by default: hits one tick apart do not spark", () => {
+    expect(battle().sparkWindowTicks).toBe(1);
+    const { events } = step(battle(), offByOne);
+    expect(hitsOf(events).some((h) => h.sparked)).toBe(false);
+  });
+
+  it("with assist on, hits one tick apart on one target spark", () => {
+    const start = assisted();
+    expect(start.sparkWindowTicks).toBe(2);
+    const { events, state } = step(start, offByOne);
+    expect(hitsOf(events).map((h) => [h.tick, h.actor, h.sparked])).toEqual([
+      [20, "p0", true],
+      [21, "p1", true],
+      [30, "p0", true],
+      [31, "p1", true],
+    ]);
+    expect(events.filter((e) => e.type === "Sparked")).toEqual([
+      { type: "Sparked", tick: 20, target: "e0", hits: 1, actors: ["p0"] },
+      { type: "Sparked", tick: 21, target: "e0", hits: 1, actors: ["p1"] },
+      { type: "Sparked", tick: 30, target: "e0", hits: 1, actors: ["p0"] },
+      { type: "Sparked", tick: 31, target: "e0", hits: 1, actors: ["p1"] },
+    ]);
+    expect(state.recentHits).toEqual([{ tick: 31, target: "e0" }]);
+  });
+
+  it("still does not spark hits two ticks apart or on different targets", () => {
+    const { events } = step(assisted(), [
+      { type: "attack", tick: 0, actor: "p0", target: "e0" },
+      { type: "attack", tick: 2, actor: "p1", target: "e0" },
+      { type: "attack", tick: 1, actor: "p2", target: "e1" },
+    ]);
+    expect(hitsOf(events).some((h) => h.sparked)).toBe(false);
+  });
+
+  it("replays identically from the same setup, whole or in slices", () => {
+    const whole = step(assisted(), offByOne);
+    expect(step(assisted(), offByOne)).toEqual(whole);
+    // Cut between the tick-20 and tick-21 hits: the memory carries the spark across the cut.
+    const sliced = step(assisted(), offByOne, { untilTick: 20 });
+    const tail = step(sliced.state, []);
+    expect([...sliced.events, ...tail.events]).toEqual(whole.events);
+    expect(tail.state).toEqual(whole.state);
+  });
+});
+
 describe("step: crystal drops", () => {
   function dropsOf(events: readonly BattleEvent[]): CrystalDroppedEvent[] {
     return events.filter((e): e is CrystalDroppedEvent => e.type === "CrystalDropped");

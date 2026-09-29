@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { fixedFusionExp } from "./fusion.ts";
+import { fixedFusionExp, fusionZelCost, ordinaryFusionExp } from "./fusion.ts";
 import { type Unit, UnitSchema } from "./schemas/unit.ts";
 
 const unitsDir = join(import.meta.dirname, "..", "content", "units");
@@ -86,5 +86,37 @@ describe("fixedFusionExp", () => {
     expect(fixedFusionExp(1_507, "fire", "fire")).toBe(2_260);
     expect(fixedFusionExp(1_507, "fire", "fire", true)).toBe(4_521);
     expect(fixedFusionExp(1_000, "light", "dark", true)).toBe(2_000);
+  });
+});
+
+describe("ordinary fodder EXP and Zel (RESOLVED-57)", () => {
+  it("scales from base at level 1 to double at max level", () => {
+    // Maren 3★ at level 40 into Brand (Water into Fire): 100 × 2 = 200.
+    expect(ordinaryFusionExp(3, 40, 40, "water", "fire")).toBe(200);
+    expect(ordinaryFusionExp(3, 1, 40, "water", "fire")).toBe(100);
+    expect(ordinaryFusionExp(3, 20, 40, "water", "fire")).toBe(148);
+    expect(ordinaryFusionExp("omni", 150, 150, "dark", "fire")).toBe(3_000);
+    expect(ordinaryFusionExp(2, 1, 1, "fire", "water")).toBe(50);
+  });
+
+  it("applies the matching-element and duplicate multipliers before rounding once", () => {
+    // Brand 3★ at level 1 into Brand: ⌊100 × 1.5 × 2⌋ = 300.
+    expect(ordinaryFusionExp(3, 1, 40, "fire", "fire", true)).toBe(300);
+    // ⌊100 × (39 + 19) / 39 × 1.5⌋ = ⌊223.07⌋ = 223 (not ⌊148⌋ × 1.5 = 222).
+    expect(ordinaryFusionExp(3, 20, 40, "fire", "fire")).toBe(223);
+    expect(ordinaryFusionExp(4, 1, 1, "fire", "fire")).toBe(300);
+  });
+
+  it("rejects 1★ forms", () => {
+    expect(() => ordinaryFusionExp(1, 1, 1, "fire", "fire")).toThrow(RangeError);
+  });
+
+  it("costs 100 Zel × target level per fodder unit", () => {
+    expect(fusionZelCost(1, 5)).toBe(500);
+    expect(fusionZelCost(30, 2)).toBe(6_000);
+  });
+
+  it("gives the documented matching Silver Crucible value", () => {
+    expect(fixedFusionExp(1_000, "light", "light")).toBe(1_500);
   });
 });

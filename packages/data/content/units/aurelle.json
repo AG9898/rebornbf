@@ -2,6 +2,7 @@
   "id": "aurelle",
   "name": "Aurelle",
   "element": "light",
+  "expCurve": 21,
   "forms": [
     {
       "id": "aurelle-3",

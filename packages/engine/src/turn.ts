@@ -836,6 +836,7 @@ export function endTurn(state: BattleState): StepResult {
     waveIndex,
     od: m.od,
     acted: [],
+    recentHits: [],
   });
   events.push({ type: "TurnStarted", tick, turn });
   return { state: next, events };

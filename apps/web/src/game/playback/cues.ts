@@ -275,6 +275,12 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     case "TurnDamaged":
     case "OverdriveEnded":
     case "WaveCleared":
+    // Item use and revives get their own visuals with the item bar (M2-02D).
+    case "ItemUsed":
+    case "UnitRevived":
+    // The continue flow gets its own screen with M3-04E.
+    case "BattleContinued":
+    case "ContinueRejected":
       return [];
   }
 }

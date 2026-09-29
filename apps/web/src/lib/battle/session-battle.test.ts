@@ -45,7 +45,8 @@ describe("session battle (M3-04B)", () => {
     expect(setup.leaderIndex).toBe(1);
     expect(setup.ally).toMatchObject({ formId: "rook-3", kind: "duplicate" });
     const maren = unitContent("maren")?.forms.find((f) => f.id === "maren-3");
-    expect(setup.squad[0]?.stats).toEqual(maren?.stats.base);
+    expect(setup.squad[0]).toMatchObject({ level: 1 });
+    expect(createBattle(setup, seed).party[0]?.stats).toEqual(maren?.stats.base);
     expect(setup.waves.map((w) => w.map((e) => e.id))).toEqual(
       STORY_STAGES[0]?.waves.map((w) => w.enemies.map((e) => e.enemy)),
     );
@@ -76,11 +77,42 @@ describe("session battle (M3-04B)", () => {
     expect(sessionBattle(unknown).ok).toBe(false);
   });
 
-  it("rejects levels whose stats wait for the growth curve (M1-08D)", () => {
+  it("accepts mid-level units with their persisted type roll (M1-08D)", () => {
+    const anima = { type: "anima" as const, gains: { hp: 7, atk: 0, def: 0, rec: -2 } };
     const mid = row({
-      squad: { leader_index: 0, units: [snap("brand", "brand-3", 5)], ally: null },
+      squad: {
+        leader_index: 0,
+        units: [{ ...snap("brand", "brand-3", 20), unit_type: anima }, snap("maren", "maren-3", 7)],
+        ally: null,
+      },
     });
-    expect(sessionBattle(mid)).toMatchObject({ ok: false });
+    const result = sessionBattle(mid);
+    if (!result.ok) throw new Error(result.message);
+    expect(result.battle.setup.squad[0]).toMatchObject({ level: 20, unitType: anima });
+    expect(result.battle.setup.squad[1]).not.toHaveProperty("unitType");
+    // The engine applies the roll once: the Brand 3★ Anima level-20 worked example.
+    const party = createBattle(result.battle.setup, result.battle.seed).party;
+    expect(party[0]?.stats).toEqual({ hp: 2120, atk: 769, def: 657, rec: 511 });
+  });
+
+  it("rejects levels outside the form and invalid type rolls", () => {
+    const over = row({
+      squad: { leader_index: 0, units: [snap("brand", "brand-3", 41)], ally: null },
+    });
+    expect(sessionBattle(over)).toMatchObject({ ok: false });
+    const bad = row({
+      squad: {
+        leader_index: 0,
+        units: [
+          {
+            ...snap("brand", "brand-3", 5),
+            unit_type: { type: "guardian", gains: { hp: 0, atk: 0, def: 4, rec: 0 } },
+          },
+        ],
+        ally: null,
+      },
+    });
+    expect(sessionBattle(bad)).toMatchObject({ ok: false });
   });
 
   it("refuses finished, expired, and other-content sessions", () => {

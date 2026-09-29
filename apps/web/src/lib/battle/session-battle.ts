@@ -5,9 +5,9 @@ import cinderMoth from "@bfr/data/content/enemies/ch1-cinder-moth.json";
 import gravemaw from "@bfr/data/content/enemies/ch1-gravemaw.json";
 import puddleWisp from "@bfr/data/content/enemies/ch1-puddle-wisp.json";
 import sparkBeetle from "@bfr/data/content/enemies/ch1-spark-beetle.json";
-import type { BattleSetup, EnemySetup, SquadMemberSetup } from "@bfr/engine";
+import type { BattleSetup, EnemySetup, SquadMemberSetup, UnitTypeRoll } from "@bfr/engine";
 import { STORY_STAGES } from "../quests/quest-map.ts";
-import { exactStatsAtLevel, formArtFile, unitContent } from "../units/owned-units.ts";
+import { formArtFile, statsAtLevel, unitContent } from "../units/owned-units.ts";
 
 /**
  * Battle sessions (M3-04B): `start_battle` records a `battle_sessions` row with the stage, a
@@ -25,6 +25,8 @@ export type SnapshotUnit = {
   unit_id: string;
   form_id: string;
   level: number;
+  /** The owned unit's persisted type roll (M3-01D adds it to the snapshot); absent means Lord. */
+  unit_type?: UnitTypeRoll | null;
 };
 
 /** `battle_sessions.squad`: the squad as it stood when the battle started. */
@@ -89,12 +91,20 @@ function member(row: SnapshotUnit): Member | string {
   const unit = unitContent(row.unit_id);
   const form = unit?.forms.find((f) => f.id === row.form_id);
   if (!unit || !form) return `${row.unit_id} is not in this version of the game.`;
-  const stats = exactStatsAtLevel(form, Number(row.level));
-  // Stats between level 1 and max level wait for the growth curve (M1-08D).
-  if (!stats) return `${unit.name} is at a level whose stats are not set yet.`;
+  const level = Number(row.level);
+  // The engine derives the stats from level + roll (GAME_DESIGN §6), so the gains are applied
+  // once, here and in the server replay alike; this check only turns a bad row into a message.
+  if (!statsAtLevel(form, level, row.unit_type)) {
+    return `${unit.name}'s level or type is not valid in this version of the game.`;
+  }
   const art = formArtFile(unit.id, form.rarity);
   return {
-    setup: { unit, formId: form.id, stats },
+    setup: {
+      unit,
+      formId: form.id,
+      level,
+      ...(row.unit_type ? { unitType: row.unit_type } : {}),
+    },
     art: art ? unit.id : "",
     artForm: art ?? undefined,
   };

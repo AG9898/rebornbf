@@ -28,6 +28,8 @@ export type ActionRejectedReason =
   | "od_not_full"
   | "paralyzed"
   | "cursed"
+  | "no_item"
+  | "item_no_effect"
   | "battle_over";
 
 /** A burst was accepted and its gauge was consumed before any hits land. */
@@ -67,7 +69,8 @@ export interface HealedEvent {
  * An effect filled a living party member's BB gauge by a fixed BC amount: a burst's
  * `bb.fill_instant` (with `actionId`), `bb.fill_on_guard` when the unit guards, `bb.fill_on_hit`
  * after an enemy attack damages it, or `bb.fill_per_turn` at end of turn (the last three have no
- * action ID and `actor` is the unit itself).
+ * action ID and `actor` is the unit itself), or a battle item's `bb_fill` (`effect: "item"`, no
+ * action ID, `actor` is the unit the item was used on).
  */
 export interface GaugeFilledEvent {
   readonly type: "GaugeFilled";
@@ -83,7 +86,9 @@ export interface GaugeFilledEvent {
     | "bb.fill_on_damage_taken"
     | "bb.fill_on_damage_dealt"
     | "bb.fill_on_spark"
-    | "bb.fill_per_turn";
+    | "bb.fill_per_turn"
+    | "item"
+    | "continue";
   /** BC actually added after clamping to the gauge range. */
   readonly gained: number;
   /** Gauge after the fill. */
@@ -285,6 +290,27 @@ export interface EffectEndedEvent {
   readonly effect: EffectId;
 }
 
+/**
+ * A battle item was used on `actor` (GAME_DESIGN §2 → Battle items) and one was taken from the
+ * inventory, leaving `remaining`. Its results follow at the same tick: `UnitRevived`, then
+ * `HpRestored`, `EffectEnded`, and `GaugeFilled` with `effect: "item"`.
+ */
+export interface ItemUsedEvent {
+  readonly type: "ItemUsed";
+  readonly tick: number;
+  readonly actor: PlayerSlotId;
+  readonly item: string;
+  readonly remaining: number;
+}
+
+/** A revive item or a continue brought a KO'd party unit back with `hp` HP. */
+export interface UnitRevivedEvent {
+  readonly type: "UnitRevived";
+  readonly tick: number;
+  readonly target: PlayerSlotId;
+  readonly hp: number;
+}
+
 /** A party unit's HP reached 0. */
 export interface UnitDefeatedEvent {
   readonly type: "UnitDefeated";
@@ -304,7 +330,7 @@ export interface HpRestoredEvent {
   readonly target: PlayerSlotId | EnemySlotId;
   /** The party action whose landed hit an `hp_drain` absorbed from. */
   readonly actionId?: number;
-  readonly effect: "damage_to_heal" | "heal.over_time" | "heal.instant" | "hp_drain";
+  readonly effect: "damage_to_heal" | "heal.over_time" | "heal.instant" | "hp_drain" | "item";
   readonly amount: number;
   readonly hp: number;
 }
@@ -372,7 +398,28 @@ export interface BattleEndedEvent {
 }
 
 /**
- * The ordered event log entries emitted by `step` and `endTurn`. Events are in non-decreasing tick
+ * A continue was accepted after a party wipe (GAME_DESIGN §2 → Continue): the battle resumes and
+ * `turn` is the turn that starts. Followed at the same tick by each unit's `EffectEnded`,
+ * `UnitRevived`, and `GaugeFilled` (`effect: "continue"`), then `TurnStarted`.
+ */
+export interface BattleContinuedEvent {
+  readonly type: "BattleContinued";
+  readonly tick: number;
+  readonly turn: number;
+}
+
+/** Why a continue was refused. */
+export type ContinueRejectedReason = "not_defeated" | "already_continued" | "trial";
+
+/** A continue was refused; the state is unchanged. */
+export interface ContinueRejectedEvent {
+  readonly type: "ContinueRejected";
+  readonly tick: number;
+  readonly reason: ContinueRejectedReason;
+}
+
+/**
+ * The ordered event log entries emitted by `step`, `endTurn`, and `continueBattle`. Events are in non-decreasing tick
  * order.
  */
 export type BattleEvent =
@@ -395,6 +442,8 @@ export type BattleEvent =
   | EffectTriggeredEvent
   | EffectEndedEvent
   | UnitDefeatedEvent
+  | ItemUsedEvent
+  | UnitRevivedEvent
   | HpRestoredEvent
   | TurnDamagedEvent
   | CounterDamagedEvent
@@ -402,4 +451,6 @@ export type BattleEvent =
   | WaveClearedEvent
   | WaveStartedEvent
   | TurnStartedEvent
-  | BattleEndedEvent;
+  | BattleEndedEvent
+  | BattleContinuedEvent
+  | ContinueRejectedEvent;

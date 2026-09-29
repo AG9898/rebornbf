@@ -155,6 +155,15 @@ describe("turn loop (M1-07B)", () => {
     expect(state.party[0]?.guarding).toBe(false);
   });
 
+  it("clears the spark-assist memory at the end of the turn", () => {
+    const start = createBattle({ ...makeSetup(2), sparkAssist: true }, 5);
+    const player = step(start, [{ type: "attack", tick: 0, actor: "p0" }]).state;
+    expect(player.recentHits.length).toBeGreaterThan(0);
+    const { state } = endTurn(player);
+    expect(state.recentHits).toEqual([]);
+    expect(state.sparkWindowTicks).toBe(2);
+  });
+
   it("rejects endTurn while hits are pending", () => {
     const start = createBattle(makeSetup(1), 1);
     const mid = step(start, [{ type: "attack", tick: 0, actor: "p0" }], { untilTick: 5 }).state;

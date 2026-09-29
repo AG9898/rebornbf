@@ -39,8 +39,20 @@ export interface OverdriveInput {
   readonly actor: PlayerSlotId;
 }
 
+/**
+ * Item bar: use one battle item on `actor` (the unit it is used on; a party item reaches every
+ * unit). Does not use any unit's action (GAME_DESIGN §2 → Battle items).
+ */
+export interface ItemInput {
+  readonly type: "item";
+  readonly tick: number;
+  readonly actor: PlayerSlotId;
+  /** The inventory item's content ID. */
+  readonly item: string;
+}
+
 /** A timestamped player input. `tick` is absolute battle time and never earlier than `state.tick`. */
-export type BattleInput = AttackInput | BurstInput | GuardInput | OverdriveInput;
+export type BattleInput = AttackInput | BurstInput | GuardInput | OverdriveInput | ItemInput;
 
 /**
  * One hit waiting on the timeline. Hits resolve in `(tick, actionId, attackIndex, hitIndex)` order,

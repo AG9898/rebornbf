@@ -17,6 +17,7 @@ import silverCrucible from "@bfr/data/content/units/silver-crucible.json";
 import solen from "@bfr/data/content/units/solen.json";
 import vespera from "@bfr/data/content/units/vespera.json";
 import voltSprite from "@bfr/data/content/units/volt-sprite.json";
+import { formStatsAtLevel, LORD_ROLL, typeRollProblem, type UnitTypeRoll } from "@bfr/engine";
 
 /**
  * The unit collection (M3-03A): the player's `owned_units` rows, read under RLS, joined with the
@@ -32,6 +33,11 @@ export type OwnedUnitRow = {
   form_id: string;
   level: number;
   exp: number;
+  /**
+   * The persisted type roll (GAME_DESIGN §6 → Stat growth and unit types). `owned_units` gains the
+   * column with M3-01D; until then rows have none and the unit is Lord.
+   */
+  unit_type?: UnitTypeRoll | null;
 };
 
 export type OwnedUnitView = {
@@ -48,9 +54,9 @@ export type OwnedUnitView = {
   level: number;
   maxLevel: number | null;
   exp: number;
-  /** The form's level-1 and max-level stats (`stats.base` / `stats.max`). */
+  /** The form's level-1 and max-level stats with the unit's type roll applied. */
   stats: { base: Stats; max: Stats } | null;
-  /** The stats at the unit's current level when known exactly (level 1 or max level). */
+  /** The stats at the unit's current level; null when the content or the row is invalid. */
   currentStats: Stats | null;
   /** Web path of the form's splash, when the unit has exported art for it. */
   illustration: string | null;
@@ -142,13 +148,29 @@ export function formArtFile(unitId: string, rarity: Rarity): string | null {
 }
 
 /**
- * Stats at `level` when the form data pins them exactly: level 1 is `stats.base` and `maxLevel`
- * is `stats.max`. Levels in between wait for the stat growth curve (M1-08D), so they give null.
+ * A form's HP/ATK/DEF/REC at `level` with the unit's persisted type roll (default Lord), from the
+ * engine's `formStatsAtLevel` (GAME_DESIGN §6 → Stat growth and unit types) so unit pages, session
+ * setup, and the server replay share one formula. Null when `level` is not an integer
+ * 1…`form.maxLevel` or the roll is invalid.
  */
-export function exactStatsAtLevel(form: Form, level: number): Stats | null {
-  if (level === form.maxLevel) return form.stats.max;
-  if (level === 1) return form.stats.base;
-  return null;
+export function statsAtLevel(
+  form: Form,
+  level: number,
+  roll: UnitTypeRoll | null | undefined = LORD_ROLL,
+): Stats | null {
+  if (!(Number.isInteger(level) && level >= 1 && level <= form.maxLevel)) return null;
+  const typeRoll = roll ?? LORD_ROLL;
+  if (typeRollProblem(typeRoll)) return null;
+  return formStatsAtLevel(form, level, typeRoll);
+}
+
+function rangeStats(
+  form: Form,
+  roll: UnitTypeRoll | null | undefined,
+): { base: Stats; max: Stats } | null {
+  const base = statsAtLevel(form, 1, roll);
+  const max = statsAtLevel(form, form.maxLevel, roll);
+  return base && max ? { base, max } : null;
 }
 
 export function toOwnedUnitView(row: OwnedUnitRow): OwnedUnitView {
@@ -168,8 +190,8 @@ export function toOwnedUnitView(row: OwnedUnitRow): OwnedUnitView {
     level,
     maxLevel: form?.maxLevel ?? null,
     exp: Number(row.exp),
-    stats: form ? { base: form.stats.base, max: form.stats.max } : null,
-    currentStats: form ? exactStatsAtLevel(form, level) : null,
+    stats: form ? rangeStats(form, row.unit_type) : null,
+    currentStats: form ? statsAtLevel(form, level, row.unit_type) : null,
     illustration: art ? `/assets/units/${row.unit_id}/illustration-${art}.png` : null,
     sprite: art ? `/assets/units/${row.unit_id}/battle-idle-${art}.png` : null,
     thumb: art ? `/assets/ui/cards/thumb/${row.unit_id}-${art}.webp` : null,

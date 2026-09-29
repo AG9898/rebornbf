@@ -63,6 +63,11 @@ export const UnitSchema = z
     name: z.string().min(1),
     element: ElementSchema,
     source: UnitSourceSchema.optional(),
+    /**
+     * Level EXP curve every form of this line uses, named by its level-1 "Next Lv" value
+     * (GAME_DESIGN §6 → Level EXP and fusion, RESOLVED-57). Omitted means base 10.
+     */
+    expCurve: z.union([z.literal(10), z.literal(21)]).optional(),
     forms: z.array(FormSchema).min(1),
   })
   .superRefine((unit, ctx) => {

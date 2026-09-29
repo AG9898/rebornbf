@@ -1,3 +1,4 @@
+import type { Form } from "@bfr/data";
 import { describe, expect, it } from "vitest";
 import {
   formArtFile,
@@ -5,7 +6,9 @@ import {
   type OwnedUnitRow,
   rarityLabel,
   sortOwnedUnits,
+  statsAtLevel,
   toOwnedUnitView,
+  unitContent,
 } from "./owned-units.ts";
 
 const ROW_ID = "3f1c2b1e-9a4d-4c55-8e7a-1b2c3d4e5f60";
@@ -35,8 +38,32 @@ describe("toOwnedUnitView", () => {
       base: { hp: 3254, atk: 1227, def: 1106, rec: 973 },
       max: { hp: 5313, atk: 1660, def: 1456, rec: 1376 },
     });
-    // Between level 1 and max the growth curve is open (M1-08D).
-    expect(view.currentStats).toBeNull();
+    // Lord curve (GAME_DESIGN §6): base + floor((max − base) × 41 / 99).
+    expect(view.currentStats).toEqual({ hp: 4106, atk: 1406, def: 1250, rec: 1139 });
+  });
+
+  it("applies the persisted type roll to current and range stats (M1-08D)", () => {
+    // Brand 3★ worked example: Anima (+7 HP, −2 REC) at level 20.
+    const anima = { type: "anima", gains: { hp: 7, atk: 0, def: 0, rec: -2 } } as const;
+    const view = toOwnedUnitView(
+      row({ form_id: "brand-3", level: 20, unit_type: { ...anima, gains: { ...anima.gains } } }),
+    );
+    expect(view.currentStats).toEqual({ hp: 2120, atk: 769, def: 657, rec: 511 });
+    expect(view.stats?.max).toEqual({ hp: 2790, atk: 917, def: 806, rec: 624 });
+    expect(toOwnedUnitView(row({ form_id: "brand-3", level: 20 })).currentStats).toEqual({
+      hp: 1987,
+      atk: 769,
+      def: 657,
+      rec: 549,
+    });
+  });
+
+  it("gives no current stats for a level outside the form or an invalid roll", () => {
+    expect(toOwnedUnitView(row({ level: 101 })).currentStats).toBeNull();
+    expect(toOwnedUnitView(row({ level: 0 })).currentStats).toBeNull();
+    const bad = { type: "lord" as const, gains: { hp: 5, atk: 0, def: 0, rec: 0 } };
+    expect(toOwnedUnitView(row({ level: 5, unit_type: bad })).currentStats).toBeNull();
+    expect(statsAtLevel(unitContent("brand")?.forms[0] as Form, 1.5)).toBeNull();
   });
 
   it("gives exact current stats at level 1 and at max level", () => {

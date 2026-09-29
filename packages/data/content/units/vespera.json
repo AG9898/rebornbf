@@ -2,6 +2,7 @@
   "id": "vespera",
   "name": "Vespera",
   "element": "dark",
+  "expCurve": 21,
   "forms": [
     {
       "id": "vespera-3",
