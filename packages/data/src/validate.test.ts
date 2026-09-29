@@ -2,10 +2,13 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { type Stage, StageSchema } from "./schemas/stage.ts";
+import { UnitSchema } from "./schemas/unit.ts";
 import {
   formatPath,
   validateBannerFile,
   validateEnemyFile,
+  validateEvolutionRefs,
+  validateItemFile,
   validateStageFile,
   validateStory,
   validateUnitFile,
@@ -278,5 +281,87 @@ describe("validateBannerFile (M5-01B)", () => {
     expect(validateBannerFile(file, banner, unitForms)[0]).toMatch(
       /^banners\/launch-summon\.json: featured: /,
     );
+  });
+});
+
+describe("evolution materials and recipes (M4-02D)", () => {
+  const unitIds = new Set(unitFiles.map((name) => name.slice(0, -".json".length)));
+  const itemsDir = join(import.meta.dirname, "..", "content", "items");
+  const itemFiles = readdirSync(itemsDir).filter((name) => name.endsWith(".json"));
+  const itemIds = new Set(itemFiles.map((name) => name.slice(0, -".json".length)));
+  const prefixes = ["cinder", "rill", "moss", "volt", "glint", "dusk"];
+  const families = [
+    ["mote", 1],
+    ["sprite", 2],
+    ["effigy", 3],
+    ["cairn", 4],
+    ["colossus", 5],
+  ] as const;
+  const singles = [
+    ["prism-cairn", "light", 5],
+    ["glint-urn", "light", 3],
+    ["dusk-urn", "dark", 3],
+    ["wyrm-coffer", "dark", 5],
+  ] as const;
+
+  it("has every per-element family and single material unit as BFR-original level-1 fodder", () => {
+    const expected: Array<readonly [string, number]> = [
+      ...prefixes.flatMap((p) => families.map(([f, r]) => [`${p}-${f}`, r] as const)),
+      ...singles.map(([id, , r]) => [id, r] as const),
+    ];
+    for (const [id, rarity] of expected) {
+      const unit = UnitSchema.parse(loadUnit(`${id}.json`));
+      expect(unit.forms, id).toHaveLength(1);
+      expect(unit.forms[0]?.rarity, id).toBe(rarity);
+      expect(unit.forms[0]?.id, id).toBe(`${id}-${rarity}`);
+      // The Sprites are ordinary 2★ filler; every new material is level-1 with flat stats.
+      if (!id.endsWith("-sprite")) {
+        expect(unit.forms[0]?.maxLevel, id).toBe(1);
+        expect(unit.source, id).toEqual({ original: true });
+      }
+    }
+    for (const [id, element] of singles) {
+      expect(UnitSchema.parse(loadUnit(`${id}.json`)).element).toBe(element);
+    }
+  });
+
+  it.each(itemFiles)("items/%s is valid", (name) => {
+    const json = JSON.parse(readFileSync(join(itemsDir, name), "utf8"));
+    expect(validateItemFile(`items/${name}`, json)).toEqual([]);
+  });
+
+  it("the Crown Shard is a material item", () => {
+    const shard = JSON.parse(readFileSync(join(itemsDir, "crown-shard.json"), "utf8"));
+    expect(shard).toMatchObject({ id: "crown-shard", kind: "material", name: "Crown Shard" });
+  });
+
+  it("accepts a recipe of existing units and items on a non-last form", () => {
+    const unit = ember();
+    unit.forms.unshift({ ...structuredClone(unit.forms[0]), id: "placeholder-ember-1" });
+    (unit.forms[0] as Record<string, unknown>).evolution = {
+      units: [
+        { unit: "cinder-effigy", count: 1 },
+        { unit: "cinder-mote", count: 2 },
+      ],
+      items: [{ item: "crown-shard", count: 1 }],
+      zel: 200_000,
+    };
+    const parsed = UnitSchema.parse(unit);
+    expect(validateEvolutionRefs("units/x.json", parsed, unitIds, itemIds)).toEqual([]);
+  });
+
+  it("reports unknown recipe units and items", () => {
+    const unit = ember();
+    unit.forms.unshift({ ...structuredClone(unit.forms[0]), id: "placeholder-ember-1" });
+    (unit.forms[0] as Record<string, unknown>).evolution = {
+      units: [{ unit: "missing-mote", count: 1 }],
+      items: [{ item: "missing-shard", count: 1 }],
+      zel: 0,
+    };
+    const parsed = UnitSchema.parse(unit);
+    expect(validateEvolutionRefs("units/x.json", parsed, unitIds, itemIds)).toEqual([
+      'units/x.json: forms[0].evolution.units[0].unit: unknown unit "missing-mote"',
+      'units/x.json: forms[0].evolution.items[0].item: unknown item "missing-shard"',
+    ]);
   });
 });

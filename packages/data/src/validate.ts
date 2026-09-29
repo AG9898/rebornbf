@@ -1,8 +1,9 @@
 import type { z } from "zod";
 import { BannerSchema } from "./schemas/banner.ts";
 import { EnemySchema } from "./schemas/enemy.ts";
+import { ItemContentSchema } from "./schemas/item.ts";
 import { isBossStage, type Stage, StageSchema } from "./schemas/stage.ts";
-import { UnitSchema } from "./schemas/unit.ts";
+import { type Unit, UnitSchema } from "./schemas/unit.ts";
 
 /** Formats an issue path as `forms[0].bursts.bb.effects[1].id`. */
 export function formatPath(path: readonly PropertyKey[]): string {
@@ -47,6 +48,42 @@ function validateContentFile<T extends { id: string }>(
  */
 export function validateUnitFile(file: string, json: unknown): string[] {
   return validateContentFile(UnitSchema, file, json).errors;
+}
+
+/**
+ * Checks that every evolution recipe in `unit` names existing material units (`unitIds`, the files
+ * in `content/units/`) and items (`itemIds`, the files in `content/items/`). `file` prefixes each
+ * error line.
+ */
+export function validateEvolutionRefs(
+  file: string,
+  unit: Unit,
+  unitIds: ReadonlySet<string>,
+  itemIds: ReadonlySet<string>,
+): string[] {
+  const errors: string[] = [];
+  unit.forms.forEach((form, f) => {
+    const recipe = form.evolution;
+    if (!recipe) return;
+    recipe.units.forEach((entry, i) => {
+      if (!unitIds.has(entry.unit)) {
+        const path = formatPath(["forms", f, "evolution", "units", i, "unit"]);
+        errors.push(`${file}: ${path}: unknown unit "${entry.unit}"`);
+      }
+    });
+    (recipe.items ?? []).forEach((entry, i) => {
+      if (!itemIds.has(entry.item)) {
+        const path = formatPath(["forms", f, "evolution", "items", i, "item"]);
+        errors.push(`${file}: ${path}: unknown item "${entry.item}"`);
+      }
+    });
+  });
+  return errors;
+}
+
+/** Validates one parsed item file (battle or material item; schema and file name). */
+export function validateItemFile(file: string, json: unknown): string[] {
+  return validateContentFile(ItemContentSchema, file, json).errors;
 }
 
 /** Validates one parsed enemy file (schema, AI rule references, file name). */

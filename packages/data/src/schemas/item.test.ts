@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ItemSchema } from "./item.ts";
+import { ItemContentSchema, ItemSchema, MaterialItemSchema } from "./item.ts";
 
 const potion = {
   id: "test-potion",
@@ -55,5 +55,22 @@ describe("ItemSchema", () => {
     ],
   ])("rejects %s", (_, patch) => {
     expect(ItemSchema.safeParse({ ...potion, ...patch }).success).toBe(false);
+  });
+});
+
+describe("MaterialItemSchema (M4-02D)", () => {
+  const shard = { id: "test-shard", kind: "material", name: "Test Shard" };
+
+  it("accepts a material item, and item content accepts battle and material items", () => {
+    expect(MaterialItemSchema.safeParse(shard).success).toBe(true);
+    expect(ItemContentSchema.safeParse(shard).success).toBe(true);
+    expect(ItemContentSchema.safeParse(potion).success).toBe(true);
+    expect(ItemContentSchema.safeParse({ ...potion, kind: "battle" }).success).toBe(true);
+  });
+
+  it("keeps material items out of battle and battle fields off material items", () => {
+    expect(ItemSchema.safeParse(shard).success).toBe(false);
+    expect(ItemContentSchema.safeParse({ ...shard, target: "single" }).success).toBe(false);
+    expect(ItemContentSchema.safeParse({ ...potion, kind: "material" }).success).toBe(false);
   });
 });

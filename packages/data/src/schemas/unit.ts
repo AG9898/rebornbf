@@ -21,6 +21,39 @@ export const StatsSchema = z.strictObject({
 });
 export type Stats = z.infer<typeof StatsSchema>;
 
+/**
+ * The cost of evolving a form into the next form of its unit (GAME_DESIGN §6 → Evolution
+ * materials, RESOLVED-66): material units consumed (by unit ID), material items consumed (by item
+ * ID, e.g. the Crown Shard), and Zel. Content validation checks that every unit and item exists.
+ */
+export const EvolutionRecipeSchema = z
+  .strictObject({
+    units: z.array(z.strictObject({ unit: ContentIdSchema, count: PositiveIntSchema })).min(1),
+    items: z
+      .array(z.strictObject({ item: ContentIdSchema, count: PositiveIntSchema }))
+      .min(1)
+      .optional(),
+    zel: NonNegativeIntSchema,
+  })
+  .superRefine((recipe, ctx) => {
+    const lists = [
+      ["units", "unit", recipe.units.map((entry) => entry.unit)],
+      ["items", "item", (recipe.items ?? []).map((entry) => entry.item)],
+    ] as const;
+    for (const [list, key, ids] of lists) {
+      ids.forEach((id, i) => {
+        if (ids.indexOf(id) !== i) {
+          ctx.addIssue({
+            code: "custom",
+            path: [list, i, key],
+            message: `duplicate ${key} "${id}" (use count)`,
+          });
+        }
+      });
+    }
+  });
+export type EvolutionRecipe = z.infer<typeof EvolutionRecipeSchema>;
+
 /** One evolution form of a unit. `stats.base` is level 1, `stats.max` is `maxLevel`. */
 export const FormSchema = z.strictObject({
   id: ContentIdSchema,
@@ -40,6 +73,11 @@ export const FormSchema = z.strictObject({
    * other form omits it and gives ordinary fodder EXP computed from rarity, level, and `maxLevel`.
    */
   fusionExp: PositiveIntSchema.optional(),
+  /**
+   * What evolving this form into the next form in `forms` costs. Omitted when the step is not
+   * transcribed yet or does not exist; never set on a unit's last form.
+   */
+  evolution: EvolutionRecipeSchema.optional(),
 });
 export type Form = z.infer<typeof FormSchema>;
 
@@ -81,6 +119,13 @@ export const UnitSchema = z
         });
       }
       seen.add(form.id);
+      if (form.evolution && i === unit.forms.length - 1) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["forms", i, "evolution"],
+          message: "the last form has no next form to evolve into",
+        });
+      }
     });
   });
 export type Unit = z.infer<typeof UnitSchema>;

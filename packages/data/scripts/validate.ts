@@ -2,9 +2,12 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { type Stage, StageSchema } from "../src/schemas/stage.ts";
+import { type Unit, UnitSchema } from "../src/schemas/unit.ts";
 import {
   validateBannerFile,
   validateEnemyFile,
+  validateEvolutionRefs,
+  validateItemFile,
   validateStageFile,
   validateStory,
   validateUnitFile,
@@ -37,7 +40,19 @@ function validateDir(dir: string, validate: (file: string, json: unknown) => str
   }
 }
 
-validateDir("units", validateUnitFile);
+const units: Unit[] = [];
+validateDir("units", (file, json) => {
+  const parsed = UnitSchema.safeParse(json);
+  if (parsed.success) units.push(parsed.data);
+  return validateUnitFile(file, json);
+});
+validateDir("items", validateItemFile);
+// Evolution recipes reference material units and items by file name.
+const unitIds = new Set(jsonFiles("units").map((file) => file.slice("units/".length, -5)));
+const itemIds = new Set(jsonFiles("items").map((file) => file.slice("items/".length, -5)));
+for (const unit of units) {
+  errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
+}
 validateDir("enemies", validateEnemyFile);
 // Stages reference enemies by file name; a broken enemy file is reported above.
 const enemyIds = new Set(

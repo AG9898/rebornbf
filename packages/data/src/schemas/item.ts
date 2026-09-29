@@ -30,10 +30,12 @@ export type ItemTarget = z.infer<typeof ItemTargetSchema>;
 /**
  * A battle item (heal, cure, revive, BB fill; GAME_DESIGN §2 → Battle items). Items come from
  * dungeon drops only (RESOLVED-17) and are brought into a battle as a per-battle inventory.
+ * `kind` is optional: a content item without one is a battle item.
  */
 export const ItemSchema = z
   .strictObject({
     id: ContentIdSchema,
+    kind: z.literal("battle").optional(),
     name: z.string().min(1),
     description: z.string().min(1).optional(),
     target: ItemTargetSchema,
@@ -44,3 +46,20 @@ export const ItemSchema = z
     path: ["effects"],
   });
 export type Item = z.infer<typeof ItemSchema>;
+
+/**
+ * A non-battle material item: stackable in the player's item inventory and spent by evolution
+ * recipes, never usable in battle (GAME_DESIGN §6 → Evolution materials; the Crown Shard,
+ * RESOLVED-67).
+ */
+export const MaterialItemSchema = z.strictObject({
+  id: ContentIdSchema,
+  kind: z.literal("material"),
+  name: z.string().min(1),
+  description: z.string().min(1).optional(),
+});
+export type MaterialItem = z.infer<typeof MaterialItemSchema>;
+
+/** One file in `content/items/`: a battle item or a material item. */
+export const ItemContentSchema = z.union([ItemSchema, MaterialItemSchema]);
+export type ItemContent = z.infer<typeof ItemContentSchema>;

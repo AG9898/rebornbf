@@ -3,10 +3,12 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { UnitSchema } from "../src/schemas/unit.ts";
+import { type Unit, UnitSchema } from "../src/schemas/unit.ts";
 import {
   validateBannerFile,
   validateEnemyFile,
+  validateEvolutionRefs,
+  validateItemFile,
   validateStageFile,
   validateUnitFile,
 } from "../src/validate.ts";
@@ -15,7 +17,7 @@ export const contentDir = join(import.meta.dirname, "..", "content");
 export const seedSqlPath = join(import.meta.dirname, "..", "..", "..", "supabase", "seed.sql");
 export const versionModulePath = join(import.meta.dirname, "..", "src", "content-version.ts");
 
-export type ContentKind = "unit" | "enemy" | "stage" | "banner";
+export type ContentKind = "unit" | "item" | "enemy" | "stage" | "banner";
 
 export interface ContentItem {
   kind: ContentKind;
@@ -25,6 +27,7 @@ export interface ContentItem {
 
 const kindDirs: readonly [ContentKind, string][] = [
   ["unit", "units"],
+  ["item", "items"],
   ["enemy", "enemies"],
   ["stage", "stages"],
   ["banner", "banners"],
@@ -45,6 +48,8 @@ export function loadContent(dir = contentDir): ContentItem[] {
   const errors: string[] = [];
   const enemyIds = new Set<string>();
   const unitForms = new Map<string, Set<string>>();
+  const units: Unit[] = [];
+  const itemIds = new Set<string>();
   for (const [kind, sub] of kindDirs) {
     const names = readdirSync(join(dir, sub))
       .filter((name) => name.endsWith(".json"))
@@ -59,7 +64,12 @@ export function loadContent(dir = contentDir): ContentItem[] {
         if (unitErrors.length === 0) {
           const unit = UnitSchema.parse(data);
           unitForms.set(id, new Set(unit.forms.map((form) => form.id)));
+          units.push(unit);
         }
+      }
+      if (kind === "item") {
+        errors.push(...validateItemFile(file, data));
+        itemIds.add(id);
       }
       if (kind === "enemy") {
         errors.push(...validateEnemyFile(file, data));
@@ -69,6 +79,10 @@ export function loadContent(dir = contentDir): ContentItem[] {
       if (kind === "banner") errors.push(...validateBannerFile(file, data, unitForms));
       items.push({ kind, id, data: withoutProvenance(data) });
     }
+  }
+  const unitIds = new Set(unitForms.keys());
+  for (const unit of units) {
+    errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
   }
   if (errors.length > 0) throw new Error(`content is invalid:\n${errors.join("\n")}`);
   return items;

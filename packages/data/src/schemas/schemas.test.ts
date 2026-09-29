@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AttackSchema } from "./attack.ts";
 import { BurstSchema } from "./burst.ts";
 import { EFFECT_IDS, EffectSchema } from "./effect.ts";
+import { EvolutionRecipeSchema, UnitSchema } from "./unit.ts";
 
 const attack = {
   moveType: "melee",
@@ -315,5 +316,65 @@ describe("BurstSchema", () => {
       "has 1 attack-shape effects but 2 attacks",
     );
     expect(BurstSchema.safeParse({ ...burst, attacks: [], effects: [] }).success).toBe(true);
+  });
+});
+
+describe("EvolutionRecipeSchema (M4-02D)", () => {
+  const recipe = {
+    units: [
+      { unit: "cinder-cairn", count: 1 },
+      { unit: "cinder-mote", count: 2 },
+    ],
+    items: [{ item: "crown-shard", count: 1 }],
+    zel: 1_500_000,
+  };
+
+  it("accepts units with counts, optional items, and Zel", () => {
+    expect(EvolutionRecipeSchema.safeParse(recipe).success).toBe(true);
+    const { items: _items, ...noItems } = recipe;
+    expect(EvolutionRecipeSchema.safeParse(noItems).success).toBe(true);
+  });
+
+  it.each([
+    ["no units", { units: [] }],
+    ["a zero count", { units: [{ unit: "cinder-mote", count: 0 }] }],
+    ["a fractional Zel cost", { zel: 1.5 }],
+    ["a negative Zel cost", { zel: -1 }],
+    ["an empty item list", { items: [] }],
+    ["a duplicate unit", { units: [recipe.units[1], recipe.units[1]] }],
+    ["a non-kebab item ID", { items: [{ item: "Crown_Shard", count: 1 }] }],
+    ["an extra field", { gems: 5 }],
+  ])("rejects %s", (_, patch) => {
+    expect(EvolutionRecipeSchema.safeParse({ ...recipe, ...patch }).success).toBe(false);
+  });
+
+  it("rejects a recipe on a unit's last form", () => {
+    const oneHit = { ...attack, hitFrames: [0], damageDistribution: [100], dropChecks: 1 };
+    const form = {
+      id: "test-3",
+      name: "Test",
+      rarity: 3,
+      maxLevel: 1,
+      stats: {
+        base: { hp: 1, atk: 1, def: 1, rec: 1 },
+        max: { hp: 1, atk: 1, def: 1, rec: 1 },
+      },
+      normalAttack: oneHit,
+      bursts: {
+        bb: {
+          name: "Test",
+          cost: 10,
+          attacks: [oneHit],
+          effects: [{ id: "attack.aoe", value: 1, target: "enemies" }],
+        },
+      },
+      sphereSlots: 1,
+    };
+    const unit = (forms: unknown[]) => ({ id: "test", name: "Test", element: "fire", forms });
+    const withRecipe = { ...form, evolution: recipe };
+    expect(UnitSchema.safeParse(unit([withRecipe, { ...form, id: "test-4" }])).success).toBe(true);
+    const last = UnitSchema.safeParse(unit([form, { ...withRecipe, id: "test-4" }]));
+    expect(last.success).toBe(false);
+    expect(last.error?.issues[0]?.path).toEqual(["forms", 1, "evolution"]);
   });
 });

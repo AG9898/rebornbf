@@ -126,7 +126,20 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "cinder-effigy",
+            "count": 1
+          },
+          {
+            "unit": "cinder-sprite",
+            "count": 1
+          }
+        ],
+        "zel": 100000
+      }
     },
     {
       "id": "brand-4",
@@ -189,7 +202,28 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "cinder-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-effigy",
+            "count": 1
+          },
+          {
+            "unit": "cinder-sprite",
+            "count": 1
+          },
+          {
+            "unit": "cinder-mote",
+            "count": 2
+          }
+        ],
+        "zel": 200000
+      }
     },
     {
       "id": "brand-5",
@@ -252,7 +286,32 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-effigy",
+            "count": 1
+          },
+          {
+            "unit": "cinder-sprite",
+            "count": 1
+          },
+          {
+            "unit": "cinder-mote",
+            "count": 1
+          }
+        ],
+        "zel": 500000
+      }
     },
     {
       "id": "brand-6",
@@ -349,7 +408,34 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "cinder-colossus",
+            "count": 1
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-cairn",
+            "count": 1
+          },
+          {
+            "unit": "cinder-effigy",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          }
+        ],
+        "zel": 1500000
+      }
     },
     {
       "id": "brand-7",

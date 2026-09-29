@@ -1,0 +1,57 @@
+{
+  "id": "dusk-cairn",
+  "name": "Dusk Cairn",
+  "element": "dark",
+  "forms": [
+    {
+      "id": "dusk-cairn-4",
+      "name": "Dusk Cairn",
+      "rarity": 4,
+      "maxLevel": 1,
+      "stats": {
+        "base": {
+          "hp": 800,
+          "atk": 200,
+          "def": 1300,
+          "rec": 200
+        },
+        "max": {
+          "hp": 800,
+          "atk": 200,
+          "def": 1300,
+          "rec": 200
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 12],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Cairn Rumble",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [30, 30, 40],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.8,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

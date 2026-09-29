@@ -1,0 +1,57 @@
+{
+  "id": "cinder-mote",
+  "name": "Cinder Mote",
+  "element": "fire",
+  "forms": [
+    {
+      "id": "cinder-mote-1",
+      "name": "Cinder Mote",
+      "rarity": 1,
+      "maxLevel": 1,
+      "stats": {
+        "base": {
+          "hp": 300,
+          "atk": 80,
+          "def": 400,
+          "rec": 80
+        },
+        "max": {
+          "hp": 300,
+          "atk": 80,
+          "def": 400,
+          "rec": 80
+        }
+      },
+      "normalAttack": {
+        "moveType": "melee",
+        "startDelayFrames": 20,
+        "hitFrames": [0, 12],
+        "damageDistribution": [50, 50],
+        "dropChecks": 4
+      },
+      "bursts": {
+        "bb": {
+          "name": "Mote Flicker",
+          "cost": 15,
+          "attacks": [
+            {
+              "moveType": "ranged",
+              "startDelayFrames": 20,
+              "hitFrames": [0, 8, 16],
+              "damageDistribution": [30, 30, 40],
+              "dropChecks": 6
+            }
+          ],
+          "effects": [
+            {
+              "id": "attack.aoe",
+              "value": 0.8,
+              "target": "enemies"
+            }
+          ]
+        }
+      },
+      "sphereSlots": 1
+    }
+  ]
+}

@@ -23,10 +23,11 @@ describe("content seed (M3-02)", () => {
     expect(readFileSync(seedSqlPath, "utf8")).toBe(renderSeedSql(items, version));
   });
 
-  it("covers every unit, enemy, stage, and banner file", () => {
+  it("covers every unit, item, enemy, stage, and banner file", () => {
     const kinds = new Set(items.map((item) => item.kind));
-    expect([...kinds].sort()).toEqual(["banner", "enemy", "stage", "unit"]);
+    expect([...kinds].sort()).toEqual(["banner", "enemy", "item", "stage", "unit"]);
     expect(items.find((item) => item.kind === "unit" && item.id === "brand")).toBeDefined();
+    expect(items.find((item) => item.kind === "item" && item.id === "crown-shard")).toBeDefined();
     expect(
       items.find((item) => item.kind === "banner" && item.id === "launch-summon"),
     ).toBeDefined();
