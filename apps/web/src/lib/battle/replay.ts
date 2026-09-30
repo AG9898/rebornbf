@@ -4,6 +4,7 @@ import {
   type BattleResult,
   type BattleSetup,
   type BattleState,
+  continueBattle,
   createBattle,
   endTurn,
   step,
@@ -20,6 +21,8 @@ import {
 export interface LoggedTurn {
   readonly inputs: readonly BattleInput[];
   readonly endTick: number;
+  /** Paid continuation after this turn’s verified wipe. */
+  readonly continued?: true;
 }
 
 /** A whole battle's player input, one entry per turn. */
@@ -100,7 +103,10 @@ export function parseInputLog(value: unknown): ParsedLog {
       if (typeof input === "string") return { ok: false, message: input };
       inputs.push(input);
     }
-    log.push({ inputs, endTick });
+    if (entry.continued !== undefined && entry.continued !== true) {
+      return { ok: false, message: "a continue marker must be true" };
+    }
+    log.push({ inputs, endTick, ...(entry.continued === true ? { continued: true } : {}) });
   }
   return { ok: true, log };
 }
@@ -130,7 +136,7 @@ function playerPhaseDone(state: BattleState): boolean {
  */
 export function replayBattle(setup: BattleSetup, seed: number, log: BattleInputLog): ReplayResult {
   let state = createBattle(setup, seed);
-  for (const [index, { inputs, endTick }] of log.entries()) {
+  for (const [index, { inputs, endTick, continued }] of log.entries()) {
     if (state.result !== undefined) {
       return { ok: false, message: `turn ${index + 1} comes after the battle ended` };
     }
@@ -140,6 +146,13 @@ export function replayBattle(setup: BattleSetup, seed: number, log: BattleInputL
         return { ok: false, message: `turn ${index + 1} ends before every unit has acted` };
       }
       state = endTurn(player.state).state;
+      if (continued) {
+        const next = continueBattle(state);
+        if (next.state === state || !next.state.continued || next.state.result !== undefined) {
+          return { ok: false, message: `turn ${index + 1}: continue refused` };
+        }
+        state = next.state;
+      }
     } catch (error) {
       if (error instanceof BattleInputError) {
         return { ok: false, message: `turn ${index + 1}: ${error.message}` };

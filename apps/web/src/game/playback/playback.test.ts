@@ -91,6 +91,12 @@ describe("damage number styles", () => {
 });
 
 describe("eventCues", () => {
+  it("restores a defeated sprite when a unit is revived", () => {
+    expect(eventCues({ type: "UnitRevived", tick: 90, target: "p0", hp: 1000 })).toEqual([
+      { kind: "unit-revive", target: "p0" },
+    ]);
+  });
+
   it("plays a cut-in only for an accepted BB, SBB, or UBB", () => {
     for (const tier of ["bb", "sbb", "ubb"] as const) {
       expect(

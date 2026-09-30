@@ -7,7 +7,11 @@
     "text": "Fog rolls off the fen, and something in it has learned to bite."
   },
   "firstClear": {
-    "gems": 25
+    "gems": 25,
+    "starter": {
+      "ordinal": 1,
+      "rarity": 3
+    }
   },
   "waves": [
     {

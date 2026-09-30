@@ -1,0 +1,50 @@
+{
+  "id": "story-15-glassward-gate",
+  "name": "Glassward Gate",
+  "story": {
+    "chapter": 2,
+    "number": 15,
+    "text": "Break the wardens at the sea gate. Beyond them the Tidewright gathers another tide."
+  },
+  "firstClear": {
+    "gems": 35
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-kiln-crab"
+        },
+        {
+          "enemy": "ch2-reed-stalker"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-glassward"
+        }
+      ]
+    }
+  ]
+}

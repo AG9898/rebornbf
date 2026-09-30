@@ -5,6 +5,12 @@ import cinderMoth from "@bfr/data/content/enemies/ch1-cinder-moth.json";
 import gravemaw from "@bfr/data/content/enemies/ch1-gravemaw.json";
 import puddleWisp from "@bfr/data/content/enemies/ch1-puddle-wisp.json";
 import sparkBeetle from "@bfr/data/content/enemies/ch1-spark-beetle.json";
+import glassward from "@bfr/data/content/enemies/ch2-glassward.json";
+import kilnCrab from "@bfr/data/content/enemies/ch2-kiln-crab.json";
+import reedStalker from "@bfr/data/content/enemies/ch2-reed-stalker.json";
+import saltfin from "@bfr/data/content/enemies/ch2-saltfin.json";
+import stormRay from "@bfr/data/content/enemies/ch2-storm-ray.json";
+import tidewright from "@bfr/data/content/enemies/ch2-tidewright.json";
 import type { BattleSetup, EnemySetup, SquadMemberSetup, UnitTypeRoll } from "@bfr/engine";
 import { STORY_STAGES } from "../quests/quest-map.ts";
 import { formArtFile, statsAtLevel, unitContent } from "../units/owned-units.ts";
@@ -21,10 +27,13 @@ export const BATTLE_SESSION_COLUMNS =
   "id, stage_id, seed, squad, content_version, expires_at, finished_at";
 
 export type SnapshotUnit = {
-  owned_unit_id: string;
+  owned_unit_id: string | null;
+  kind?: "guest";
   unit_id: string;
   form_id: string;
   level: number;
+  bb_level?: number;
+  sbb_level?: number;
   /** The owned unit's persisted type roll (snapshotted since M3-01D); null or absent means Lord. */
   unit_type?: UnitTypeRoll | null;
 };
@@ -44,6 +53,7 @@ export type BattleSessionRow = {
   content_version: string;
   expires_at: string;
   finished_at: string | null;
+  continued_turn?: number | null;
 };
 
 export type SessionBattle = {
@@ -61,7 +71,20 @@ export type SessionBattleResult =
   | { ok: false; message: string };
 
 const ENEMIES: ReadonlyMap<string, Enemy> = new Map(
-  [ashboundSentry, bramblePup, cinderMoth, gravemaw, puddleWisp, sparkBeetle].map((json) => {
+  [
+    ashboundSentry,
+    bramblePup,
+    cinderMoth,
+    gravemaw,
+    puddleWisp,
+    sparkBeetle,
+    saltfin,
+    kilnCrab,
+    reedStalker,
+    stormRay,
+    glassward,
+    tidewright,
+  ].map((json) => {
     const enemy = EnemySchema.parse(json);
     return [enemy.id, enemy];
   }),
@@ -97,12 +120,21 @@ function member(row: SnapshotUnit): Member | string {
   if (!statsAtLevel(form, level, row.unit_type)) {
     return `${unit.name}'s level or type is not valid in this version of the game.`;
   }
+  if (
+    [row.bb_level, row.sbb_level].some(
+      (value) => value !== undefined && (!Number.isInteger(value) || value < 1 || value > 10),
+    )
+  )
+    return `${unit.name}'s burst levels are not valid in this version of the game.`;
   const art = formArtFile(unit.id, form.rarity);
   return {
     setup: {
       unit,
       formId: form.id,
       level,
+      ...(row.bb_level !== undefined || row.sbb_level !== undefined
+        ? { burstLevels: { bb: row.bb_level, sbb: row.sbb_level } }
+        : {}),
       ...(row.unit_type ? { unitType: row.unit_type } : {}),
     },
     art: art ? unit.id : "",
@@ -149,7 +181,7 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
   const setup: BattleSetup = {
     squad: squad.map((m) => m.setup),
     leaderIndex,
-    ...(allyMember ? { ally: { ...allyMember.setup, kind: "duplicate" as const } } : {}),
+    ...(allyMember ? { ally: { ...allyMember.setup, kind: ally?.kind ?? "duplicate" } } : {}),
     waves,
   };
   return {

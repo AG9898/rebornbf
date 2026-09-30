@@ -63,6 +63,7 @@ import {
 import {
   acceptsInput,
   advanceLive,
+  continueLive,
   isOver,
   type LiveBattle,
   queueInput,
@@ -388,7 +389,20 @@ export class BattleScene extends Phaser.Scene {
     this.overlay.render(this.hud);
     if (isOver(this.live) && this.heldEvents.length === 0 && this.overAtMs === undefined) {
       this.overAtMs = this.clockMs;
-      if (this.live.state.result) this.bridge.onComplete?.(this.live.state.result, this.live.log);
+      if (this.live.state.result) {
+        const resume =
+          this.live.state.result === "lose" && !this.live.state.continued && !this.live.state.trial
+            ? () => {
+                const next = continueLive(this.live);
+                if (next.live === this.live) return;
+                this.live = next.live;
+                this.overAtMs = undefined;
+                this.hudView.hideResult();
+                this.showEvents(next.events);
+              }
+            : undefined;
+        this.bridge.onComplete?.(this.live.state.result, this.live.log, resume);
+      }
     }
   }
 
@@ -556,6 +570,14 @@ export class BattleScene extends Phaser.Scene {
           ? this.enemyView(cue.target)?.rect
           : this.unitView(cue.target as PlayerSlotId)?.sprite0;
         if (rect) this.floatText(rect.x + 24, rect.y, `+${cue.amount}`, "#7fe08a", 25);
+        return;
+      }
+      case "unit-revive": {
+        const view = this.unitView(cue.target);
+        if (view) {
+          this.tweens.killTweensOf(view.sprite);
+          view.sprite.setAlpha(1);
+        }
         return;
       }
       case "unit-death": {

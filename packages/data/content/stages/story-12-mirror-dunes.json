@@ -1,0 +1,47 @@
+{
+  "id": "story-12-mirror-dunes",
+  "name": "Mirror Dunes",
+  "story": {
+    "chapter": 2,
+    "number": 12,
+    "text": "The dunes reflect a tower that is no longer there. Its wardens still patrol the buried road."
+  },
+  "firstClear": {
+    "gems": 30
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-reed-stalker"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-kiln-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    }
+  ]
+}

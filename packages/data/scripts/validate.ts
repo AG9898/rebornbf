@@ -10,6 +10,7 @@ import {
   validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
+  validateGuestFile,
   validateItemFile,
   validateStageFile,
   validateStory,
@@ -54,6 +55,7 @@ validateDir("items", validateItemFile);
 // Evolution recipes reference material units and items by file name.
 const unitIds = new Set(jsonFiles("units").map((file) => file.slice("units/".length, -5)));
 const itemIds = new Set(jsonFiles("items").map((file) => file.slice("items/".length, -5)));
+validateDir("guests", (file, json) => validateGuestFile(file, json, unitIds));
 for (const unit of units) {
   errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
 }

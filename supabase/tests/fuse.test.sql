@@ -90,33 +90,33 @@ select throws_ok($$select public.fuse('00000000-0000-0000-0000-000000000f01', ar
 
 -- Reference cases (GAME_DESIGN §6 → Level EXP and fusion, worked examples)
 select is(public.fuse('00000000-0000-0000-0000-000000000f01', array['00000000-0000-0000-0000-000000000f11']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000f01","exp_gained":2259,"exp":2259,"level":9,"zel_spent":100,"fodder_consumed":1}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000f01","exp_gained":2259,"exp":2259,"level":9,"zel_spent":100,"bb_level":1,"sbb_level":1,"fodder_consumed":1}'::jsonb,
   'matching Flask: 2,259 EXP reaches level 9 for 100 Zel');
 select is(public.fuse('00000000-0000-0000-0000-000000000f02', array['00000000-0000-0000-0000-000000000f12']::uuid[]) -> 'exp_gained',
   '1506'::jsonb, 'non-matching Flask: 1,506 EXP');
 select is(public.fuse('00000000-0000-0000-0000-000000000f03', array['00000000-0000-0000-0000-000000000f13']::uuid[]) -> 'exp_gained',
   '200'::jsonb, 'ordinary Maren 3-star at level 40: 200 EXP');
 select is(public.fuse('00000000-0000-0000-0000-000000000f04', array['00000000-0000-0000-0000-000000000f14']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000f04","exp_gained":1500,"exp":1500,"level":6,"zel_spent":100,"fodder_consumed":1}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000f04","exp_gained":1500,"exp":1500,"level":6,"zel_spent":100,"bb_level":1,"sbb_level":1,"fodder_consumed":1}'::jsonb,
   'matching Silver Crucible into Aurelle: 1,500 EXP on the base-21 curve');
 select is(public.fuse('00000000-0000-0000-0000-000000000f05', array[
     '00000000-0000-0000-0000-000000000f21', '00000000-0000-0000-0000-000000000f22',
     '00000000-0000-0000-0000-000000000f23', '00000000-0000-0000-0000-000000000f24',
     '00000000-0000-0000-0000-000000000f25']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000f05","exp_gained":11295,"exp":11295,"level":17,"zel_spent":500,"fodder_consumed":5}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000f05","exp_gained":11295,"exp":11295,"level":17,"zel_spent":500,"bb_level":1,"sbb_level":1,"fodder_consumed":5}'::jsonb,
   'five matching Flasks: 11,295 EXP, level 17, 500 Zel');
 select is(public.fuse('00000000-0000-0000-0000-000000000f06', array[
     '00000000-0000-0000-0000-000000000f31', '00000000-0000-0000-0000-000000000f32',
     '00000000-0000-0000-0000-000000000f33', '00000000-0000-0000-0000-000000000f34']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000f06","exp_gained":472605,"exp":472605,"level":74,"zel_spent":400,"fodder_consumed":4}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000f06","exp_gained":472605,"exp":472605,"level":74,"zel_spent":400,"bb_level":1,"sbb_level":1,"fodder_consumed":4}'::jsonb,
   'matching Alembic 16,518 + Athanor 77,277 + Grail 227,286 and non-matching Grail 151,524');
 
 -- Level cap: EXP past maxLevel is lost, and a max-level target can still be fused
 select is(public.fuse('00000000-0000-0000-0000-000000000f07', array['00000000-0000-0000-0000-000000000f41']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000f07","exp_gained":227286,"exp":4116,"level":12,"zel_spent":100,"fodder_consumed":1}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000f07","exp_gained":227286,"exp":4116,"level":12,"zel_spent":100,"bb_level":1,"sbb_level":1,"fodder_consumed":1}'::jsonb,
   'a Grail caps Brand 2-star at level 12 (4,116 EXP)');
 select is(public.fuse('00000000-0000-0000-0000-000000000f07', array['00000000-0000-0000-0000-000000000f42']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000f07","exp_gained":1506,"exp":4116,"level":12,"zel_spent":1200,"fodder_consumed":1}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000f07","exp_gained":1506,"exp":4116,"level":12,"zel_spent":1200,"bb_level":1,"sbb_level":1,"fodder_consumed":1}'::jsonb,
   'a max-level target still fuses, discarding the EXP, at 100 Zel x level 12');
 
 -- Out of Zel: rejected atomically
@@ -164,7 +164,7 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000000fb","role":"authenticated"}', true);
 select is(public.fuse('00000000-0000-0000-0000-000000000fb2', array['00000000-0000-0000-0000-000000000fb1']::uuid[]),
-  '{"target_id":"00000000-0000-0000-0000-000000000fb2","exp_gained":2259,"exp":4116,"level":12,"zel_spent":900,"fodder_consumed":1}'::jsonb,
+  '{"target_id":"00000000-0000-0000-0000-000000000fb2","exp_gained":2259,"exp":4116,"level":12,"zel_spent":900,"bb_level":1,"sbb_level":1,"fodder_consumed":1}'::jsonb,
   'a level-9 row with 0 EXP starts from 1,857 EXP');
 select throws_ok($$select public.fuse('00000000-0000-0000-0000-000000000fb2', array[
     '00000000-0000-0000-0000-000000000f51']::uuid[])$$,

@@ -41,3 +41,38 @@ describe("session battle submission", () => {
     ).toEqual(unavailable);
   });
 });
+
+describe("story starter reward", () => {
+  const grant = { owned_unit_id: SESSION, unit_id: "maren", form_id: "maren-4" };
+  async function submit(firstClear: boolean, starter: unknown) {
+    return submitSession(SESSION, LOG, async () =>
+      Response.json({
+        ok: true,
+        result: "win",
+        turns: 2,
+        rewards: { first_clear: firstClear, gems: 25, zel: 10, starter },
+      }),
+    );
+  }
+
+  it("includes the granted starter's name, rarity, and owned-unit link id", async () => {
+    expect(await submit(true, grant)).toMatchObject({
+      ok: true,
+      rewards: { starter: { ownedUnitId: SESSION, name: "Maren", rarity: 4 } },
+    });
+  });
+
+  it("shows no unlock for replays, captures, malformed grants, or a wrong form", async () => {
+    for (const [firstClear, grantValue] of [
+      [false, grant],
+      [true, null],
+      [true, { ...grant, owned_unit_id: "bad-id" }],
+      [true, { ...grant, form_id: "brand-4" }],
+      [true, { ...grant, unit_id: "aurelle", form_id: "aurelle-4" }],
+    ] as const) {
+      const result = await submit(firstClear, grantValue);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.rewards.starter).toBeUndefined();
+    }
+  });
+});

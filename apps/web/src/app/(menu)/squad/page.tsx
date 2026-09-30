@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "../../../components/menu/menu.module.css";
+import { guestPreviews } from "../../../lib/squad/guest-pool.ts";
 import {
   draftFromRow,
   parseSquadSlot,
@@ -105,7 +106,13 @@ export default async function SquadPage({
           </Link>
         </section>
       ) : (
-        <SquadEditor key={slot} slot={slot} units={units} saved={saved} />
+        <SquadEditor
+          key={slot}
+          slot={slot}
+          units={units}
+          guests={guestPreviews(unitsResult.data ?? [])}
+          saved={saved}
+        />
       )}
     </div>
   );

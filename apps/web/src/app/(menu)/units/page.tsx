@@ -53,6 +53,11 @@ export default async function UnitsPage(): Promise<ReactNode> {
         <h1 className={`${units.title} ${styles.gold}`}>Units</h1>
         <span className={units.count}>{owned.length} owned</span>
       </header>
+      <p className={units.note}>
+        <Link href="/fusion" className={units.back}>
+          Fuse units
+        </Link>
+      </p>
 
       {owned.length === 0 ? (
         <section className={styles.panel}>

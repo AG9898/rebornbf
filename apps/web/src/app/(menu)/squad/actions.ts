@@ -26,6 +26,7 @@ export async function saveSquad(slot: number, draft: SquadDraft): Promise<SaveSq
     p_unit_ids: draft.unitIds,
     p_leader_index: draft.leaderIndex,
     p_ally_unit_id: draft.allyUnitId,
+    p_guest_id: draft.guestId ?? null,
   });
   if (error) {
     // 22023 is save_squad's validation error; its message is written for players.

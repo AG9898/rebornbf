@@ -1,0 +1,60 @@
+{
+  "id": "ch2-glassward",
+  "name": "Glassward",
+  "element": "light",
+  "stats": {
+    "hp": 28000,
+    "atk": 1400,
+    "def": 800,
+    "rec": 200
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 10],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "prism-surge",
+      "name": "Prism Surge",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 32,
+          "hitFrames": [0, 8, 16, 24],
+          "damageDistribution": [25, 25, 25, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.7,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "prism-surge",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "lowest_hp"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.08,
+    "zel": {
+      "rate": 60,
+      "amount": 100
+    }
+  }
+}

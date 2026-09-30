@@ -8,6 +8,7 @@ import {
   validateBannerFile,
   validateEnemyFile,
   validateEvolutionRefs,
+  validateGuestFile,
   validateItemFile,
   validateStageFile,
   validateUnitFile,
@@ -17,7 +18,7 @@ export const contentDir = join(import.meta.dirname, "..", "content");
 export const seedSqlPath = join(import.meta.dirname, "..", "..", "..", "supabase", "seed.sql");
 export const versionModulePath = join(import.meta.dirname, "..", "src", "content-version.ts");
 
-export type ContentKind = "unit" | "item" | "enemy" | "stage" | "banner";
+export type ContentKind = "unit" | "item" | "enemy" | "stage" | "banner" | "guest";
 
 export interface ContentItem {
   kind: ContentKind;
@@ -31,6 +32,7 @@ const kindDirs: readonly [ContentKind, string][] = [
   ["enemy", "enemies"],
   ["stage", "stages"],
   ["banner", "banners"],
+  ["guest", "guests"],
 ];
 
 const DOLLAR_TAG = "$bfr_content$";
@@ -77,6 +79,8 @@ export function loadContent(dir = contentDir): ContentItem[] {
       }
       if (kind === "stage") errors.push(...validateStageFile(file, data, enemyIds));
       if (kind === "banner") errors.push(...validateBannerFile(file, data, unitForms));
+      if (kind === "guest")
+        errors.push(...validateGuestFile(file, data, new Set(unitForms.keys())));
       items.push({ kind, id, data: withoutProvenance(data) });
     }
   }

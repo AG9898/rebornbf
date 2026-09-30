@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { BannerSchema } from "./schemas/banner.ts";
 import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
+import { GuestSchema } from "./schemas/guest.ts";
 import { ItemContentSchema } from "./schemas/item.ts";
 import { isBossStage, type Stage, StageSchema } from "./schemas/stage.ts";
 import { type Unit, UnitSchema } from "./schemas/unit.ts";
@@ -84,6 +85,19 @@ export function validateEvolutionRefs(
 /** Validates one parsed item file (battle or material item; schema and file name). */
 export function validateItemFile(file: string, json: unknown): string[] {
   return validateContentFile(ItemContentSchema, file, json).errors;
+}
+
+/** Validates guest entries and their unit reference. */
+export function validateGuestFile(
+  file: string,
+  json: unknown,
+  unitIds: ReadonlySet<string>,
+): string[] {
+  const result = validateContentFile(GuestSchema, file, json);
+  if (result.data && !unitIds.has(result.data.unit)) {
+    result.errors.push(`${file}: unit: unknown unit "${result.data.unit}"`);
+  }
+  return result.errors;
 }
 
 /** Validates one parsed enemy file (schema, AI rule references, file name). */

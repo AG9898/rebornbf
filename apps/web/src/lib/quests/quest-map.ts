@@ -7,6 +7,14 @@ import story05 from "@bfr/data/content/stages/story-05-stormbreak-ridge.json";
 import story06 from "@bfr/data/content/stages/story-06-sunken-waystation.json";
 import story07 from "@bfr/data/content/stages/story-07-duskgate-stair.json";
 import story08 from "@bfr/data/content/stages/story-08-beacon-hollow.json";
+import story09 from "@bfr/data/content/stages/story-09-saltglass-strand.json";
+import story10 from "@bfr/data/content/stages/story-10-reedwake-channel.json";
+import story11 from "@bfr/data/content/stages/story-11-kilnfoam-shoals.json";
+import story12 from "@bfr/data/content/stages/story-12-mirror-dunes.json";
+import story13 from "@bfr/data/content/stages/story-13-stormtide-causeway.json";
+import story14 from "@bfr/data/content/stages/story-14-drowned-observatory.json";
+import story15 from "@bfr/data/content/stages/story-15-glassward-gate.json";
+import story16 from "@bfr/data/content/stages/story-16-tidewright-spire.json";
 
 /**
  * The quest map (M3-04A): the story stages from `@bfr/data`, grouped by chapter, with each stage's
@@ -21,6 +29,7 @@ export type QuestProgressRow = { stage_id: string };
 /** Chapter titles for the story frame (GAME_DESIGN §7). */
 export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
   1: "The Ember Road",
+  2: "The Saltglass Coast",
 };
 
 /** `cleared` after a first clear; `open` when the previous story stage is cleared (or it is the first). */
@@ -28,7 +37,7 @@ export type StageState = "cleared" | "open" | "locked";
 
 export type QuestStageView = {
   id: string;
-  /** Story-wide stage number (chapter 1 is 1–8). */
+  /** Story-wide stage number (chapter 1 is 1–8, chapter 2 is 9–16). */
   number: number;
   name: string;
   text: string;
@@ -54,6 +63,14 @@ export const STORY_STAGES: readonly Stage[] = [
   story06,
   story07,
   story08,
+  story09,
+  story10,
+  story11,
+  story12,
+  story13,
+  story14,
+  story15,
+  story16,
 ]
   .map((json) => StageSchema.parse(json))
   .filter((stage) => stage.story !== undefined)

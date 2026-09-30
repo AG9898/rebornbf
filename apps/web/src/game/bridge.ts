@@ -37,5 +37,6 @@ export interface BattleBridge {
   onComplete?(
     result: "win" | "lose",
     log: readonly import("../lib/battle/replay.ts").LoggedTurn[],
+    resume?: () => void,
   ): void;
 }

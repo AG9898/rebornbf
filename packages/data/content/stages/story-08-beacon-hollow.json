@@ -7,7 +7,11 @@
     "text": "Gravemaw coils around the dead beacon. Break its hold and the Ember Road burns bright again."
   },
   "firstClear": {
-    "gems": 150
+    "gems": 150,
+    "starter": {
+      "ordinal": 4,
+      "rarity": 6
+    }
   },
   "waves": [
     {

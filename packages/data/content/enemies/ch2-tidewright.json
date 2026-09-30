@@ -1,0 +1,92 @@
+{
+  "id": "ch2-tidewright",
+  "name": "Tidewright",
+  "element": "water",
+  "stats": {
+    "hp": 90000,
+    "atk": 1000,
+    "def": 900,
+    "rec": 200
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 10],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "breaking-tide",
+      "name": "Breaking Tide",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 32,
+          "hitFrames": [0, 8, 16, 24],
+          "damageDistribution": [25, 25, 25, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.8,
+          "target": "enemies"
+        }
+      ]
+    },
+    {
+      "id": "glassfall",
+      "name": "Glassfall",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 32,
+          "hitFrames": [0, 8, 16, 24],
+          "damageDistribution": [25, 25, 25, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "buff.atk",
+          "value": 0.25,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "attack.aoe",
+          "value": 1.0,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "hp_threshold_once",
+      "hpPercent": 50,
+      "skill": "glassfall",
+      "target": "random"
+    },
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "breaking-tide",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "lowest_hp"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.08,
+    "zel": {
+      "rate": 100,
+      "amount": 1600
+    }
+  }
+}

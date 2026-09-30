@@ -10,6 +10,7 @@ import {
   type SquadDraft,
   setLeader,
   toggleAlly,
+  toggleGuest,
   toggleSquadUnit,
 } from "../../../lib/squad/squad-editor.ts";
 import { saveSquad } from "./actions.ts";
@@ -34,15 +35,17 @@ const POSITIONS: readonly number[] = Array.from({ length: SQUAD_SIZE }, (_, i) =
 /**
  * Squad editor (M3-03B): five squad slots plus the ally slot, filled by tapping owned units.
  * Tapping a squad slot's crown makes that unit the leader. The ally is a duplicate of one of the
- * player's own units (guests arrive with M3-03C).
+ * player's own units or a scaled guest from the launch pool.
  */
 export function SquadEditor({
   slot,
   units,
+  guests,
   saved,
 }: {
   slot: number;
   units: readonly EditorUnit[];
+  guests: readonly EditorUnit[];
   saved: SquadDraft;
 }): ReactNode {
   const [draft, setDraft] = useState<SquadDraft>(saved);
@@ -72,7 +75,11 @@ export function SquadEditor({
     });
   }
 
-  const ally = draft.allyUnitId ? byId.get(draft.allyUnitId) : undefined;
+  const ally = draft.guestId
+    ? guests.find((unit) => unit.id === draft.guestId)
+    : draft.allyUnitId
+      ? byId.get(draft.allyUnitId)
+      : undefined;
 
   return (
     <>
@@ -113,7 +120,9 @@ export function SquadEditor({
             <button
               type="button"
               className={`${squad.slotCard} ${squad.slotAlly}`}
-              onClick={() => update(toggleAlly(draft, ally.id))}
+              onClick={() =>
+                update(draft.guestId ? toggleGuest(draft, ally.id) : toggleAlly(draft, ally.id))
+              }
               aria-label={`Remove ${ally.name} from the ally slot`}
             >
               <UnitFace unit={ally} />
@@ -121,7 +130,7 @@ export function SquadEditor({
           ) : (
             <span className={`${squad.slotCard} ${squad.slotEmpty} ${squad.slotAlly}`}>Ally</span>
           )}
-          <span className={squad.allyTag}>Ally</span>
+          <span className={squad.allyTag}>{draft.guestId ? "Guest" : "Ally"}</span>
         </li>
       </ol>
 
@@ -158,6 +167,29 @@ export function SquadEditor({
       <p className={squad.status} role="status">
         {status ? status.text : dirty ? (problem ?? "Unsaved changes.") : ""}
       </p>
+
+      <h2>Guests</h2>
+      <p>
+        Try a guest in your ally slot. Their form and level scale to your collection when you start
+        a battle.
+      </p>
+      <ul className={squad.grid}>
+        {guests.map((unit) => (
+          <li key={unit.id}>
+            <button
+              type="button"
+              className={`${squad.pick} ${draft.guestId === unit.id ? squad.pickChosen : ""}`}
+              onClick={() => update(toggleGuest(draft, unit.id))}
+              aria-pressed={draft.guestId === unit.id}
+            >
+              <UnitFace unit={unit} />
+              <span className={squad.pickName}>{unit.name}</span>
+              <span className={squad.pickMeta}>Lv {unit.level} · Guest</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <h2>Your units</h2>
 
       <ul className={squad.grid}>
         {units.map((unit) => {

@@ -5,11 +5,14 @@ import stageArt from "./stage-art.json";
 
 /** Battle art is selected from the locked background manifest, by chapter or stage ID. */
 export function stageBackground(stage: Stage): string {
-  const match = Object.entries(stageArt.backgrounds).find(([, entry]) =>
+  const backgrounds: Record<string, { chapters: number[]; stages: string[]; fallback?: string }> =
+    stageArt.backgrounds;
+  const match = Object.entries(backgrounds).find(([, entry]) =>
     stage.story ? entry.chapters.includes(stage.story.chapter) : entry.stages.includes(stage.id),
   );
   if (!match) throw new Error(`No battle background for stage ${stage.id}`);
-  return match[0];
+  // A reserved theme uses its explicitly named placeholder until its master is approved.
+  return match[1].fallback ?? match[0];
 }
 
 export const backgroundUrl = (id: string): string => `/assets/backgrounds/${id}.webp`;
@@ -19,9 +22,12 @@ export function stageEnemyArt(stage: Stage): readonly (readonly { id: string; si
   const sprites: Record<string, { canvas: number }> = stageArt.enemies;
   return stage.waves.map((wave) =>
     wave.enemies.map((enemy) => {
-      const sprite = sprites[enemy.enemy];
+      // Chapter 2 sprites are pending M6-07L; aliases affect presentation only.
+      const fallbacks: Record<string, string> = stageArt.enemyFallbacks;
+      const id = sprites[enemy.enemy] ? enemy.enemy : (fallbacks[enemy.enemy] ?? enemy.enemy);
+      const sprite = sprites[id];
       if (!sprite) throw new Error(`No battle sprite for enemy ${enemy.enemy}`);
-      return { id: enemy.enemy, size: sprite.canvas };
+      return { id, size: sprite.canvas };
     }),
   );
 }

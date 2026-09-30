@@ -1,4 +1,33 @@
+import { isStarterUnitId } from "../onboarding/starters.ts";
+import { isOwnedUnitId, unitContent } from "../units/owned-units.ts";
 import type { LoggedTurn } from "./replay.ts";
+
+export type StarterReward = {
+  readonly ownedUnitId: string;
+  readonly name: string;
+  readonly rarity: number;
+};
+
+/** A popup is allowed only for a server-confirmed first clear and a known starter form. */
+function starterReward(value: unknown): StarterReward | undefined {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("owned_unit_id" in value) ||
+    typeof value.owned_unit_id !== "string" ||
+    !isOwnedUnitId(value.owned_unit_id) ||
+    !("unit_id" in value) ||
+    typeof value.unit_id !== "string" ||
+    !("form_id" in value)
+  )
+    return undefined;
+  const unit = unitContent(value.unit_id);
+  if (!unit || !isStarterUnitId(value.unit_id)) return undefined;
+  const form = unit.forms.find((form) => form.id === value.form_id);
+  if (!form || typeof form.rarity !== "number" || form.rarity < 3 || form.rarity > 7)
+    return undefined;
+  return { ownedUnitId: value.owned_unit_id, name: unit.name, rarity: form.rarity };
+}
 
 export type Submission =
   | {
@@ -8,6 +37,7 @@ export type Submission =
         readonly first_clear: boolean;
         readonly gems: number;
         readonly zel: number;
+        readonly starter?: StarterReward;
       };
     }
   | { readonly ok: false; readonly error: string };
@@ -49,6 +79,10 @@ export async function submitSession(
       "zel" in body.rewards &&
       typeof body.rewards.zel === "number"
     ) {
+      const starter =
+        body.rewards.first_clear && "starter" in body.rewards
+          ? starterReward(body.rewards.starter)
+          : undefined;
       return {
         ok: true,
         turns: body.turns,
@@ -56,6 +90,7 @@ export async function submitSession(
           first_clear: body.rewards.first_clear,
           gems: body.rewards.gems,
           zel: body.rewards.zel,
+          ...(starter ? { starter } : {}),
         },
       };
     }

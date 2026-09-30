@@ -31,7 +31,16 @@ export const StoryPlacementSchema = z.strictObject({
 export type StoryPlacement = z.infer<typeof StoryPlacementSchema>;
 
 /** Rewards for a stage's first clear (granted server-side after replay; GAME_DESIGN §8). */
-export const FirstClearRewardSchema = z.strictObject({ gems: NonNegativeIntSchema });
+export const FirstClearRewardSchema = z.strictObject({
+  gems: NonNegativeIntSchema,
+  /** One-based position in the starter order after excluding the onboarding pick. */
+  starter: z
+    .strictObject({
+      ordinal: z.number().int().min(1).max(5),
+      rarity: z.number().int().min(3).max(7),
+    })
+    .optional(),
+});
 export type FirstClearReward = z.infer<typeof FirstClearRewardSchema>;
 
 /**
@@ -128,6 +137,13 @@ export const StageSchema = z
     waves: z.array(WaveSchema).min(1),
   })
   .superRefine((stage, ctx) => {
+    if (stage.firstClear?.starter && !stage.story) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["firstClear", "starter"],
+        message: "only story stages grant starters",
+      });
+    }
     if (stage.story && stage.dungeon) {
       ctx.addIssue({
         code: "custom",

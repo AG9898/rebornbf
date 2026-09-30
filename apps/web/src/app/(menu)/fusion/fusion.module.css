@@ -1,0 +1,108 @@
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: calc(var(--u) * 24);
+  color: #f2ead6;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: calc(var(--u) * 20);
+}
+.header h1 {
+  font-size: calc(var(--u) * 48);
+}
+.header a,
+.detailLink {
+  color: #f6d88a;
+  font-size: calc(var(--u) * 26);
+}
+.balance,
+.label {
+  display: block;
+  font-size: calc(var(--u) * 28);
+  margin: calc(var(--u) * 16) 0;
+}
+.select {
+  width: 100%;
+  padding: calc(var(--u) * 12);
+  background: #10131d;
+  color: #f2ead6;
+  border: 2px solid #c99a3a;
+  border-radius: 8px;
+  font-size: calc(var(--u) * 24);
+}
+.note {
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 21);
+  margin-bottom: calc(var(--u) * 16);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--u) * 12);
+  list-style: none;
+  padding: 0;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: calc(var(--u) * 8);
+  border: 2px solid #c99a3a;
+  border-radius: 12px;
+  background: #10131d;
+  color: #fff;
+  font-size: calc(var(--u) * 24);
+}
+.card img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.card small {
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+}
+.card[aria-pressed="true"] {
+  border-color: #fff0b4;
+  background: #53432b;
+  box-shadow: inset 0 0 0 2px #fff0b4;
+}
+.card:disabled {
+  opacity: 0.45;
+}
+.preview {
+  margin: calc(var(--u) * 22) 0;
+  padding: calc(var(--u) * 18);
+  background: #10131d;
+  border: 2px solid #c99a3a;
+  border-radius: 12px;
+  font-size: calc(var(--u) * 24);
+}
+.preview button,
+.fuse {
+  margin: calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 10) 0;
+  padding: calc(var(--u) * 14);
+  border-radius: 10px;
+  border: 2px solid #c99a3a;
+  background: #59452c;
+  color: #fff0b4;
+  font-size: calc(var(--u) * 26);
+}
+.preview button:disabled,
+.fuse:disabled {
+  opacity: 0.45;
+}
+.page button:focus-visible,
+.select:focus-visible {
+  outline: 3px solid #fff0b4;
+  outline-offset: 3px;
+}
+.detailLink {
+  display: block;
+  margin-top: calc(var(--u) * 16);
+}

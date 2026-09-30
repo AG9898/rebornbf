@@ -2,6 +2,7 @@ import {
   type BattleEvent,
   type BattleInput,
   type BattleState,
+  continueBattle,
   endTurn,
   msToTick,
   step,
@@ -128,4 +129,28 @@ export function advanceLive(
   const released = releaseDue(current, clockTick);
   events.push(...released.events);
   return { live: released.live, events };
+}
+
+/** Resumes the same live battle only after the server confirms the gem payment. */
+export function continueLive(live: LiveBattle): {
+  live: LiveBattle;
+  events: readonly BattleEvent[];
+} {
+  const next = continueBattle(live.state);
+  if (next.state.result !== undefined || !isOver(live)) return { live, events: [] };
+  const log = live.log.map((turn, index) =>
+    index === live.log.length - 1 ? { ...turn, continued: true as const } : turn,
+  );
+  return {
+    live: {
+      ...live,
+      state: next.state,
+      log,
+      queued: [],
+      pending: [],
+      steppedTo: -1,
+      turnInputs: [],
+    },
+    events: next.events,
+  };
 }

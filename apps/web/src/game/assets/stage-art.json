@@ -4,6 +4,11 @@
     "plains": {
       "chapters": [1],
       "stages": ["demo-stage", "placeholder-stage", "tutorial"]
+    },
+    "saltglass-coast": {
+      "chapters": [2],
+      "stages": [],
+      "fallback": "plains"
     }
   },
   "enemies": {
@@ -49,5 +54,13 @@
     "trial1-locke-p2": {
       "canvas": 256
     }
+  },
+  "enemyFallbacks": {
+    "ch2-saltfin": "ch1-puddle-wisp",
+    "ch2-kiln-crab": "ch1-cinder-moth",
+    "ch2-reed-stalker": "ch1-bramble-pup",
+    "ch2-storm-ray": "ch1-spark-beetle",
+    "ch2-glassward": "ch1-ashbound-sentry",
+    "ch2-tidewright": "ch1-gravemaw"
   }
 }

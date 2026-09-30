@@ -1,0 +1,45 @@
+{
+  "id": "story-10-reedwake-channel",
+  "name": "Reedwake Channel",
+  "story": {
+    "chapter": 2,
+    "number": 10,
+    "text": "Follow the flooded channel. Each tide leaves a new line of glass across the reeds."
+  },
+  "firstClear": {
+    "gems": 25,
+    "starter": {
+      "ordinal": 5,
+      "rarity": 7
+    }
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-saltfin"
+        },
+        {
+          "enemy": "ch2-reed-stalker"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-storm-ray"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        }
+      ]
+    }
+  ]
+}

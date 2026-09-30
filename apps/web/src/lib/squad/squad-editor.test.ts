@@ -8,6 +8,7 @@ import {
   type SquadDraft,
   setLeader,
   toggleAlly,
+  toggleGuest,
   toggleSquadUnit,
 } from "./squad-editor.ts";
 
@@ -75,6 +76,20 @@ describe("setLeader and toggleAlly", () => {
 });
 
 describe("draftProblem", () => {
+  it("swaps between guests and duplicates, restores guests, and detects guest changes", () => {
+    const guest = toggleGuest(draft(["a"], 0, "a"), "aurelle");
+    expect(guest).toMatchObject({ allyUnitId: null, guestId: "aurelle" });
+    expect(toggleAlly(guest, "a")).toMatchObject({ allyUnitId: "a", guestId: null });
+    expect(toggleGuest(guest, "aurelle").guestId).toBeNull();
+    expect(
+      draftFromRow(
+        { slot: 0, unit_ids: ["a"], leader_index: 0, ally_unit_id: null, guest_id: "aurelle" },
+        OWNED,
+      ),
+    ).toEqual(guest);
+    expect(draftsEqual(guest, draft(["a"]))).toBe(false);
+    expect(draftProblem({ ...guest, allyUnitId: "a" })).toBe("Choose one ally.");
+  });
   it("accepts 1-5 distinct units with a leader among them", () => {
     expect(draftProblem(draft(["a"]))).toBeNull();
     expect(draftProblem(draft(["a", "b", "c", "d", "e"], 4, "a"))).toBeNull();

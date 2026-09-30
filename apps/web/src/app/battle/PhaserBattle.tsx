@@ -39,6 +39,9 @@ export default function PhaserBattle({
   const canvasRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [ending, setEnding] = useState<"pending" | "lost" | Submission>();
+  const [continueAction, setContinueAction] = useState<() => Promise<void>>();
+  const [continuing, setContinuing] = useState(false);
+  const [continueError, setContinueError] = useState<string>();
   const submitted = useRef<string | undefined>(undefined);
   // Read through refs so new callbacks never remount the game.
   const callbacks = useRef({ onEvents, onResult });
@@ -54,11 +57,52 @@ export default function PhaserBattle({
     const bridge: BattleBridge = {
       onReady: () => setReady(true),
       onEvents: (events) => callbacks.current.onEvents?.(events),
-      onComplete: (result, log) => {
+      onComplete: (result, log, resume) => {
         callbacks.current.onResult?.(result);
         if (!sessionId) return;
         if (result === "lose") {
           setEnding("lost");
+          setContinueAction(() =>
+            resume
+              ? async () => {
+                  setContinuing(true);
+                  setContinueError(undefined);
+                  try {
+                    const response = await fetch("/api/battles/continue", {
+                      method: "POST",
+                      headers: { "content-type": "application/json" },
+                      body: JSON.stringify({ session_id: sessionId, input_log: log }),
+                    });
+                    const value: unknown = await response.json();
+                    if (cancelled) return;
+                    if (
+                      !response.ok ||
+                      typeof value !== "object" ||
+                      value === null ||
+                      !("ok" in value) ||
+                      value.ok !== true
+                    ) {
+                      setContinueError(
+                        typeof value === "object" &&
+                          value !== null &&
+                          "error" in value &&
+                          typeof value.error === "string"
+                          ? value.error
+                          : "Could not continue. Try again.",
+                      );
+                      return;
+                    }
+                    setContinueAction(undefined);
+                    setEnding(undefined);
+                    resume();
+                  } catch {
+                    if (!cancelled) setContinueError("Could not reach the server. Try again.");
+                  } finally {
+                    if (!cancelled) setContinuing(false);
+                  }
+                }
+              : undefined,
+          );
           return;
         }
         if (submitted.current === sessionId) return;
@@ -143,6 +187,34 @@ export default function PhaserBattle({
             aria-live="polite"
           >
             <p>{endingText}</p>
+            {typeof ending === "object" && ending.ok && ending.rewards.starter && (
+              <section
+                aria-label="Starter unlocked"
+                className="rounded-lg border border-amber-200/60 p-3"
+              >
+                <h2 className="font-semibold text-amber-200">Starter unlocked!</h2>
+                <p>
+                  {ending.rewards.starter.name} · {ending.rewards.starter.rarity}★
+                </p>
+                <Link
+                  href={`/units/${ending.rewards.starter.ownedUnitId}`}
+                  className="text-amber-200 underline"
+                >
+                  View unit
+                </Link>
+              </section>
+            )}
+            {ending === "lost" && continueAction && (
+              <button
+                type="button"
+                disabled={continuing}
+                onClick={() => void continueAction()}
+                className="rounded bg-amber-200 px-4 py-2 font-semibold text-slate-950 disabled:opacity-50"
+              >
+                {continuing ? "Continuing…" : "Continue · 5 gems"}
+              </button>
+            )}
+            {continueError && <p role="alert">{continueError}</p>}
             <Link href="/quests" className="font-semibold text-amber-200 underline">
               Back to quest map
             </Link>

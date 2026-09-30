@@ -1,0 +1,47 @@
+{
+  "id": "story-14-drowned-observatory",
+  "name": "Drowned Observatory",
+  "story": {
+    "chapter": 2,
+    "number": 14,
+    "text": "A drowned observatory names the Tidewright: a keeper that mistakes living shores for broken glass."
+  },
+  "firstClear": {
+    "gems": 30
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-saltfin"
+        },
+        {
+          "enemy": "ch2-reed-stalker"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-glassward"
+        }
+      ]
+    }
+  ]
+}

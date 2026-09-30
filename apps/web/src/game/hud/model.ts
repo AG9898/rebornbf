@@ -238,7 +238,7 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
     case "BattleEnded":
       return { ...hud, result: event.result };
     case "BattleContinued": {
-      // The continue UI arrives with M3-04E; the HUD only drops the defeat result here.
+      // Drop the defeat result when the server-authorized continue resumes playback.
       const { result: _lost, ...rest } = hud;
       return rest;
     }

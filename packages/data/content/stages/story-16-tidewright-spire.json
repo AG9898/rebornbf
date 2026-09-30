@@ -1,0 +1,45 @@
+{
+  "id": "story-16-tidewright-spire",
+  "name": "Tidewright Spire",
+  "story": {
+    "chapter": 2,
+    "number": 16,
+    "text": "The Tidewright crowns its drowned spire with glass. Shatter its lens and give the shore back to the sea."
+  },
+  "firstClear": {
+    "gems": 200
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-saltfin"
+        },
+        {
+          "enemy": "ch2-kiln-crab"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-reed-stalker"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-tidewright",
+          "boss": true
+        }
+      ]
+    }
+  ]
+}

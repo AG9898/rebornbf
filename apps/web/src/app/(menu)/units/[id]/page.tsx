@@ -80,6 +80,9 @@ export default async function UnitDetailPage({
       </section>
 
       <section className={units.detail}>
+        <Link href={`/fusion?target=${unit.id}`} className={units.back}>
+          Level through fusion
+        </Link>
         <h1 className={`${units.title} ${styles.gold}`}>{unit.name}</h1>
         {unit.formName ? <p className={units.formName}>{unit.formName}</p> : null}
         <p className={units.cardMeta}>

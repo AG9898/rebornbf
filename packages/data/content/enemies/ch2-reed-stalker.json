@@ -1,0 +1,33 @@
+{
+  "id": "ch2-reed-stalker",
+  "name": "Reed Stalker",
+  "element": "earth",
+  "stats": {
+    "hp": 14500,
+    "atk": 1000,
+    "def": 450,
+    "rec": 200
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 10],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.08,
+    "zel": {
+      "rate": 60,
+      "amount": 100
+    }
+  }
+}

@@ -2,7 +2,7 @@
 -- consumes them and moves the unit to its next form at level 1 atomically. Uses the seeded Brand
 -- line, its evolution materials, and the Crown Shard item.
 begin;
-select plan(34);
+select plan(36);
 
 -- Privileges --------------------------------------------------------------------------------------
 select ok(has_function_privilege('authenticated', 'public.evolve(uuid, uuid[])', 'execute'),
@@ -49,6 +49,9 @@ insert into public.squads (user_id, slot, unit_ids, leader_index, ally_unit_id) 
   ('00000000-0000-0000-0000-0000000000ea', 0, array['00000000-0000-0000-0000-000000000e61']::uuid[], 0, '00000000-0000-0000-0000-000000000e62');
 insert into public.wallets (user_id, zel) values ('00000000-0000-0000-0000-0000000000ea', 1600000), ('00000000-0000-0000-0000-0000000000eb', 1500000);
 select public.grant_item('00000000-0000-0000-0000-0000000000ea', 'crown-shard', 1, 'test');
+
+update public.owned_units set bb_level = 9, sbb_level = 7
+where id = '00000000-0000-0000-0000-000000000e02';
 
 -- Player A ----------------------------------------------------------------------------------------
 set local role authenticated;
@@ -140,5 +143,7 @@ select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', 
   '42501', null, 'anon cannot execute evolve');
 reset role;
 
+select is((select bb_level::integer from public.owned_units where id='00000000-0000-0000-0000-000000000e02'), 4, 'evolution halves BB with floor');
+select is((select sbb_level::integer from public.owned_units where id='00000000-0000-0000-0000-000000000e02'), 3, 'evolution halves SBB with floor');
 select * from finish();
 rollback;

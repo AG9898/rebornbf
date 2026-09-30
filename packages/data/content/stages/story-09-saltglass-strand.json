@@ -1,0 +1,44 @@
+{
+  "id": "story-09-saltglass-strand",
+  "name": "Saltglass Strand",
+  "story": {
+    "chapter": 2,
+    "number": 9,
+    "text": "The rekindled beacon points seaward. Brightmere scouts report glass growing through the sand."
+  },
+  "firstClear": {
+    "gems": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-saltfin"
+        },
+        {
+          "enemy": "ch2-kiln-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-reed-stalker"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-kiln-crab"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        }
+      ]
+    }
+  ]
+}

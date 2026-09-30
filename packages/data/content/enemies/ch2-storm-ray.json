@@ -1,0 +1,60 @@
+{
+  "id": "ch2-storm-ray",
+  "name": "Storm Ray",
+  "element": "thunder",
+  "stats": {
+    "hp": 13500,
+    "atk": 1150,
+    "def": 400,
+    "rec": 200
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 10],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "static-surf",
+      "name": "Static Surf",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 32,
+          "hitFrames": [0, 8, 16, 24],
+          "damageDistribution": [25, 25, 25, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.6,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "static-surf",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.08,
+    "zel": {
+      "rate": 60,
+      "amount": 100
+    }
+  }
+}

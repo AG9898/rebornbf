@@ -7,7 +7,11 @@
     "text": "The waystation's keepers are gone. Their lanterns point the way down."
   },
   "firstClear": {
-    "gems": 30
+    "gems": 30,
+    "starter": {
+      "ordinal": 3,
+      "rarity": 5
+    }
   },
   "waves": [
     {

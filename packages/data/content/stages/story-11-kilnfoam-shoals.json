@@ -1,0 +1,47 @@
+{
+  "id": "story-11-kilnfoam-shoals",
+  "name": "Kilnfoam Shoals",
+  "story": {
+    "chapter": 2,
+    "number": 11,
+    "text": "Hot vents split the shoals. Something beneath them is turning the coast into a furnace."
+  },
+  "firstClear": {
+    "gems": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-kiln-crab"
+        },
+        {
+          "enemy": "ch2-kiln-crab"
+        },
+        {
+          "enemy": "ch2-saltfin"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-storm-ray"
+        },
+        {
+          "enemy": "ch2-reed-stalker"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-kiln-crab"
+        }
+      ]
+    }
+  ]
+}

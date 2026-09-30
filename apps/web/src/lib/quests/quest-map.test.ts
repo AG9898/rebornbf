@@ -7,11 +7,23 @@ const ids = STORY_STAGES.map((stage) => stage.id);
 describe("quest map (M3-04A)", () => {
   it("lists chapter 1 with its eight stages in order, stage 8 the boss", () => {
     const [chapter, ...rest] = buildQuestMap(new Set());
-    expect(rest).toEqual([]);
+    expect(rest.map((c) => c.number)).toEqual([2]);
     expect(chapter?.number).toBe(1);
     expect(chapter?.title).toBe("The Ember Road");
     expect(chapter?.stages.map((s) => s.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(chapter?.stages.filter((s) => s.boss).map((s) => s.number)).toEqual([8]);
+  });
+
+  it("chapter 2 stays locked until stage 8, then opens in story order", () => {
+    const before = buildQuestMap(new Set(ids.slice(0, 7)))[1];
+    expect(before?.stages.every((s) => s.state === "locked")).toBe(true);
+    const after = buildQuestMap(new Set(ids.slice(0, 8)))[1];
+    expect(after?.title).toBe("The Saltglass Coast");
+    expect(after?.stages.map((s) => s.number)).toEqual([9, 10, 11, 12, 13, 14, 15, 16]);
+    expect(after?.stages.map((s) => s.state)).toEqual(["open", ...Array(7).fill("locked")]);
+    expect(after?.stages.filter((s) => s.boss).map((s) => s.number)).toEqual([16]);
+    const next = buildQuestMap(new Set(ids.slice(0, 9)))[1];
+    expect(next?.stages.slice(0, 3).map((s) => s.state)).toEqual(["cleared", "open", "locked"]);
   });
 
   it("bundles every story stage file in @bfr/data", () => {

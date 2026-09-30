@@ -10,13 +10,14 @@ export const SQUAD_SIZE = 5;
 export const SQUAD_SLOTS = 10;
 
 /** The `squads` columns the squad page selects. */
-export const SQUAD_COLUMNS = "slot, unit_ids, leader_index, ally_unit_id";
+export const SQUAD_COLUMNS = "slot, unit_ids, leader_index, ally_unit_id, guest_id";
 
 export type SquadRow = {
   slot: number;
   unit_ids: string[];
   leader_index: number;
   ally_unit_id: string | null;
+  guest_id?: string | null;
 };
 
 export type SquadDraft = {
@@ -25,6 +26,7 @@ export type SquadDraft = {
   leaderIndex: number;
   /** An owned unit fielded again in the ally slot (RESOLVED-05), or null. */
   allyUnitId: string | null;
+  guestId?: string | null;
 };
 
 export const EMPTY_DRAFT: SquadDraft = { unitIds: [], leaderIndex: 0, allyUnitId: null };
@@ -39,7 +41,7 @@ export function draftFromRow(row: SquadRow | null, ownedIds: ReadonlySet<string>
   const unitIds = row.unit_ids.filter((id) => ownedIds.has(id)).slice(0, SQUAD_SIZE);
   const leaderIndex = leaderId ? Math.max(0, unitIds.indexOf(leaderId)) : 0;
   const allyUnitId = row.ally_unit_id && ownedIds.has(row.ally_unit_id) ? row.ally_unit_id : null;
-  return { unitIds, leaderIndex, allyUnitId };
+  return { unitIds, leaderIndex, allyUnitId, ...(row.guest_id ? { guestId: row.guest_id } : {}) };
 }
 
 /**
@@ -66,11 +68,16 @@ export function setLeader(draft: SquadDraft, index: number): SquadDraft {
 
 /** Put a unit in the ally slot, or clear the slot if that unit is already there. */
 export function toggleAlly(draft: SquadDraft, unitId: string): SquadDraft {
-  return { ...draft, allyUnitId: draft.allyUnitId === unitId ? null : unitId };
+  return { ...draft, allyUnitId: draft.allyUnitId === unitId ? null : unitId, guestId: null };
+}
+
+export function toggleGuest(draft: SquadDraft, guestId: string): SquadDraft {
+  return { ...draft, allyUnitId: null, guestId: draft.guestId === guestId ? null : guestId };
 }
 
 /** Why a draft cannot be saved, or null. Mirrors the size and leader checks in `save_squad`. */
 export function draftProblem(draft: SquadDraft): string | null {
+  if (draft.allyUnitId && draft.guestId) return "Choose one ally.";
   if (draft.unitIds.length === 0) return "Add at least one unit.";
   if (draft.unitIds.length > SQUAD_SIZE) return `A squad holds at most ${SQUAD_SIZE} units.`;
   if (new Set(draft.unitIds).size !== draft.unitIds.length) return "A unit can join only once.";
@@ -91,6 +98,7 @@ export function draftsEqual(a: SquadDraft, b: SquadDraft): boolean {
   return (
     a.leaderIndex === b.leaderIndex &&
     a.allyUnitId === b.allyUnitId &&
+    (a.guestId ?? null) === (b.guestId ?? null) &&
     a.unitIds.length === b.unitIds.length &&
     a.unitIds.every((id, i) => id === b.unitIds[i])
   );

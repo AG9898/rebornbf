@@ -82,11 +82,11 @@ select ok((select finished_at is null from public.battle_sessions), 'the session
 select is((select squad from public.battle_sessions),
   '{"leader_index": 1, "units": [
      {"owned_unit_id": "00000000-0000-0000-0000-0000000006a2", "unit_id": "maren", "form_id": "maren-3", "level": 4,
-      "unit_type": {"type": "anima", "gains": {"hp": 7, "atk": 0, "def": 0, "rec": -2}}},
+      "bb_level": 1, "sbb_level": 1, "unit_type": {"type": "anima", "gains": {"hp": 7, "atk": 0, "def": 0, "rec": -2}}},
      {"owned_unit_id": "00000000-0000-0000-0000-0000000006a1", "unit_id": "brand", "form_id": "brand-3", "level": 1,
-      "unit_type": {"type": "lord", "gains": {"hp": 0, "atk": 0, "def": 0, "rec": 0}}}],
+      "bb_level": 1, "sbb_level": 1, "unit_type": {"type": "lord", "gains": {"hp": 0, "atk": 0, "def": 0, "rec": 0}}}],
     "ally": {"owned_unit_id": "00000000-0000-0000-0000-0000000006a3", "unit_id": "rook", "form_id": "rook-omni", "level": 1,
-      "unit_type": null}}'::jsonb,
+      "bb_level": 1, "sbb_level": 1, "unit_type": null}}'::jsonb,
   'the squad snapshot keeps squad order, leader, levels, type rolls, and the ally');
 select is((select (public.start_battle('test-story-one')).stage_id), 'test-story-one',
   'start_battle returns the new session row');

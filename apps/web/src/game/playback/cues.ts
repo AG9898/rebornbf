@@ -163,6 +163,7 @@ export type Cue =
       readonly amount: number;
     }
   | { readonly kind: "unit-death"; readonly target: PlayerSlotId }
+  | { readonly kind: "unit-revive"; readonly target: PlayerSlotId }
   | { readonly kind: "wave"; readonly wave: number; readonly banners: readonly Banner[] }
   | { readonly kind: "turn"; readonly turn: number }
   | { readonly kind: "result"; readonly result: "win" | "lose"; readonly turn: number };
@@ -256,6 +257,8 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     case "Healed":
     case "HpRestored":
       return event.amount > 0 ? [{ kind: "heal", target: event.target, amount: event.amount }] : [];
+    case "UnitRevived":
+      return [{ kind: "unit-revive", target: event.target }];
     case "UnitDefeated":
       return [{ kind: "unit-death", target: event.target }];
     case "WaveStarted":
@@ -275,10 +278,9 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     case "TurnDamaged":
     case "OverdriveEnded":
     case "WaveCleared":
-    // Item use and revives get their own visuals with the item bar (M2-02D).
+    // Item use has no additional visual cue.
     case "ItemUsed":
-    case "UnitRevived":
-    // The continue flow gets its own screen with M3-04E.
+    // React owns the paid continue prompt; engine events update the HUD.
     case "BattleContinued":
     case "ContinueRejected":
       return [];

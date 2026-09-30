@@ -1,0 +1,47 @@
+{
+  "id": "story-13-stormtide-causeway",
+  "name": "Stormtide Causeway",
+  "story": {
+    "chapter": 2,
+    "number": 13,
+    "text": "Cross the causeway before the next surge. Lightning runs along the glass beneath your feet."
+  },
+  "firstClear": {
+    "gems": 30
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-storm-ray"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        },
+        {
+          "enemy": "ch2-kiln-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-reed-stalker"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "ch2-glassward"
+        },
+        {
+          "enemy": "ch2-storm-ray"
+        }
+      ]
+    }
+  ]
+}

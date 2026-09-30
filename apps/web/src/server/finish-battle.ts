@@ -43,7 +43,7 @@ async function readBody(request: Request): Promise<{ value: unknown } | Response
   }
 }
 
-export async function finishBattle(request: Request): Promise<Response> {
+export async function finishBattle(request: Request, continuing = false): Promise<Response> {
   const body = await readBody(request);
   if (body instanceof Response) return body;
   const { value } = body;
@@ -69,8 +69,29 @@ export async function finishBattle(request: Request): Promise<Response> {
     .overrideTypes<FinishSessionRow[], { merge: false }>();
   if (error) return fail(503, "This battle could not be loaded. Try again shortly.");
 
-  const verdict = verifyFinish(data?.[0], userId, inputLog, new Date());
+  const session = data?.[0];
+  // Continue retries submit the original unmarked loss; the RPC checks the same paid turn.
+  const verdict = verifyFinish(
+    continuing && session ? { ...session, continued_turn: null } : session,
+    userId,
+    inputLog,
+    new Date(),
+    continuing ? "lose" : "win",
+  );
   if (!verdict.ok) return fail(verdict.status, verdict.error);
+
+  if (continuing) {
+    const { error: continueError } = await admin.rpc("continue_battle", {
+      p_session_id: sessionId,
+      p_user_id: userId,
+      p_turn: verdict.turns,
+    });
+    if (continueError?.code === "P0002") return fail(409, "This battle cannot continue again.");
+    if (continueError?.code === "22023")
+      return fail(422, "Continue unavailable. You need 5 gems and an eligible stage.");
+    if (continueError) return fail(503, "Could not continue. Try again shortly.");
+    return json(200, { ok: true });
+  }
 
   const { data: rewards, error: claimError } = await admin.rpc("grant_battle_rewards", {
     p_session_id: sessionId,

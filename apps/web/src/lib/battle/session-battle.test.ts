@@ -35,6 +35,64 @@ function row(overrides: Partial<BattleSessionRow> = {}): BattleSessionRow {
 }
 
 describe("session battle (M3-04B)", () => {
+  it("uses the frozen burst levels for playback and replay", () => {
+    const result = sessionBattle(
+      row({
+        squad: {
+          leader_index: 0,
+          units: [{ ...snap("brand", "brand-omni"), bb_level: 10, sbb_level: 2 }],
+          ally: { ...snap("maren", "maren-omni"), bb_level: 10, sbb_level: 10 },
+        },
+      }),
+    );
+    if (!result.ok) throw new Error(result.message);
+    expect(result.battle.setup.squad[0]?.burstLevels).toEqual({ bb: 10, sbb: 2 });
+    const state = createBattle(result.battle.setup, result.battle.seed);
+    expect(state.party[0]?.form.bursts.ubb).toBeUndefined();
+    expect(state.party[1]?.form.bursts.ubb).toBeDefined();
+  });
+  it("rejects corrupt persisted burst levels before playback", () => {
+    for (const value of [0, 11, 1.5]) {
+      expect(
+        sessionBattle(
+          row({
+            squad: {
+              leader_index: 0,
+              units: [{ ...snap("brand", "brand-3"), bb_level: value }],
+              ally: null,
+            },
+          }),
+        ).ok,
+      ).toBe(false);
+    }
+  });
+  it("plays the server's scaled guest snapshot as a guest with Lord stats", () => {
+    const result = sessionBattle(
+      row({
+        squad: {
+          leader_index: 0,
+          units: [snap("brand", "brand-3")],
+          ally: {
+            owned_unit_id: null,
+            unit_id: "aurelle",
+            form_id: "aurelle-6",
+            level: 100,
+            unit_type: null,
+            kind: "guest",
+          },
+        },
+      }),
+    );
+    if (!result.ok) throw new Error(result.message);
+    expect(result.battle.setup.ally).toMatchObject({
+      kind: "guest",
+      formId: "aurelle-6",
+      level: 100,
+    });
+    expect(createBattle(result.battle.setup, result.battle.seed).party[1]?.stats).toEqual(
+      unitContent("aurelle")?.forms.find((form) => form.id === "aurelle-6")?.stats.max,
+    );
+  });
   it("builds the stage's waves and the snapshotted squad at level-1 stats", () => {
     const result = sessionBattle(row());
     if (!result.ok) throw new Error(result.message);
@@ -56,7 +114,7 @@ describe("session battle (M3-04B)", () => {
     expect(createBattle(setup, seed).party).toHaveLength(3);
   });
 
-  it("builds every chapter 1 stage", () => {
+  it("builds every story stage in both chapters", () => {
     for (const stage of STORY_STAGES) {
       expect(sessionBattle(row({ stage_id: stage.id })).ok).toBe(true);
     }

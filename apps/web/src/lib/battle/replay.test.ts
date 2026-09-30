@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   acceptsInput,
   advanceLive,
+  continueLive,
   isOver,
   type LiveBattle,
   queueInput,
@@ -260,5 +261,74 @@ describe("finish verification (M3-04C)", () => {
 
   it("rejects a malformed log before replaying", () => {
     expect(verifyFinish(row(), USER, "win", NOW)).toMatchObject({ ok: false, status: 400 });
+  });
+});
+
+describe("paid continue replay (M3-04E)", () => {
+  const { setup, seed } = battle();
+  let live = startLive(createBattle(setup, seed));
+  let ms = 0;
+  let queuedTurn = -1;
+  for (; ms < 3_600_000 && !isOver(live); ms += 50) {
+    if (acceptsInput(live) && queuedTurn !== live.state.turn) {
+      queuedTurn = live.state.turn;
+      for (const unit of live.state.party.filter((unit) => unit.hp > 0)) {
+        live = queueInput(live, { type: "guard", tick: live.state.tick, actor: unit.slot });
+      }
+    }
+    live = advanceLive(live, ms).live;
+  }
+  const lost = live;
+  const paidTurn = lost.log.length;
+  live = continueLive(lost).live;
+  queuedTurn = -1;
+  for (; ms < 7_200_000 && !isOver(live); ms += 50) {
+    if (acceptsInput(live) && queuedTurn !== live.state.turn) {
+      queuedTurn = live.state.turn;
+      for (const input of turnInputs(live.state)) live = queueInput(live, input);
+    }
+    live = advanceLive(live, ms).live;
+  }
+
+  it("proves a loss before payment and resumes the same seed to a verified win", () => {
+    expect(lost.state.result).toBe("lose");
+    expect(verifyFinish(row(), USER, lost.log, NOW, "lose").ok).toBe(true);
+    expect(live.state.result).toBe("win");
+    const parsed = parseInputLog(JSON.parse(JSON.stringify(live.log)));
+    if (!parsed.ok) throw new Error(parsed.message);
+    expect(replayBattle(setup, seed, parsed.log)).toMatchObject({ ok: true, result: "win" });
+    expect(verifyFinish(row({ continued_turn: paidTurn }), USER, parsed.log, NOW).ok).toBe(true);
+  });
+
+  it("rejects unpaid, missing, moved, and extra continue markers", () => {
+    expect(verifyFinish(row(), USER, live.log, NOW)).toMatchObject({ ok: false, status: 422 });
+    expect(verifyFinish(row({ continued_turn: paidTurn + 1 }), USER, live.log, NOW)).toMatchObject({
+      ok: false,
+      status: 422,
+    });
+    expect(verifyFinish(row({ continued_turn: paidTurn }), USER, lost.log, NOW)).toMatchObject({
+      ok: false,
+      status: 422,
+    });
+    const extra = live.log.map((turn, index) =>
+      index === live.log.length - 1 ? { ...turn, continued: true } : turn,
+    );
+    expect(verifyFinish(row({ continued_turn: paidTurn }), USER, extra, NOW)).toMatchObject({
+      ok: false,
+      status: 422,
+    });
+  });
+
+  it("rejects a continue before a wipe and in a trial", () => {
+    const early = [{ ...lost.log[0], continued: true }] as BattleInputLog;
+    expect(replayBattle(setup, seed, early)).toMatchObject({ ok: false });
+    expect(replayBattle({ ...setup, trial: true }, seed, live.log)).toMatchObject({ ok: false });
+    expect(continueLive(startLive(createBattle(setup, seed))).events).toEqual([]);
+    const trialLoss = { ...lost, state: { ...lost.state, trial: true } };
+    expect(continueLive(trialLoss).live).toBe(trialLoss);
+  });
+
+  it("rejects malformed continue markers", () => {
+    expect(parseInputLog([{ inputs: [], endTick: 1, continued: false }]).ok).toBe(false);
   });
 });

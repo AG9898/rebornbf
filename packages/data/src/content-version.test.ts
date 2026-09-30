@@ -25,7 +25,7 @@ describe("content seed (M3-02)", () => {
 
   it("covers every unit, item, enemy, stage, and banner file", () => {
     const kinds = new Set(items.map((item) => item.kind));
-    expect([...kinds].sort()).toEqual(["banner", "enemy", "item", "stage", "unit"]);
+    expect([...kinds].sort()).toEqual(["banner", "enemy", "guest", "item", "stage", "unit"]);
     expect(items.find((item) => item.kind === "unit" && item.id === "brand")).toBeDefined();
     expect(items.find((item) => item.kind === "item" && item.id === "crown-shard")).toBeDefined();
     expect(
