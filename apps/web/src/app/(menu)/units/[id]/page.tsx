@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import styles from "../../../../components/menu/menu.module.css";
 import { SIGN_IN_PATH } from "../../../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../../../lib/supabase/server.ts";
+import { nextEvolution } from "../../../../lib/units/evolution.ts";
 import {
   ELEMENT_LABELS,
   isOwnedUnitId,
@@ -15,6 +16,7 @@ import {
   toOwnedUnitView,
 } from "../../../../lib/units/owned-units.ts";
 import units from "../units.module.css";
+import evolve from "./evolve/evolve.module.css";
 
 export const metadata: Metadata = { title: "Unit · BFR" };
 
@@ -50,6 +52,7 @@ export default async function UnitDetailPage({
   if (!row) notFound();
 
   const unit = toOwnedUnitView(row);
+  const evolution = nextEvolution(row);
 
   return (
     <div className={units.page}>
@@ -113,6 +116,11 @@ export default async function UnitDetailPage({
           <p className={units.note}>
             This unit's level is outside its form's range, so its current stats are not shown.
           </p>
+        ) : null}
+        {evolution ? (
+          <Link href={`/units/${unit.id}/evolve`} className={evolve.link}>
+            {evolution.next.rarity === "omni" ? "Omni Evolve" : "Evolve"}
+          </Link>
         ) : null}
       </section>
     </div>

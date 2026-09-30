@@ -206,7 +206,28 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "glint-cairn",
+            "count": 2
+          },
+          {
+            "unit": "glint-effigy",
+            "count": 1
+          },
+          {
+            "unit": "wyrm-coffer",
+            "count": 1
+          }
+        ],
+        "zel": 500000
+      }
     },
     {
       "id": "aurelle-6",
@@ -306,7 +327,34 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "glint-colossus",
+            "count": 1
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "glint-cairn",
+            "count": 1
+          },
+          {
+            "unit": "glint-urn",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          }
+        ],
+        "zel": 1500000
+      }
     },
     {
       "id": "aurelle-7",
@@ -507,7 +555,42 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "glint-colossus",
+            "count": 2
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "glint-cairn",
+            "count": 1
+          },
+          {
+            "unit": "glint-urn",
+            "count": 2
+          },
+          {
+            "unit": "wyrm-coffer",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          },
+          {
+            "item": "zenith-core",
+            "count": 1
+          }
+        ],
+        "zel": 3000000
+      }
     },
     {
       "id": "aurelle-omni",

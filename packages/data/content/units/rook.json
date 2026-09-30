@@ -126,7 +126,20 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "volt-effigy",
+            "count": 1
+          },
+          {
+            "unit": "volt-sprite",
+            "count": 1
+          }
+        ],
+        "zel": 100000
+      }
     },
     {
       "id": "rook-4",
@@ -189,7 +202,28 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "volt-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-effigy",
+            "count": 1
+          },
+          {
+            "unit": "volt-sprite",
+            "count": 1
+          },
+          {
+            "unit": "volt-mote",
+            "count": 2
+          }
+        ],
+        "zel": 200000
+      }
     },
     {
       "id": "rook-5",
@@ -252,7 +286,32 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-effigy",
+            "count": 1
+          },
+          {
+            "unit": "volt-sprite",
+            "count": 1
+          },
+          {
+            "unit": "volt-mote",
+            "count": 1
+          }
+        ],
+        "zel": 500000
+      }
     },
     {
       "id": "rook-6",
@@ -349,7 +408,34 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "volt-colossus",
+            "count": 1
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-effigy",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          }
+        ],
+        "zel": 1500000
+      }
     },
     {
       "id": "rook-7",
@@ -514,7 +600,46 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "volt-colossus",
+            "count": 2
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-cairn",
+            "count": 1
+          },
+          {
+            "unit": "volt-effigy",
+            "count": 1
+          },
+          {
+            "unit": "volt-sprite",
+            "count": 1
+          },
+          {
+            "unit": "volt-mote",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          },
+          {
+            "item": "zenith-core",
+            "count": 1
+          }
+        ],
+        "zel": 3000000
+      }
     },
     {
       "id": "rook-omni",

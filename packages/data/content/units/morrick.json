@@ -126,7 +126,20 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "dusk-effigy",
+            "count": 1
+          },
+          {
+            "unit": "dusk-sprite",
+            "count": 1
+          }
+        ],
+        "zel": 100000
+      }
     },
     {
       "id": "morrick-4",
@@ -189,7 +202,28 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "dusk-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-effigy",
+            "count": 1
+          },
+          {
+            "unit": "dusk-sprite",
+            "count": 1
+          },
+          {
+            "unit": "dusk-mote",
+            "count": 2
+          }
+        ],
+        "zel": 200000
+      }
     },
     {
       "id": "morrick-5",
@@ -252,7 +286,32 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-effigy",
+            "count": 1
+          },
+          {
+            "unit": "dusk-sprite",
+            "count": 1
+          },
+          {
+            "unit": "dusk-mote",
+            "count": 1
+          }
+        ],
+        "zel": 500000
+      }
     },
     {
       "id": "morrick-6",
@@ -349,7 +408,34 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "dusk-colossus",
+            "count": 1
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-effigy",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          }
+        ],
+        "zel": 1500000
+      }
     },
     {
       "id": "morrick-7",
@@ -525,7 +611,46 @@
           }
         ]
       },
-      "sphereSlots": 1
+      "sphereSlots": 1,
+      "evolution": {
+        "units": [
+          {
+            "unit": "dusk-colossus",
+            "count": 2
+          },
+          {
+            "unit": "prism-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-cairn",
+            "count": 1
+          },
+          {
+            "unit": "dusk-effigy",
+            "count": 1
+          },
+          {
+            "unit": "dusk-sprite",
+            "count": 1
+          },
+          {
+            "unit": "dusk-mote",
+            "count": 1
+          }
+        ],
+        "items": [
+          {
+            "item": "crown-shard",
+            "count": 1
+          },
+          {
+            "item": "zenith-core",
+            "count": 1
+          }
+        ],
+        "zel": 3000000
+      }
     },
     {
       "id": "morrick-omni",
