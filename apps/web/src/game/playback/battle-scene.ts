@@ -6,6 +6,7 @@ import {
   type PlayerSlotId,
 } from "@bfr/engine";
 import Phaser from "phaser";
+import { pieceTextBox } from "../../components/menu/text-box.ts";
 import { type UnitSpriteSheet, unitIdleSprite } from "../assets/sprites.ts";
 import { backgroundUrl } from "../assets/stage-art.ts";
 import {
@@ -28,7 +29,7 @@ import {
   toggleSpeed,
 } from "../hud/controls.ts";
 import { applyHudEvents, type HudState, initHud } from "../hud/model.ts";
-import { FALLBACK_FONT, HudView, hudTextStyle } from "../hud/view.ts";
+import { FALLBACK_FONT, fitTextToBox, HudView, hudTextStyle } from "../hud/view.ts";
 import {
   classifyGesture,
   hitTest,
@@ -617,12 +618,17 @@ export class BattleScene extends Phaser.Scene {
       .setTint(tint);
     const portraitImage = this.add.image(0, 0, portrait.key).setOrigin(0).setDisplaySize(640, 520);
     const ribbonPiece = `cutin-ribbon-${tier}` as const;
+    const ribbonRect = { x: 0, y: 337, width: 570, height: uiPieceSize(ribbonPiece).height / 2 };
     const ribbon = this.add
-      .image(0, 337, uiPiece(ribbonPiece).key)
+      .image(ribbonRect.x, ribbonRect.y, uiPiece(ribbonPiece).key)
       .setOrigin(0)
-      .setDisplaySize(570, uiPieceSize(ribbonPiece).height / 2);
-    const label = this.text(51, 371, name, "#ffffff", 28).setOrigin(0, 0.5);
-    label.setWordWrapWidth(425);
+      .setDisplaySize(ribbonRect.width, ribbonRect.height);
+    // One line in the ribbon's flat channel, shrunk (never wrapped) when a name is too long.
+    const label = fitTextToBox(
+      this.text(0, 0, name, "#ffffff", 28),
+      pieceTextBox(ribbonPiece, ribbonRect),
+      "left",
+    );
     const card = this.add
       .container(BATTLE_WIDTH, 0, [streaks, portraitImage, ribbon, label])
       .setDepth(TOP_DEPTH + 3);

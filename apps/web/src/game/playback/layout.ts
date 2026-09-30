@@ -110,7 +110,7 @@ export const HUD = {
   /** Boss crest top-left; its ring (the boss orb) is centred at `bossOrb`. */
   bossCrest: { x: -15, y: 462, width: 120, height: 66 },
   bossOrb: { x: 45, y: 498, size: 37 },
-  bossName: { x: 98, y: 505 },
+  // The boss name has no position here: it fits `boss-band`'s measured text box (UI_TEXT_BOXES).
   autoPill: { x: 420, y: 480, width: 98, height: 35 },
   speedPill: { x: 527, y: 480, width: 98, height: 35 },
   bossHpFrame: { x: 0, y: 522, width: 640, height: panelHeight(67) },

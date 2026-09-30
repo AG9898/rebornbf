@@ -116,6 +116,28 @@ export const UI_ASSETS = {
 
 export type UiAsset = keyof typeof UI_ASSETS;
 
+/**
+ * The measured inner face of each text-bearing piece (ui.json `textBox`), in its export's own
+ * 2x pixels: app text is fitted inside this box, never placed by eye (ART_GUIDE.md → Text on
+ * UI pieces).
+ */
+export const UI_TEXT_BOXES = {
+  "boss-band": { x: 224, y: 68, width: 596, height: 62 },
+  "cutin-ribbon-bb": { x: 92, y: 112, width: 688, height: 100 },
+  "cutin-ribbon-sbb": { x: 92, y: 112, width: 688, height: 100 },
+  "cutin-ribbon-ubb": { x: 92, y: 112, width: 688, height: 100 },
+  "title-plate": { x: 22, y: 14, width: 562, height: 82 },
+  "stat-plate": { x: 12, y: 10, width: 416, height: 72 },
+  "leader-ribbon": { x: 30, y: 12, width: 200, height: 52 },
+  "skill-tag-red": { x: 14, y: 8, width: 288, height: 50 },
+  "skill-tag-violet": { x: 14, y: 7, width: 288, height: 42 },
+  "skill-tag-blue": { x: 14, y: 7, width: 288, height: 42 },
+} as const satisfies Partial<
+  Record<UiAsset, { x: number; y: number; width: number; height: number }>
+>;
+
+export type UiTextPiece = keyof typeof UI_TEXT_BOXES;
+
 /** Pixel size of every showcase card in public/assets/ui/cards/<unit>-<form>.webp. */
 export const CARD_ART_SIZE = { width: 250, height: 690 } as const;
 

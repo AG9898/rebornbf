@@ -1,5 +1,6 @@
 import type { BurstTier } from "@bfr/engine";
 import type Phaser from "phaser";
+import { type Box, fitScale, pieceTextBox } from "../../components/menu/text-box.ts";
 import {
   type BattleUiPiece,
   elementOrb,
@@ -29,8 +30,6 @@ export const FALLBACK_FONT = "sans-serif";
 
 export const HUD_COLORS = {
   window: 0x10152a,
-  enemyBarBack: 0x3a2030,
-  enemyHp: 0x5fd068,
   mark: 0xf5e4b2,
   overlay: 0x0b0d17,
   /** Card and portrait tints: acted (dimmed), downed (dark red), Overdrive Mode (pink glow). */
@@ -76,6 +75,21 @@ export function hudTextStyle(
   };
 }
 
+/**
+ * Fits a label inside a piece's text box (`pieceTextBox`): vertically centred, left-aligned or
+ * centred, and scaled down (never up) until it fits. Call again after `setText`.
+ */
+export function fitTextToBox(
+  text: Phaser.GameObjects.Text,
+  box: Box,
+  align: "left" | "center" = "center",
+): Phaser.GameObjects.Text {
+  text.setScale(1);
+  text.setScale(fitScale(text, box));
+  text.setOrigin(align === "left" ? 0 : 0.5, 0.5);
+  return text.setPosition(align === "left" ? box.x : box.x + box.width / 2, box.y + box.height / 2);
+}
+
 /** A square-cut fill strip laid over a trough and cropped (never squashed) to its ratio. */
 interface Fill {
   readonly image: Phaser.GameObjects.Image;
@@ -104,12 +118,6 @@ interface PillView {
   readonly label: Phaser.GameObjects.Text;
 }
 
-interface EnemyBarView {
-  readonly fill: Phaser.GameObjects.Rectangle;
-  readonly width: number;
-  readonly objects: Phaser.GameObjects.GameObject[];
-}
-
 /** What the HUD draws besides `HudState`: the font, the top-plate title, and each slot's portrait. */
 export interface HudArt {
   readonly fontFamily: string;
@@ -130,12 +138,12 @@ function offset(rect: Rect, by: { x: number; y: number }): Rect {
  * The battle HUD (M2-02C; locked art M2-07A): the top plate with the Damage/Spark counters and
  * Menu pill, the boss band (crest with the boss's element orb, name, Auto/Speed pills) and HP bar,
  * six unit cards (portrait, element orb, leader crown, HP and brave fills), the OD gauge, the item
- * panel, enemy HP bars, and the win/lose screen. It draws only `HudState`, which is built from
+ * panel, enemy names, and the win/lose screen. It draws only `HudState`, which is built from
  * engine events; it never reads or computes battle outcomes.
  */
 export class HudView {
   private cards: CardView[] = [];
-  private enemies: EnemyBarView[] = [];
+  private enemyNames: Phaser.GameObjects.Text[] = [];
   private od!: Fill;
   private odText!: Phaser.GameObjects.Text;
   private odFrame!: Phaser.GameObjects.Image;
@@ -143,6 +151,8 @@ export class HudView {
   private damage!: Phaser.GameObjects.Text;
   private sparks!: Phaser.GameObjects.Text;
   private bossName!: Phaser.GameObjects.Text;
+  /** The boss name's measured box on the rock band, right of the crest (`UI_TEXT_BOXES`). */
+  private bossNameBox!: Box;
   private bossOrb!: Phaser.GameObjects.Image;
   private bossHp!: Fill;
   private result: Phaser.GameObjects.GameObject[] = [];
@@ -176,19 +186,15 @@ export class HudView {
     this.render(hud);
   }
 
-  /** Rebuilds the enemy HP bars and names for the current wave. */
+  /**
+   * Rebuilds the enemy names for the current wave. Enemies have no HP bars of their own: the boss
+   * HP bar above the cards is the enemy HP indicator, as in the original.
+   */
   buildEnemies(hud: HudState): void {
-    for (const view of this.enemies) for (const object of view.objects) object.destroy();
-    this.enemies = hud.enemies.map((enemy, i) => {
+    for (const name of this.enemyNames) name.destroy();
+    this.enemyNames = hud.enemies.map((enemy, i) => {
       const r = this.enemyBounds(i);
-      const name = this.text(r.x, r.y + r.height + 7, enemy.name, 18);
-      const back = this.scene.add
-        .rectangle(r.x, r.y - 18, r.width, 11, HUD_COLORS.enemyBarBack)
-        .setOrigin(0);
-      const fill = this.scene.add
-        .rectangle(r.x, r.y - 18, r.width, 11, HUD_COLORS.enemyHp)
-        .setOrigin(0);
-      return { fill, width: r.width, objects: [name, back, fill] };
+      return this.text(r.x, r.y + r.height + 7, enemy.name, 18);
     });
   }
 
@@ -201,14 +207,8 @@ export class HudView {
       const view = this.cards[i];
       if (view) this.renderCard(view, unit);
     });
-    hud.enemies.forEach((enemy, i) => {
-      const view = this.enemies[i];
-      if (!view) return;
-      view.fill.width = Math.round(view.width * clamp01(enemy.hp / enemy.maxHp));
-      view.fill.setVisible(enemy.hp > 0);
-    });
     const boss = bossEnemy(hud);
-    this.bossName.setText(boss?.name ?? "");
+    fitTextToBox(this.bossName.setText(boss?.name ?? ""), this.bossNameBox, "left");
     this.bossOrb.setVisible(boss !== undefined);
     if (boss) this.bossOrb.setTexture(uiPiece(elementOrb(boss.element)).key);
     this.setFill(this.bossHp, boss ? boss.hp / boss.maxHp : 0);
@@ -340,7 +340,8 @@ export class HudView {
     this.bossOrb = this.scene.add
       .image(orb.x, orb.y, uiPiece("orb-fire").key)
       .setDisplaySize(orb.size, orb.size);
-    this.bossName = this.text(HUD.bossName.x, HUD.bossName.y, "", 22).setOrigin(0, 0.5);
+    this.bossNameBox = pieceTextBox("boss-band", HUD.bossBand);
+    this.bossName = this.text(0, 0, "", 22);
     // Tapped through the scene's hit regions; `setControls` shows their state (M2-02D).
     const pill = (rect: Rect, label: string): PillView => ({
       rect,
