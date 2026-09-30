@@ -321,7 +321,8 @@ describe("evolution materials and recipes (M4-02D)", () => {
       // The Sprites are ordinary 2★ filler; every new material is level-1 with flat stats.
       if (!id.endsWith("-sprite")) {
         expect(unit.forms[0]?.maxLevel, id).toBe(1);
-        expect(unit.source, id).toEqual({ original: true });
+        // The public mirror strips `source` (RESOLVED-61); where present it marks BFR-original.
+        expect([undefined, { original: true }], id).toContainEqual(unit.source);
       }
     }
     for (const [id, element] of singles) {
