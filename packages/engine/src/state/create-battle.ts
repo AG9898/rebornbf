@@ -1,6 +1,7 @@
 import {
   AiRuleSchema,
   AttackSchema,
+  type Effect,
   EnemySkillSchema,
   type Form,
   ItemSchema,
@@ -16,6 +17,8 @@ import { createOdGauge } from "../gauge/overdrive.ts";
 import { createRng } from "../rng.ts";
 import { sparkWindowTicks } from "../timeline/spark.ts";
 import { formAtBurstLevels, MAX_BURST_LEVEL, MIN_BURST_LEVEL } from "./burst-levels.ts";
+import { formWithEnhancementBursts } from "./enhancement-bursts.ts";
+import { enhancementPassives, selectedEnhancements } from "./enhancements.ts";
 import {
   type AllySetup,
   type BattleEnemy,
@@ -116,12 +119,54 @@ function toBattleUnit(
       }
     }
   }
+  let spPassives: Effect[];
+  let enhancementAtkCap: number | undefined;
+  let angelIdolChance: number | undefined;
+  let ailmentPassives: Pick<
+    BattleUnit,
+    "enhancementAfflictedDamage" | "enhancementAilmentCounters"
+  >;
+  let battleForm: Form;
+  try {
+    const options = selectedEnhancements(
+      form,
+      member.level,
+      member.burstLevels,
+      member.selectedEnhancements,
+    );
+    const resolved = enhancementPassives(options);
+    spPassives = resolved.effects;
+    enhancementAtkCap = resolved.atkCap;
+    angelIdolChance = resolved.angelIdolChance;
+    ailmentPassives = {
+      ...(resolved.afflictedDamage !== undefined
+        ? { enhancementAfflictedDamage: resolved.afflictedDamage }
+        : {}),
+      ...(resolved.ailmentCounters.length
+        ? { enhancementAilmentCounters: resolved.ailmentCounters }
+        : {}),
+    };
+    battleForm = formAtBurstLevels(formWithEnhancementBursts(form, options), member.burstLevels);
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error;
+    throw new BattleSetupError(`${path}.selectedEnhancements: ${error.message}`);
+  }
+  for (const effect of spPassives) {
+    assertKnownEffect(effect.id);
+    for (const gated of effect.effects ?? []) assertKnownEffect(gated.id);
+  }
+  for (const burst of Object.values(battleForm.bursts)) {
+    for (const effect of burst?.effects ?? []) {
+      assertKnownEffect(effect.id);
+      for (const gated of effect.effects ?? []) assertKnownEffect(gated.id);
+    }
+  }
   return {
     slot,
     unitId: unit.id,
     name: unit.name,
     element: unit.element,
-    form: formAtBurstLevels(form, member.burstLevels),
+    form: battleForm,
     stats,
     hp: stats.hp,
     effects: [],
@@ -134,6 +179,12 @@ function toBattleUnit(
     isLeader,
     ...(allyKind ? { allyKind } : {}),
     ...(spheres.length ? { spheres } : {}),
+    ...(spPassives.length ? { enhancementPassives: spPassives } : {}),
+    ...(enhancementAtkCap !== undefined ? { enhancementAtkCap } : {}),
+    ...ailmentPassives,
+    ...(angelIdolChance !== undefined
+      ? { passiveAngelIdol: { chance: angelIdolChance, consumed: false, protected: false } }
+      : {}),
   };
 }
 
@@ -308,7 +359,7 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
 }
 
 /**
- * Leader-skill and Extra Skill passives go into force at battle start. HP passives
+ * Leader-skill, Extra Skill, sphere and SP passives go into force at battle start. HP passives
  * (`passive.stat_pct` on `hp`) raise max HP once here, capped at 99,999, and each unit starts at
  * its new max HP.
  */

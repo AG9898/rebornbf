@@ -3,6 +3,7 @@ import { useItem } from "./actions/item.ts";
 import { bcDropRate, hcDropRate } from "./drops/rates.ts";
 import { collectCrystals, rollHitDrops } from "./drops/roll.ts";
 import {
+  isAfflicted,
   isCursed,
   isInflictId,
   isParalyzed,
@@ -275,10 +276,12 @@ function rollDamage(
 ): AttackDamage {
   const atkTotal = attackTotal({
     atk: unit.stats.atk,
+    atkCap: unit.enhancementAtkCap,
     flatAtk: options.flatAtk,
     statMods:
       buffTotal(unit.effects, "buff.atk") +
       passiveStatTotal(unit.effects, "atk") +
+      (isAfflicted(target.effects) ? (unit.enhancementAfflictedDamage ?? 0) : 0) +
       hpScaledAtkTotal(unit.effects, unit.hp, unit.stats.hp) -
       statPenalty(unit.effects, "atk") +
       (options.overdrive ? OVERDRIVE_STAT_BONUS : 0),

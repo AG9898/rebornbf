@@ -194,6 +194,7 @@ describe("HUD model", () => {
       { type: "EffectApplied", tick: 1, actionId: 0, actor: "p0", target: "p0", effect: atk },
       { type: "EnemyEffectApplied", tick: 2, actor: "e0", target: "p0", effect: poison },
       { type: "EffectApplied", tick: 3, actionId: 1, actor: "p1", target: "e1", effect: poison },
+      { type: "AilmentCounterApplied", tick: 3, actor: "p0", target: "e1", effect: poison },
       {
         type: "EffectTriggered",
         tick: 4,

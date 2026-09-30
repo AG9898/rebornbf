@@ -108,6 +108,17 @@ describe("damage formula components", () => {
     expect(attackTotal({ atk: 1000, flatAtk: 200, statMods: 0.5 })).toBe(1800);
   });
 
+  it("applies an ATK-only override after percentages, burst modifiers and conversion", () => {
+    // (50,000 + 1) × (1 + .5 + 1) + 5,000 = 130,002.5, floored then capped.
+    const input = { atk: 50000, flatAtk: 1, statMods: 0.5, bbModifier: 1, converted: 5000 };
+    expect(attackTotal(input)).toBe(99999);
+    expect(attackTotal({ ...input, atkCap: 130000 })).toBe(130000);
+    for (const atk of [99998, 99999, 100000, 129999, 130000, 130001]) {
+      expect(attackTotal({ atk })).toBe(Math.min(atk, 99999));
+      expect(attackTotal({ atk, atkCap: 130000 })).toBe(Math.min(atk, 130000));
+    }
+  });
+
   it("uses DEF ÷ 3 unrounded, or 0 with DEF-ignore", () => {
     expect(defenseTerm(1000)).toBeCloseTo(333.333, 3);
     expect(defenseTerm(1000, true)).toBe(0);

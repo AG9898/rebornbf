@@ -1,6 +1,12 @@
 import type { Attack, EnemySkill } from "@bfr/data";
 import { evaluateEnemyAi } from "./ai/evaluate.ts";
-import { dotDamage, isParalyzed, poisonDamage, statPenalty } from "./effects/ailments.ts";
+import {
+  dotDamage,
+  isParalyzed,
+  poisonDamage,
+  rollInfliction,
+  statPenalty,
+} from "./effects/ailments.ts";
 import {
   type AttackPlan,
   attackCritRate,
@@ -17,7 +23,7 @@ import {
   odFillRate,
   rollBcFillWhenAttacked,
 } from "./effects/gauge.ts";
-import { endedEffectIds, tickEffects } from "./effects/index.ts";
+import { EFFECT_REGISTRY, endedEffectIds, tickEffects } from "./effects/index.ts";
 import { passiveStatTotal, refreshPassives } from "./effects/passive.ts";
 import {
   absorbWithBarrier,
@@ -32,6 +38,7 @@ import {
   rollChanceMitigation,
   rollDamageReflect,
   takeDamage,
+  takeUnitDamage,
   triggeredMitigation,
   triggerMitigation,
 } from "./effects/survival.ts";
@@ -237,8 +244,8 @@ function planEnemyHits(
 /**
  * After an enemy attack's last hit on a unit it cost HP and left alive: `damage_to_heal` heals a
  * share of the damage taken, `bb.fill_on_hit` fills the gauge (a ranged fill draws its BC), then
- * `damage_reflect` may counter the attacking enemy (GAME_DESIGN §4 Survival / Gauge effects, Kit
- * additions (M2-04H)).
+ * `damage_reflect` may damage the attacking enemy, then SP ailments counter via existing
+ * infliction handlers (GAME_DESIGN §4; RESOLVED-77).
  */
 function afterEnemyAttack(
   m: TurnMutable,
@@ -287,18 +294,50 @@ function afterEnemyAttack(
   if (!enemy || enemy.hp <= 0) return;
   const counter = rollDamageReflect(unit.effects, damage, enemy.hp, m.rng);
   m.rng = counter.rng;
-  if (counter.value <= 0) return;
-  const enemyHp = enemy.hp - counter.value;
-  m.enemies[e] = { ...enemy, hp: enemyHp };
-  events.push({
-    type: "CounterDamaged",
-    tick,
-    actor: slot,
-    target: attacker,
-    effect: "damage_reflect",
-    damage: counter.value,
-    hp: enemyHp,
-  });
+  if (counter.value > 0) {
+    const enemyHp = enemy.hp - counter.value;
+    m.enemies[e] = { ...enemy, hp: enemyHp };
+    events.push({
+      type: "CounterDamaged",
+      tick,
+      actor: slot,
+      target: attacker,
+      effect: "damage_reflect",
+      damage: counter.value,
+      hp: enemyHp,
+    });
+  }
+  // RESOLVED-77: after reflect, only a living attacker receives counters. No damage path
+  // is called here, so reflected/turn damage and counters cannot recursively trigger them.
+  for (const { ailment, chance } of unit.enhancementAilmentCounters ?? []) {
+    const target = m.enemies[e];
+    if (!target || target.hp <= 0) break;
+    const roll = rollInfliction(
+      m.rng,
+      {
+        id: `ailment.inflict.${ailment}`,
+        value: chance,
+        target: "enemy",
+      },
+      "enemy",
+    );
+    m.rng = roll.rng;
+    if (!roll.effect) continue;
+    const effects = EFFECT_REGISTRY[roll.effect.id](target.effects, {
+      ...roll.effect,
+      source: "triggered",
+    });
+    if (changed(target.effects, effects)) {
+      events.push({
+        type: "AilmentCounterApplied",
+        tick,
+        actor: slot,
+        target: attacker,
+        effect: roll.effect,
+      });
+    }
+    m.enemies[e] = { ...target, effects };
+  }
 }
 
 /**
@@ -382,9 +421,14 @@ function resolveEnemyHits(
         shielded ? hitDamage(hit.barrierCore ?? hit.core, hit.distribution, mods) : unitHit,
       );
       const damage = absorb.damage;
-      const ko = takeDamage(absorb.effects, unit.hp, unit.stats.hp, damage, m.rng);
+      const ko = takeUnitDamage(unit, absorb.effects, damage, m.rng);
       m.rng = ko.rng;
-      m.party[index] = { ...unit, hp: ko.hp, effects: ko.effects };
+      m.party[index] = {
+        ...unit,
+        hp: ko.hp,
+        effects: ko.effects,
+        ...("passiveAngelIdol" in ko ? { passiveAngelIdol: ko.passiveAngelIdol } : {}),
+      };
       dealt.set(hit.attackKey, (dealt.get(hit.attackKey) ?? 0) + (unit.hp - ko.hp));
       events.push({
         type: "EnemyHitLanded",
@@ -621,7 +665,7 @@ function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): voi
   m.party = m.party.map((unit) => {
     const damage = unit.hp > 0 ? poisonDamage(unit.effects, unit.stats.hp) : 0;
     if (damage <= 0) return unit;
-    const ko = takeDamage(unit.effects, unit.hp, unit.stats.hp, damage, m.rng);
+    const ko = takeUnitDamage(unit, unit.effects, damage, m.rng);
     m.rng = ko.rng;
     events.push({
       type: "TurnDamaged",
@@ -633,7 +677,12 @@ function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): voi
       ...(ko.survived ? { survived: true as const } : {}),
     });
     if (ko.hp === 0) events.push({ type: "UnitDefeated", tick, target: unit.slot });
-    return { ...unit, hp: ko.hp, effects: ko.effects };
+    return {
+      ...unit,
+      hp: ko.hp,
+      effects: ko.effects,
+      ...("passiveAngelIdol" in ko ? { passiveAngelIdol: ko.passiveAngelIdol } : {}),
+    };
   });
   m.enemies = m.enemies.map((enemy) => {
     const damage = enemy.hp > 0 ? poisonDamage(enemy.effects, enemy.stats.hp) : 0;
@@ -658,7 +707,7 @@ function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): voi
     const def = attackTotal({ atk: unit.stats.def, statMods: defStatMods(unit) });
     const damage = dotDamage(unit.effects, def, unit.element);
     if (damage <= 0) return unit;
-    const ko = takeDamage(unit.effects, unit.hp, unit.stats.hp, damage, m.rng);
+    const ko = takeUnitDamage(unit, unit.effects, damage, m.rng);
     m.rng = ko.rng;
     events.push({
       type: "TurnDamaged",
@@ -670,7 +719,12 @@ function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): voi
       ...(ko.survived ? { survived: true as const } : {}),
     });
     if (ko.hp === 0) events.push({ type: "UnitDefeated", tick, target: unit.slot });
-    return { ...unit, hp: ko.hp, effects: ko.effects };
+    return {
+      ...unit,
+      hp: ko.hp,
+      effects: ko.effects,
+      ...("passiveAngelIdol" in ko ? { passiveAngelIdol: ko.passiveAngelIdol } : {}),
+    };
   });
   m.enemies = m.enemies.map((enemy) => {
     if (enemy.hp <= 0) return enemy;
@@ -748,7 +802,14 @@ function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): voi
   }
   // 5. Durations, guard, and the Overdrive countdown.
   m.party = m.party.map((unit) => {
-    const next = endOverdriveTurn({ ...unit, effects: tickEffects(unit.effects), guarding: false });
+    const next = endOverdriveTurn({
+      ...unit,
+      effects: tickEffects(unit.effects),
+      guarding: false,
+      ...(unit.passiveAngelIdol
+        ? { passiveAngelIdol: { ...unit.passiveAngelIdol, protected: false } }
+        : {}),
+    });
     pushEnded(events, tick, unit.slot, unit.effects, next.effects);
     if (unit.overdrive && !next.overdrive) {
       events.push({ type: "OverdriveEnded", tick, actor: unit.slot });

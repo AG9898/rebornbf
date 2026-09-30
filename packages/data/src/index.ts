@@ -1,5 +1,5 @@
 /** Content schema version. Bumped when the shape of game content JSON changes. */
-export const DATA_SCHEMA_VERSION = 11;
+export const DATA_SCHEMA_VERSION = 12;
 
 export { CONTENT_VERSION } from "./content-version.ts";
 export * from "./dungeons.ts";

@@ -244,6 +244,7 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
     }
     case "EffectApplied":
     case "EnemyEffectApplied":
+    case "AilmentCounterApplied":
       return patchEffects(hud, event.target, event.effect.id, true);
     case "EffectTriggered":
       // A `mitigation_after_damage` threshold grants the unit `mitigation`.

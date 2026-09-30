@@ -7,6 +7,7 @@ import {
   NonNegativeIntSchema,
   PositiveIntSchema,
 } from "./common.ts";
+import { checkEnhancementRefs, EnhancementTreeSchema } from "./enhancement.ts";
 import { ExtraSkillSchema, LeaderSkillSchema } from "./skill.ts";
 
 /** Rarity: 1★–7★ or Omni (GAME_DESIGN §6). */
@@ -55,30 +56,43 @@ export const EvolutionRecipeSchema = z
 export type EvolutionRecipe = z.infer<typeof EvolutionRecipeSchema>;
 
 /** One evolution form of a unit. `stats.base` is level 1, `stats.max` is `maxLevel`. */
-export const FormSchema = z.strictObject({
-  id: ContentIdSchema,
-  name: z.string().min(1),
-  rarity: RaritySchema,
-  maxLevel: PositiveIntSchema,
-  stats: z.strictObject({ base: StatsSchema, max: StatsSchema }),
-  normalAttack: AttackSchema,
-  bursts: BurstTiersSchema,
-  leaderSkill: LeaderSkillSchema.optional(),
-  extraSkill: ExtraSkillSchema.optional(),
-  sphereSlots: NonNegativeIntSchema,
-  /**
-   * Fixed fusion EXP this form gives as fodder, before the matching-element ×1.5 and duplicate ×2
-   * multipliers (GAME_DESIGN §6 → Level EXP and fusion, RESOLVED-57). Set only on fixed-EXP fodder:
-   * the EXP vessels (Flask / Alembic / Athanor / Grail) and the Brass and Silver Crucibles. Every
-   * other form omits it and gives ordinary fodder EXP computed from rarity, level, and `maxLevel`.
-   */
-  fusionExp: PositiveIntSchema.optional(),
-  /**
-   * What evolving this form into the next form in `forms` costs. Omitted when the step is not
-   * transcribed yet or does not exist; never set on a unit's last form.
-   */
-  evolution: EvolutionRecipeSchema.optional(),
-});
+export const FormSchema = z
+  .strictObject({
+    id: ContentIdSchema,
+    name: z.string().min(1),
+    rarity: RaritySchema,
+    maxLevel: PositiveIntSchema,
+    stats: z.strictObject({ base: StatsSchema, max: StatsSchema }),
+    normalAttack: AttackSchema,
+    bursts: BurstTiersSchema,
+    leaderSkill: LeaderSkillSchema.optional(),
+    extraSkill: ExtraSkillSchema.optional(),
+    sphereSlots: NonNegativeIntSchema,
+    /**
+     * Fixed fusion EXP this form gives as fodder, before the matching-element ×1.5 and duplicate ×2
+     * multipliers (GAME_DESIGN §6 → Level EXP and fusion, RESOLVED-57). Set only on fixed-EXP fodder:
+     * the EXP vessels (Flask / Alembic / Athanor / Grail) and the Brass and Silver Crucibles. Every
+     * other form omits it and gives ordinary fodder EXP computed from rarity, level, and `maxLevel`.
+     */
+    fusionExp: PositiveIntSchema.optional(),
+    /**
+     * What evolving this form into the next form in `forms` costs. Omitted when the step is not
+     * transcribed yet or does not exist; never set on a unit's last form.
+     */
+    evolution: EvolutionRecipeSchema.optional(),
+    enhancements: EnhancementTreeSchema.optional(),
+  })
+  .superRefine((form, ctx) => {
+    if (!form.enhancements) return;
+    if (form.rarity !== "omni") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["enhancements"],
+        message: "enhancements require an Omni form",
+      });
+    }
+    checkEnhancementRefs(form.enhancements, form.bursts, ctx);
+  });
 export type Form = z.infer<typeof FormSchema>;
 
 /**

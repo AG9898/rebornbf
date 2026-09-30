@@ -53,6 +53,15 @@ export interface EffectAppliedEvent {
   readonly effect: Effect;
 }
 
+/** A surviving defender's SP counter inflicted an ailment after the attack's last hit. */
+export interface AilmentCounterAppliedEvent {
+  readonly type: "AilmentCounterApplied";
+  readonly tick: number;
+  readonly actor: PlayerSlotId;
+  readonly target: EnemySlotId;
+  readonly effect: Effect;
+}
+
 /** A burst's `heal.instant` restored HP to a living party member at action start. */
 export interface HealedEvent {
   readonly type: "Healed";
@@ -427,6 +436,7 @@ export type BattleEvent =
   | ActionStartedEvent
   | BurstUsedEvent
   | EffectAppliedEvent
+  | AilmentCounterAppliedEvent
   | HealedEvent
   | GaugeFilledEvent
   | GuardedEvent

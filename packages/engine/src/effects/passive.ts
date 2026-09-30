@@ -6,7 +6,7 @@ import type { EffectHandler } from "./gauge.ts";
 
 /**
  * Passive effects (GAME_DESIGN §4 → Passives and conditions). Leader skills (the leader's and the
- * ally's) and every squad unit's Extra Skill are materialised as permanent `ActiveEffect`s in the
+ * ally's), Extra Skills, spheres and selected SP grants are materialised as permanent `ActiveEffect`s in the
  * `passive` slot by `refreshPassives`: at battle start and once per turn (turn loop: M1-07B).
  */
 export const PASSIVE_IDS = [
@@ -72,7 +72,8 @@ export function expGainBonus(effects: readonly ActiveEffect[]): number {
 /**
  * IDs never materialised as passives: one-shot burst effects (instant heals and fills, cures,
  * attack shapes) and ailment infliction ("adds X% ailment to attacks" is an attack proc), plus
- * `angel_idol`, whose once-per-battle use needs a consumption record the state does not keep yet.
+ * catalog `angel_idol` (its conditional Extra Skill trigger remains deferred). SP-only idols use
+ * separate `passiveAngelIdol` state, never this rebuilt effect list.
  */
 function isMaterialised(id: Effect["id"]): boolean {
   return !(
@@ -122,7 +123,7 @@ function toPassive(effect: Effect | ConditionedEffect, source: PassiveSource): A
   return { ...rest, ...trigger, source };
 }
 
-/** Every skill in force: leader skill, ally leader skill, then each unit's Extra Skill. */
+/** Every skill in force: leader/ally skills, then each unit's SP grants, spheres and Extra Skill. */
 function skillsInForce(state: BattleState): SkillOwner[] {
   const skills: SkillOwner[] = [];
   const leader = state.party.find((unit) => unit.isLeader);
@@ -134,6 +135,9 @@ function skillsInForce(state: BattleState): SkillOwner[] {
     skills.push({ owner: ally, source: "ally_leader", effects: state.leaderSkills.ally.effects });
   }
   for (const unit of state.party) {
+    if (unit.enhancementPassives) {
+      skills.push({ owner: unit, source: "sp", effects: unit.enhancementPassives });
+    }
     for (const sphere of unit.spheres ?? []) {
       skills.push({ owner: unit, source: "sphere", effects: sphere.effects });
     }

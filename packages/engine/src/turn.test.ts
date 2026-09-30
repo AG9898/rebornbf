@@ -1,8 +1,11 @@
-import type { Effect, EnemySkill } from "@bfr/data";
+import { AILMENTS, type Effect, type EnemySkill } from "@bfr/data";
 import { describe, expect, it } from "vitest";
+import { continueBattle } from "./actions/continue.ts";
 import { evaluateEnemyAi } from "./ai/evaluate.ts";
 import type { ActiveEffect } from "./effects/buffs.ts";
 import { applyEffect } from "./effects/index.ts";
+import { refreshPassives } from "./effects/passive.ts";
+import { takeUnitDamage } from "./effects/survival.ts";
 import type {
   BattleEndedEvent,
   BattleEvent,
@@ -76,6 +79,227 @@ function threeWaveSetup(): BattleSetup {
     ],
   };
 }
+
+describe("SP ailment counters (RESOLVED-77)", () => {
+  const counter = [{ ailment: "injury" as const, chance: 100 }];
+  function armed(seed = 3, hits = 2): BattleState {
+    const start = duel(
+      {
+        ...makeEnemy("counter-target"),
+        normalAttack: {
+          ...ENEMY_NORMAL_ATTACK,
+          hitFrames: Array.from({ length: hits }, (_, i) => i * 10),
+          damageDistribution: Array.from({ length: hits }, () => 100 / hits),
+        },
+      },
+      seed,
+    );
+    return patchUnit(start, "p0", { enhancementAilmentCounters: counter });
+  }
+  function damageRng(start: BattleState) {
+    const enemy = start.enemies[0];
+    if (!enemy) throw new Error("missing enemy");
+    const ai = evaluateEnemyAi({
+      enemy,
+      rules: enemy.ai,
+      enemyTurn: 1,
+      party: start.party,
+      memory: enemy.aiMemory,
+      rng: start.rng,
+    });
+    return rollAttack(ai.rng, 0).rng;
+  }
+  it("rolls per ailment in fixed order once at the last hit, even against immunity", () => {
+    let landed = 0;
+    let missed = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const start = patchUnit(armed(seed), "p0", {
+        enhancementAilmentCounters: AILMENTS.map((ailment) => ({ ailment, chance: 50 })),
+      });
+      let rng = damageRng(start);
+      const expected: string[] = [];
+      for (const ailment of AILMENTS) {
+        const draw = nextInt(rng, 0, 99);
+        rng = draw.rng;
+        if (draw.value < 50) {
+          expected.push(`ailment.inflict.${ailment}`);
+          landed++;
+        } else missed++;
+      }
+      const result = endTurn(start);
+      const hits = ofType(result.events, "EnemyHitLanded");
+      const applied = ofType(result.events, "AilmentCounterApplied");
+      expect(applied.map((e) => e.effect.id)).toEqual(expected);
+      expect(applied.every((e) => e.tick === hits.at(-1)?.tick)).toBe(true);
+      expect(applied.every((e) => e.actor === "p0" && e.target === "e0")).toBe(true);
+      for (const event of applied) {
+        expect(event.effect.turns).toBe(
+          event.effect.id.endsWith("curse") || event.effect.id.endsWith("paralysis") ? 1 : 3,
+        );
+      }
+      expect(result.state.rng).toEqual(rng);
+      expect(endTurn(JSON.parse(JSON.stringify(start)))).toEqual(result);
+      const immune = {
+        ...start,
+        enemies: start.enemies.map((e) => ({
+          ...e,
+          effects: applyEffect(
+            e.effects,
+            { id: "ailment.null", value: 1, target: "self", turns: 3 },
+            "bb",
+          ),
+        })),
+      };
+      const blocked = endTurn(immune);
+      expect(ofType(blocked.events, "AilmentCounterApplied")).toEqual([]);
+      expect(blocked.state.rng).toEqual(rng);
+      // Attack damage is planned before Injury counters land; hit count does not change it.
+      const plain = endTurn(patchUnit(start, "p0", { enhancementAilmentCounters: undefined }));
+      expect(hits).toEqual(ofType(plain.events, "EnemyHitLanded"));
+    }
+    expect(landed).toBeGreaterThan(0);
+    expect(missed).toBeGreaterThan(0);
+  });
+  it("resolves after heal, BC fill and reflect without recursive reactions", () => {
+    const seed = Array.from({ length: 100 }, (_, i) => i + 1).find((seed) => {
+      const heal = nextInt(damageRng(armed(seed)), 0, 99);
+      const fill = nextInt(heal.rng, 2, 3);
+      return heal.value < 50 && nextInt(fill.rng, 0, 99).value < 50;
+    });
+    if (seed === undefined) throw new Error("missing proc seed");
+    const start = armed(seed);
+    const unit = start.party[0];
+    if (!unit) throw new Error("missing unit");
+    const effects: Effect[] = [
+      { id: "damage_to_heal", value: 0.1, chance: 50, target: "self", turns: 3 },
+      { id: "bb.fill_on_hit", value: 0, min: 2, max: 3, target: "self", turns: 3 },
+      { id: "damage_reflect", value: 0.1, chance: 50, target: "self", turns: 3 },
+    ];
+    const prepared = patchUnit(start, "p0", {
+      effects: effects.reduce((list, e) => applyEffect(list, e, "bb"), unit.effects),
+    });
+    let rng = damageRng(start);
+    rng = nextInt(rng, 0, 99).rng; // Heal proc.
+    rng = nextInt(rng, 2, 3).rng; // Ranged BC fill.
+    rng = nextInt(rng, 0, 99).rng; // Reflect proc.
+    rng = nextInt(rng, 0, 99).rng; // Guaranteed counter still draws.
+    const result = endTurn(prepared);
+    expect(result.state.rng).toEqual(rng);
+    const types = result.events.map((e) => e.type);
+    for (const type of ["HpRestored", "GaugeFilled", "CounterDamaged"] as const) {
+      expect(types).toContain(type);
+      expect(types.indexOf(type)).toBeLessThan(types.indexOf("AilmentCounterApplied"));
+    }
+    expect(types.indexOf("HpRestored")).toBeLessThan(types.indexOf("GaugeFilled"));
+    expect(types.indexOf("GaugeFilled")).toBeLessThan(types.indexOf("CounterDamaged"));
+    expect(ofType(result.events, "AilmentCounterApplied")).toHaveLength(1);
+    expect(
+      result.state.enemies[0]?.effects.find((e) => e.id === "ailment.inflict.injury")?.turns,
+    ).toBe(2);
+  });
+  it("does not trigger from fully absorbed attacks or a KO, but idol HP loss qualifies", () => {
+    const start = armed();
+    const unit = start.party[0];
+    if (!unit) throw new Error("missing unit");
+    const shield = patchUnit(start, "p0", {
+      effects: applyEffect(
+        unit.effects,
+        { id: "barrier", value: 99999, target: "self", turns: 3 },
+        "bb",
+      ),
+    });
+    for (const blocked of [shield, patchUnit(start, "p0", { hp: 1 })]) {
+      const result = endTurn(blocked);
+      expect(ofType(result.events, "AilmentCounterApplied")).toEqual([]);
+      expect(result.state.rng).toEqual(damageRng(blocked));
+    }
+    const saved = patchUnit(start, "p0", {
+      hp: 2,
+      passiveAngelIdol: {
+        chance: 100,
+        consumed: false,
+        protected: false,
+      },
+    });
+    const result = endTurn(saved);
+    expect(result.state.party[0]?.hp).toBe(1);
+    expect(ofType(result.events, "AilmentCounterApplied")).toHaveLength(1);
+    expect(result.state.rng).toEqual(nextInt(damageRng(saved), 0, 99).rng);
+    // At 1 HP, turn protection does not negate damage, but zero HP loss gives no counter.
+    const protectedStart = patchUnit(start, "p0", {
+      hp: 1,
+      passiveAngelIdol: {
+        chance: 100,
+        consumed: true,
+        protected: true,
+      },
+    });
+    expect(ofType(endTurn(protectedStart).events, "AilmentCounterApplied")).toEqual([]);
+  });
+  it("counts each random hit separately and never reacts to poison or DoT alone", () => {
+    const start = armed();
+    const enemy = start.enemies[0];
+    const unit = start.party[0];
+    if (!enemy || !unit) throw new Error("missing combatants");
+    const random: EnemySkill = {
+      id: "random",
+      name: "Random",
+      attacks: [enemy.normalAttack],
+      effects: [{ id: "attack.random", value: 0, target: "enemies" }],
+    };
+    const randomStart = {
+      ...start,
+      enemies: [
+        {
+          ...enemy,
+          skills: [random],
+          ai: [{ when: "default" as const, skill: "random", target: "random" as const }],
+        },
+      ],
+    };
+    const result = endTurn(randomStart);
+    expect(ofType(result.events, "AilmentCounterApplied")).toHaveLength(2);
+    expect(ofType(result.events, "AilmentCounterApplied").map((e) => e.tick)).toEqual(
+      ofType(result.events, "EnemyHitLanded").map((e) => e.tick),
+    );
+    const idle = {
+      ...start,
+      enemies: [
+        {
+          ...enemy,
+          effects: applyEffect(
+            [],
+            {
+              id: "ailment.inflict.paralysis",
+              value: 100,
+              target: "self",
+              turns: 1,
+            },
+            "bb",
+          ),
+        },
+      ],
+    };
+    const ticking = patchUnit(idle, "p0", {
+      effects: [
+        { id: "ailment.inflict.poison", value: 100, target: "self", turns: 3, source: "bb" },
+        {
+          id: "debuff.dot",
+          value: 1,
+          dotAtk: 1000,
+          dotElement: "earth",
+          target: "self",
+          turns: 3,
+          source: "bb",
+        },
+      ],
+    });
+    const ticked = endTurn(ticking);
+    expect(ofType(ticked.events, "TurnDamaged")).toHaveLength(2);
+    expect(ofType(ticked.events, "AilmentCounterApplied")).toEqual([]);
+    expect(ticked.state.rng).toEqual(ticking.rng);
+  });
+});
 
 describe("turn loop (M1-07B)", () => {
   it("plays a full 3-wave battle headlessly to a win", () => {
@@ -262,6 +486,121 @@ describe("turn loop (M1-07B)", () => {
     });
     expect(state.result).toBeUndefined();
     expect(state.party[0]?.effects.some((e) => e.id === "angel_idol")).toBe(false);
+  });
+
+  it("protects SP saves through repeated lethal hits and poison/DoT, then expires", () => {
+    const enemy = {
+      ...makeEnemy("titan"),
+      stats: { hp: 99999, atk: 60000, def: 500, rec: 1 },
+      normalAttack: { ...ENEMY_NORMAL_ATTACK, hitFrames: [0, 10], damageDistribution: [50, 50] },
+    };
+    const start = patchUnit(
+      createBattle({ squad: [makeMember("solo")], leaderIndex: 0, waves: [[enemy, enemy]] }, 3),
+      "p0",
+      {
+        passiveAngelIdol: { chance: 100, consumed: false, protected: false },
+        effects: [
+          { id: "ailment.inflict.poison", value: 100, turns: 3, target: "self", source: "bb" },
+          {
+            id: "debuff.dot",
+            value: 5,
+            flatAtk: 0,
+            dotAtk: 60000,
+            dotElement: "earth",
+            turns: 3,
+            target: "self",
+            source: "bb",
+          },
+        ],
+      },
+    );
+    const first = endTurn(start);
+    expect(ofType(first.events, "EnemyHitLanded").map((e) => [e.unitHp, e.survived])).toEqual([
+      [1, true],
+      [1, undefined],
+      [1, undefined],
+      [1, undefined],
+    ]);
+    expect(ofType(first.events, "TurnDamaged").map((e) => [e.effect, e.hp])).toEqual([
+      ["ailment.inflict.poison", 1],
+      ["debuff.dot", 1],
+    ]);
+    expect(ofType(first.events, "UnitDefeated")).toEqual([]);
+    expect(first.state.party[0]?.passiveAngelIdol).toEqual({
+      chance: 100,
+      consumed: true,
+      protected: false,
+    });
+    const refreshed = refreshPassives(first.state);
+    expect(endTurn(JSON.parse(JSON.stringify(refreshed)))).toEqual(endTurn(refreshed));
+    const lost = endTurn(refreshed).state;
+    expect(lost.result).toBe("lose");
+    const continued = continueBattle(lost).state;
+    expect(continued.party[0]?.passiveAngelIdol).toEqual({
+      chance: 100,
+      consumed: true,
+      protected: false,
+    });
+    expect(endTurn(continued).state.result).toBe("lose");
+  });
+
+  it("keeps consumed SP allowance across waves and expires a turn-end save before next turn", () => {
+    const start = patchUnit(createBattle(makeSetup(1), 5), "p0", {
+      hp: 1,
+      passiveAngelIdol: { chance: 100, consumed: false, protected: false },
+      effects: [
+        { id: "ailment.inflict.poison", value: 100, turns: 3, target: "self", source: "bb" },
+        {
+          id: "debuff.dot",
+          value: 5,
+          flatAtk: 0,
+          dotAtk: 60000,
+          dotElement: "earth",
+          turns: 3,
+          target: "self",
+          source: "bb",
+        },
+      ],
+    });
+    const cleared = { ...start, enemies: start.enemies.map((e) => ({ ...e, hp: 0 })) };
+    const next = endTurn(cleared);
+    expect(next.state).toMatchObject({ waveIndex: 1, turn: 2 });
+    expect(ofType(next.events, "TurnDamaged").map((e) => [e.hp, e.survived])).toEqual([
+      [1, true],
+      [1, undefined],
+    ]);
+    expect(next.state.party[0]?.passiveAngelIdol).toEqual({
+      chance: 100,
+      consumed: true,
+      protected: false,
+    });
+    expect(endTurn(JSON.parse(JSON.stringify(next.state))).state.result).toBe("lose");
+  });
+
+  it("SP protection clamps rather than negates damage and does not consume a burst idol", () => {
+    const start = duel();
+    const unit = start.party[0];
+    if (!unit) throw new Error("missing unit");
+    const effects = withEffect(unit.effects, {
+      id: "angel_idol",
+      value: 1,
+      turns: 3,
+      target: "self",
+    });
+    const passiveAngelIdol = { chance: 100, consumed: false, protected: false };
+    const first = takeUnitDamage({ ...unit, passiveAngelIdol }, effects, 999999, start.rng);
+    expect(first).toMatchObject({ hp: 1, survived: true, effects });
+    expect(first.passiveAngelIdol?.consumed).toBe(true);
+    const protectedUnit = { ...unit, hp: 100, passiveAngelIdol: first.passiveAngelIdol };
+    expect(takeUnitDamage(protectedUnit, effects, 25, first.rng).hp).toBe(75);
+    const lethal = takeUnitDamage(protectedUnit, effects, 999999, first.rng);
+    expect(lethal).toMatchObject({ hp: 1, survived: false, rng: first.rng, effects });
+    // Once protection ends, the ordinary burst idol is still available and keeps legacy behavior.
+    const expired = { ...protectedUnit, passiveAngelIdol: { ...passiveAngelIdol, consumed: true } };
+    const burstSave = takeUnitDamage(expired, effects, 999999, first.rng);
+    expect(burstSave).toMatchObject({ hp: unit.stats.hp, survived: true });
+    expect(burstSave.effects.some((e) => e.id === "angel_idol")).toBe(false);
+    expect(burstSave.passiveAngelIdol?.protected).toBe(false);
   });
 
   it("runs the end-of-turn tick in order: poison, HoT, BB per turn, OD, durations", () => {

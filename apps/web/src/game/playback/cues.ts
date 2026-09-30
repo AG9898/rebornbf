@@ -273,6 +273,7 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     case "OdGained":
     case "EffectApplied":
     case "EnemyEffectApplied":
+    case "AilmentCounterApplied":
     case "EffectTriggered":
     case "EffectEnded":
     case "TurnDamaged":

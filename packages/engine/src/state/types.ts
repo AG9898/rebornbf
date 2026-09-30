@@ -1,6 +1,8 @@
 import type {
+  Ailment,
   AiRule,
   Attack,
+  Effect,
   Element,
   EnemySkill,
   Form,
@@ -17,6 +19,7 @@ import type { RngState } from "../rng.ts";
 import type { SparkMark } from "../timeline/spark.ts";
 import type { ScheduledHit } from "../timeline/types.ts";
 import type { BurstLevels } from "./burst-levels.ts";
+import type { EnhancementSelection } from "./enhancements.ts";
 import type { UnitTypeRoll } from "./unit-stats.ts";
 
 /** Squad size limit (GAME_DESIGN §2 Battle Structure): 5 units plus one optional ally. */
@@ -33,6 +36,8 @@ interface SquadMemberBase {
   readonly spheres?: readonly Sphere[];
   /** Unit-specific persisted unlock, never inferred from rarity. */
   readonly secondSphereSlot?: boolean;
+  /** Optional SP snapshot; only unlocked level-150 Omni members may activate selections. */
+  readonly selectedEnhancements?: EnhancementSelection;
 }
 
 /** A member whose base stats are given as-is (demo squads, guests, tests). */
@@ -153,6 +158,23 @@ export interface BattleUnit {
   /** Set only on the 6th-slot unit. */
   readonly allyKind?: AllySetup["kind"];
   readonly spheres?: readonly Sphere[];
+  /** Resolved SP grants, separate from canonical form content and rebuilt as source `sp`. */
+  readonly enhancementPassives?: readonly Effect[];
+  /** Self-only ATK cap from validated selected SP, separate from catalog effects. */
+  readonly enhancementAtkCap?: number;
+  /** Self-only final SP ATK bonus against a target afflicted at action scheduling. */
+  readonly enhancementAfflictedDamage?: number;
+  /** Additive per-ailment SP counter chances, capped and ordered by AILMENTS. */
+  readonly enhancementAilmentCounters?: readonly {
+    readonly ailment: Ailment;
+    readonly chance: number;
+  }[];
+  /** SP-only allowance and turn-local no-zero-HP protection (RESOLVED-76). */
+  readonly passiveAngelIdol?: {
+    readonly chance: number;
+    readonly consumed: boolean;
+    readonly protected: boolean;
+  };
 }
 
 export interface BattleEnemy {

@@ -4,6 +4,7 @@ export * from "./burst.ts";
 export * from "./common.ts";
 export * from "./effect.ts";
 export * from "./enemy.ts";
+export * from "./enhancement.ts";
 export * from "./guest.ts";
 export * from "./item.ts";
 export * from "./skill.ts";

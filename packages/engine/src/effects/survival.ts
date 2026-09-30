@@ -2,6 +2,7 @@ import type { Effect } from "@bfr/data";
 import type { MitigationInput } from "../formulas/mitigation.ts";
 import { floorDamage } from "../formulas/rounding.ts";
 import { nextInt, type RngState } from "../rng.ts";
+import type { BattleUnit } from "../state/types.ts";
 import { type ActiveEffect, effectSlot, replaceBuff } from "./buffs.ts";
 import { crossesThreshold } from "./gauge.ts";
 
@@ -172,6 +173,48 @@ export interface KoCheck {
   /** True when an `angel_idol` was consumed to survive. */
   readonly survived: boolean;
   readonly rng: RngState;
+}
+
+/**
+ * SP's once-per-battle save is separate from burst idols and has sourced priority over bursts;
+ * only a successful passive save consumes its allowance. Protection clamps HP to 1, not damage
+ * to zero, and draws/consumes nothing on subsequent lethal hits in this turn (RESOLVED-76).
+ */
+export function takeUnitDamage(
+  unit: Pick<BattleUnit, "hp" | "stats" | "passiveAngelIdol">,
+  effects: readonly ActiveEffect[],
+  damage: number,
+  rng: RngState,
+): KoCheck & Pick<BattleUnit, "passiveAngelIdol"> {
+  const passive = unit.passiveAngelIdol;
+  const fields = passive ? { passiveAngelIdol: passive } : {};
+  if (passive?.protected && unit.hp > 0) {
+    return {
+      hp: Math.max(1, unit.hp - Math.max(0, damage)),
+      effects: [...effects],
+      survived: false,
+      rng,
+      ...fields,
+    };
+  }
+  if (unit.hp > damage || unit.hp <= 0 || !passive || passive.consumed) {
+    return { ...takeDamage(effects, unit.hp, unit.stats.hp, damage, rng), ...fields };
+  }
+  const save = takeDamage(
+    [{ id: "angel_idol", value: 0, chance: passive.chance, target: "self", source: "sp" }],
+    unit.hp,
+    unit.stats.hp,
+    damage,
+    rng,
+  );
+  if (!save.survived) {
+    return { ...takeDamage(effects, unit.hp, unit.stats.hp, damage, save.rng), ...fields };
+  }
+  return {
+    ...save,
+    effects: [...effects],
+    passiveAngelIdol: { ...passive, consumed: true, protected: true },
+  };
 }
 
 /**

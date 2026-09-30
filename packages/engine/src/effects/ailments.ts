@@ -62,6 +62,11 @@ export function hasAilment(effects: readonly ActiveEffect[], ailment: Ailment): 
   return effects.some((effect) => effect.id === `ailment.inflict.${ailment}`);
 }
 
+/** Only the six status ailments qualify; parameter debuffs and DoT do not. */
+export function isAfflicted(effects: readonly ActiveEffect[]): boolean {
+  return AILMENTS.some((ailment) => hasAilment(effects, ailment));
+}
+
 /** Status negation blocks new ailments; re-inflicting an ailment refreshes its duration. */
 const inflict: EffectHandler = (effects, effect) =>
   effects.some((active) => active.id === "ailment.null")
