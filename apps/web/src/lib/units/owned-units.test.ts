@@ -5,12 +5,17 @@ import { TYPE_GAIN_RANGES } from "@bfr/engine";
 import { describe, expect, it } from "vitest";
 import {
   formArtFile,
+  formLeaderSkill,
   isOwnedUnitId,
+  levelLabel,
+  nextUnitSort,
   type OwnedUnitRow,
+  parseUnitSort,
   rarityLabel,
   sortOwnedUnits,
   statsAtLevel,
   toOwnedUnitView,
+  toUnitDetailView,
   unitContent,
 } from "./owned-units.ts";
 
@@ -129,6 +134,67 @@ describe("toOwnedUnitView", () => {
   });
 });
 
+describe("toUnitDetailView", () => {
+  it("adds the type, EXP to the next level, and the form's skill names", () => {
+    const view = toUnitDetailView(
+      row({
+        unit_id: "brand",
+        form_id: "brand-7",
+        level: 2,
+        exp: 34,
+        unit_type: { type: "breaker", gains: { hp: 0, atk: 2, def: -1, rec: 0 } },
+      }),
+    );
+    expect(view).toMatchObject({
+      typeLabel: "Breaker",
+      expToNext: 24,
+      expProgress: 0.5,
+      skills: {
+        leader: "Legend's Forge",
+        extra: "Unbanked Coals",
+        burst: "Cinder Charge Apex",
+      },
+    });
+  });
+
+  it("treats a unit without a roll as a Lord and hides skills the form lacks", () => {
+    const view = toUnitDetailView(row({ form_id: "brand-2", level: 1, exp: 0, unit_type: null }));
+    expect(view.typeLabel).toBe("Lord");
+    expect(view.expToNext).toBe(10);
+    expect(view.expProgress).toBe(0);
+    expect(view.skills).toEqual({
+      leader: "Kindling Resolve",
+      extra: null,
+      burst: "Cinder Charge",
+    });
+  });
+
+  it("has no next level at the cap or for an invalid level", () => {
+    expect(toUnitDetailView(row({ level: 100 }))).toMatchObject({
+      expToNext: null,
+      expProgress: 1,
+    });
+    expect(toUnitDetailView(row({ level: 101 }))).toMatchObject({
+      expToNext: null,
+      expProgress: 0,
+    });
+  });
+
+  it("has no skills for unknown content", () => {
+    const view = toUnitDetailView(row({ unit_id: "nobody", form_id: "nobody-1" }));
+    expect(view.skills).toEqual({ leader: null, extra: null, burst: null });
+    expect(view.expToNext).toBeNull();
+  });
+});
+
+describe("formLeaderSkill", () => {
+  it("names the form's Leader Skill, or null", () => {
+    expect(formLeaderSkill("brand", "brand-7")).toBe("Legend's Forge");
+    expect(formLeaderSkill("brand", "brand-99")).toBeNull();
+    expect(formLeaderSkill("nobody", "nobody-1")).toBeNull();
+  });
+});
+
 describe("sortOwnedUnits", () => {
   it("orders by rarity, then level, then name", () => {
     const units = [
@@ -139,6 +205,43 @@ describe("sortOwnedUnits", () => {
       toOwnedUnitView(row({ id: "e", unit_id: "unknown", form_id: "unknown-1", level: 99 })),
     ];
     expect(sortOwnedUnits(units).map((u) => u.id)).toEqual(["b", "d", "c", "a", "e"]);
+  });
+
+  it("sorts by level, element, or name first, falling back to rarity order", () => {
+    const units = [
+      toOwnedUnitView(row({ id: "a", unit_id: "rook", form_id: "rook-5", level: 10 })),
+      toOwnedUnitView(row({ id: "b", unit_id: "brand", form_id: "brand-omni", level: 1 })),
+      toOwnedUnitView(row({ id: "c", unit_id: "maren", form_id: "maren-5", level: 30 })),
+      toOwnedUnitView(row({ id: "d", unit_id: "garrick", form_id: "garrick-5", level: 30 })),
+    ];
+    const ids = (key: Parameters<typeof sortOwnedUnits>[1]) =>
+      sortOwnedUnits(units, key).map((u) => u.id);
+    expect(ids("level")).toEqual(["d", "c", "a", "b"]);
+    expect(ids("name")).toEqual(["b", "d", "c", "a"]);
+    const elements = sortOwnedUnits(units, "element").map((u) => u.element);
+    expect(elements).toEqual([...elements].sort((x, y) => order(x) - order(y)));
+  });
+});
+
+const order = (e: string | null) =>
+  ["fire", "water", "earth", "thunder", "light", "dark", null].indexOf(e);
+
+describe("unit sort keys", () => {
+  it("parses ?sort= and cycles through every key", () => {
+    expect(parseUnitSort("level")).toBe("level");
+    expect(parseUnitSort(undefined)).toBe("rarity");
+    expect(parseUnitSort("bogus")).toBe("rarity");
+    expect(parseUnitSort(["name"])).toBe("rarity");
+    expect(nextUnitSort("rarity")).toBe("level");
+    expect(nextUnitSort("name")).toBe("rarity");
+  });
+});
+
+describe("levelLabel", () => {
+  it("shows Lv.MAX at the form's cap", () => {
+    expect(levelLabel({ level: 12, maxLevel: 60 })).toBe("Lv.12");
+    expect(levelLabel({ level: 60, maxLevel: 60 })).toBe("Lv.MAX");
+    expect(levelLabel({ level: 3, maxLevel: null })).toBe("Lv.3");
   });
 });
 

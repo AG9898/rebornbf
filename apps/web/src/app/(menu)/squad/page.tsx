@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "../../../components/menu/menu.module.css";
@@ -8,27 +7,25 @@ import {
   draftFromRow,
   parseSquadSlot,
   SQUAD_COLUMNS,
-  SQUAD_SLOTS,
   type SquadRow,
 } from "../../../lib/squad/squad-editor.ts";
 import { SIGN_IN_PATH } from "../../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import {
+  formLeaderSkill,
   OWNED_UNIT_COLUMNS,
   type OwnedUnitRow,
+  type OwnedUnitView,
   sortOwnedUnits,
   toOwnedUnitView,
 } from "../../../lib/units/owned-units.ts";
 import { type EditorUnit, SquadEditor } from "./SquadEditor.tsx";
-import squad from "./squad.module.css";
 
 export const metadata: Metadata = { title: "Squad · BFR" };
 
-const SLOT_NUMBERS: readonly number[] = Array.from({ length: SQUAD_SLOTS }, (_, i) => i);
-
 /**
- * The squad editor (M3-03B): the player's owned units and the squad saved in `?slot=` (0–9),
- * both read under RLS. Saving goes through the `save_squad` RPC. Protected by `src/proxy.ts`.
+ * The squad editor (M3-03B, restyled as the original's Manage Squad in M3-03F): the player's
+ * owned units and the squad saved in `?slot=` (0–9), both read under RLS. Saving goes through the `save_squad` RPC. Protected by `src/proxy.ts`.
  */
 export default async function SquadPage({
   searchParams,
@@ -66,54 +63,32 @@ export default async function SquadPage({
     );
   }
 
-  const owned = sortOwnedUnits((unitsResult.data ?? []).map(toOwnedUnitView));
-  const units: EditorUnit[] = owned.map((unit) => ({
-    id: unit.id,
-    name: unit.name,
-    rarityLabel: unit.rarityLabel,
-    level: unit.level,
-    sprite: unit.sprite,
-    thumb: unit.thumb,
-  }));
-  const saved = draftFromRow(squadResult.data, new Set(units.map((unit) => unit.id)));
+  const owned = sortOwnedUnits((unitsResult.data ?? []).map(toOwnedUnitView)).map(toEditorUnit);
+  const saved = draftFromRow(squadResult.data, new Set(owned.map((unit) => unit.id)));
 
   return (
-    <div className={squad.page}>
-      <header className={squad.header}>
-        <h1 className={`${squad.title} ${styles.gold}`}>Squad</h1>
-      </header>
-
-      <nav className={squad.slots} aria-label="Squad slots">
-        {SLOT_NUMBERS.map((i) => (
-          <Link
-            key={i}
-            href={`/squad?slot=${i}`}
-            className={`${squad.slotTab} ${i === slot ? squad.slotTabActive : ""}`}
-            aria-current={i === slot ? "page" : undefined}
-          >
-            {i + 1}
-          </Link>
-        ))}
-      </nav>
-
-      {units.length === 0 ? (
-        <section className={styles.panel}>
-          <p className={styles.panelText}>
-            You have no units yet. Your starters join you as you clear the story.
-          </p>
-          <Link href="/home" className={styles.panelLink}>
-            Back to Home
-          </Link>
-        </section>
-      ) : (
-        <SquadEditor
-          key={slot}
-          slot={slot}
-          units={units}
-          guests={guestPreviews(unitsResult.data ?? [])}
-          saved={saved}
-        />
-      )}
-    </div>
+    <SquadEditor
+      key={slot}
+      slot={slot}
+      units={owned}
+      guests={guestPreviews(unitsResult.data ?? []).map(toEditorUnit)}
+      saved={saved}
+    />
   );
+}
+
+/** The slice of a unit view the editor draws, plus its form's Leader Skill name. */
+function toEditorUnit(view: OwnedUnitView): EditorUnit {
+  return {
+    id: view.id,
+    name: view.name,
+    rarityLabel: view.rarityLabel,
+    level: view.level,
+    maxLevel: view.maxLevel,
+    element: view.element,
+    stats: view.currentStats,
+    leaderSkill: formLeaderSkill(view.unitId, view.formId),
+    sprite: view.sprite,
+    thumb: view.thumb,
+  };
 }

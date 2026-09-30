@@ -5,8 +5,10 @@ import {
   draftsEqual,
   EMPTY_DRAFT,
   parseSquadSlot,
+  pedestalOrder,
   type SquadDraft,
   setLeader,
+  stepSquadSlot,
   toggleAlly,
   toggleGuest,
   toggleSquadUnit,
@@ -114,5 +116,25 @@ describe("parseSquadSlot and draftsEqual", () => {
     expect(draftsEqual(draft(["a", "b"], 1, "c"), draft(["a", "b"], 1, "c"))).toBe(true);
     expect(draftsEqual(draft(["a", "b"]), draft(["b", "a"]))).toBe(false);
     expect(draftsEqual(draft(["a"], 0, null), draft(["a"], 0, "a"))).toBe(false);
+  });
+});
+
+describe("pedestalOrder", () => {
+  it("puts the leader's position in the centre and the rest in squad order", () => {
+    expect(pedestalOrder(draft(["a", "b", "c"], 2))).toEqual([2, 0, 1, 3, 4]);
+    expect(pedestalOrder(draft(["a", "b", "c", "d", "e"], 0))).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it("centres position 0 for an empty squad or an out-of-range leader", () => {
+    expect(pedestalOrder(EMPTY_DRAFT)).toEqual([0, 1, 2, 3, 4]);
+    expect(pedestalOrder(draft(["a"], 3))).toEqual([0, 1, 2, 3, 4]);
+  });
+});
+
+describe("stepSquadSlot", () => {
+  it("wraps round the ten squad slots", () => {
+    expect(stepSquadSlot(0, -1)).toBe(9);
+    expect(stepSquadSlot(9, 1)).toBe(0);
+    expect(stepSquadSlot(4, 1)).toBe(5);
   });
 });

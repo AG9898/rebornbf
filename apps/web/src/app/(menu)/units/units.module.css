@@ -1,4 +1,8 @@
-/* Unit collection and detail (M3-03A). Sizes use the menu frame's logical pixel, --u. */
+/*
+ * Unit collection and detail (M3-03A); the list is the original's All Units (M3-03E) and the
+ * detail its Unit Info (M3-03G), per ART_GUIDE -> UI -> Units, Squad, and Unit detail screens.
+ * The top block is shared with the evolve page. Sizes use the menu frame's logical pixel, --u.
+ */
 
 .page {
   flex: 1;
@@ -15,11 +19,6 @@
   margin-bottom: calc(var(--u) * 18);
 }
 
-.title {
-  font-size: calc(var(--u) * 48);
-  line-height: 1.1;
-}
-
 .count {
   font-size: calc(var(--u) * 22);
   color: #f6d88a;
@@ -31,64 +30,198 @@
   text-decoration: none;
 }
 
+.noArt {
+  font-size: calc(var(--u) * 64);
+  color: #6b6456;
+}
+
+.cardMeta {
+  margin-top: calc(var(--u) * 4);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  color: #d8d0bc;
+}
+
+.formName {
+  margin-top: calc(var(--u) * 4);
+  font-size: calc(var(--u) * 26);
+  color: #f6d88a;
+}
+
+.note {
+  margin-top: calc(var(--u) * 12);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  color: #a9a08c;
+}
+
+/* ---------- Units list (M3-03E) ---------- */
+
+.listPage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: url("/assets/ui/bg-olive.webp") repeat;
+  background-size: calc(var(--u) * 256);
+}
+
+/* App text over UI art: menu font, outlined; --stroke scales the outline with the text. */
+.outline {
+  --stroke: 4;
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * var(--stroke)) #2a1606;
+  text-shadow: 0 calc(var(--u) * 2) 0 #2a1606;
+  line-height: 1;
+}
+
+.titleBar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  height: calc(var(--u) * 74);
+  padding-inline: calc(var(--u) * 8);
+  background: linear-gradient(rgb(20 14 4 / 0.55), rgb(20 14 4 / 0.2));
+  box-shadow: 0 calc(var(--u) * 2) 0 rgb(0 0 0 / 0.35);
+}
+
+.pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--u) * 48);
+  background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
+  font-size: calc(var(--u) * 24);
+  text-decoration: none;
+}
+
+.backButton {
+  width: calc(var(--u) * 86);
+}
+
+.sortButton {
+  width: calc(var(--u) * 92);
+}
+
+.backButton:hover,
+.backButton:focus-visible,
+.sortButton:hover,
+.sortButton:focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
+}
+
+.countPlate {
+  width: calc(var(--u) * 94);
+  flex-direction: column;
+  gap: calc(var(--u) * 2);
+}
+
+.countLabel {
+  --stroke: 3;
+  font-size: calc(var(--u) * 16);
+  color: #f6d88a;
+}
+
+.countValue {
+  font-size: calc(var(--u) * 22);
+}
+
+/* Drawn at its own aspect (640x111 at 2x), so the text box maps as percentages. */
+.titlePlate {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 334);
+  aspect-ratio: 640 / 111;
+}
+
+.titlePlateArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.titleText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 3);
+  padding-left: calc(var(--u) * 8);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.titleText h1 {
+  font-size: calc(var(--u) * 26);
+  font-weight: 400;
+}
+
+.sortLine {
+  --stroke: 3;
+  font-size: calc(var(--u) * 15);
+  color: #f6d88a;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: calc(var(--u) * 14) calc(var(--u) * 10) calc(var(--u) * 18) calc(var(--u) * 14);
+  scrollbar-width: thin;
+  scrollbar-color: #c99a3a rgb(20 14 4 / 0.55);
+}
+
+.list::-webkit-scrollbar {
+  width: calc(var(--u) * 8);
+}
+
+.list::-webkit-scrollbar-track {
+  border-radius: calc(var(--u) * 4);
+  background: rgb(20 14 4 / 0.55);
+}
+
+.list::-webkit-scrollbar-thumb {
+  border-radius: calc(var(--u) * 4);
+  background: #c99a3a;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: calc(var(--u) * 14);
+  grid-template-columns: repeat(5, 1fr);
+  gap: calc(var(--u) * 10) calc(var(--u) * 8);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: calc(var(--u) * 8) calc(var(--u) * 6) calc(var(--u) * 12);
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 14);
-  background: rgb(10 14 26 / 0.75);
+.icon {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
   color: #fff;
   text-decoration: none;
 }
 
-.card:hover,
-.card:focus-visible {
-  border-color: #fbe39a;
+.icon:focus-visible {
+  outline: calc(var(--u) * 3) solid #fbe39a;
+  outline-offset: calc(var(--u) * 2);
+  border-radius: calc(var(--u) * 12);
 }
 
-.portrait {
-  --element: #6b6456;
-  position: relative;
+/* The frame's inner window is about 8% in from each edge (unit-frame-* at 240 px). */
+.iconArt {
+  position: absolute;
+  inset: 7%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  aspect-ratio: 1;
-  border: calc(var(--u) * 3) solid var(--element);
-  border-radius: calc(var(--u) * 10);
-  background: #10131d;
   overflow: hidden;
-}
-
-/* Element frame: a CSS stand-in until element frame art exists (ART_GUIDE → Illustrations). */
-.portrait[data-element="fire"] {
-  --element: #e0562a;
-}
-.portrait[data-element="water"] {
-  --element: #3f8fe8;
-}
-.portrait[data-element="earth"] {
-  --element: #4fae4a;
-}
-.portrait[data-element="thunder"] {
-  --element: #f2cf3a;
-}
-.portrait[data-element="light"] {
-  --element: #f4ecd2;
-}
-.portrait[data-element="dark"] {
-  --element: #9a4fd0;
+  border-radius: 9%;
+  background: #1d1a12;
 }
 
 .thumb {
@@ -100,93 +233,325 @@
 .sprite {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   image-rendering: pixelated;
 }
 
-.noArt {
-  font-size: calc(var(--u) * 64);
+.iconInitial {
+  font-size: calc(var(--u) * 48);
   color: #6b6456;
 }
 
-.rarity {
+.iconFrame {
   position: absolute;
-  right: calc(var(--u) * 4);
-  top: calc(var(--u) * 4);
-  padding: calc(var(--u) * 2) calc(var(--u) * 8);
-  border-radius: calc(var(--u) * 10);
-  background: rgb(0 0 0 / 0.6);
-  font-size: calc(var(--u) * 18);
-  color: #fbe39a;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.cardName {
-  margin-top: calc(var(--u) * 8);
-  font-size: calc(var(--u) * 24);
+.icon:not([data-element]) .iconArt {
+  inset: 0;
+  border: calc(var(--u) * 4) solid #6b6456;
 }
 
-.cardMeta {
-  margin-top: calc(var(--u) * 4);
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 18);
-  color: #d8d0bc;
+.party,
+.level {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
-.splash {
+.party {
+  --stroke: 4;
+  top: calc(var(--u) * -4);
+  font-size: calc(var(--u) * 20);
+  color: #6fd0ff;
+  -webkit-text-stroke-color: #06224a;
+  text-shadow: 0 calc(var(--u) * 2) 0 #06224a;
+}
+
+.level {
+  bottom: calc(var(--u) * 2);
+  font-size: calc(var(--u) * 21);
+  color: #ffe34a;
+}
+
+/* ---------- Unit detail (M3-03G) ---------- */
+
+.detailPage {
+  --tint: 214 196 128;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: url("/assets/ui/bg-olive.webp") repeat;
+  background-size: calc(var(--u) * 256);
+}
+
+.detailPage[data-element="fire"] {
+  --tint: 232 92 40;
+}
+
+.detailPage[data-element="water"] {
+  --tint: 64 150 232;
+}
+
+.detailPage[data-element="earth"] {
+  --tint: 92 184 76;
+}
+
+.detailPage[data-element="thunder"] {
+  --tint: 240 204 56;
+}
+
+.detailPage[data-element="light"] {
+  --tint: 255 244 200;
+}
+
+.detailPage[data-element="dark"] {
+  --tint: 150 84 210;
+}
+
+/* The title plate spans the bar after Back, at its own aspect (640x111 at 2x). */
+.detailPlate {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 400);
+  aspect-ratio: 640 / 111;
+}
+
+.detailPlateText {
+  position: absolute;
   display: flex;
   align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 16);
-  background: radial-gradient(circle at 50% 55%, #3a2f22 0%, #1d1c2a 55%, #10131d 85%);
+  gap: calc(var(--u) * 8);
+  padding-left: calc(var(--u) * 4);
+  white-space: nowrap;
   overflow: hidden;
 }
 
-.splashImage {
-  width: 100%;
+.detailOrb {
+  flex: none;
+  width: calc(var(--u) * 36);
+  height: calc(var(--u) * 36);
+}
+
+.detailNames {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 4);
+}
+
+.detailNames h1 {
+  --stroke: 4;
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 22);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detailForm {
+  font-size: calc(var(--u) * 17);
+  color: #f6d88a;
+}
+
+.stars {
+  --stroke: 3;
+  font-size: calc(var(--u) * 15);
+  letter-spacing: calc(var(--u) * 1);
+  color: #ffd23a;
+}
+
+.stars[data-omni] {
+  color: #9ff0ff;
+}
+
+/* The splash sits over bg-olive tinted with the unit's element. */
+.detailBody {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: radial-gradient(
+    ellipse at 66% 42%,
+    rgb(var(--tint) / 0.7) 0%,
+    rgb(var(--tint) / 0.32) 45%,
+    rgb(var(--tint) / 0.12) 75%
+  );
+  scrollbar-width: thin;
+  scrollbar-color: #c99a3a rgb(20 14 4 / 0.55);
+}
+
+.hero {
+  position: relative;
+  flex: 1;
+  min-height: calc(var(--u) * 480);
+  padding: calc(var(--u) * 12) calc(var(--u) * 12) calc(var(--u) * 14);
+  overflow: hidden;
+}
+
+.detailSplash {
+  position: absolute;
+  top: 0;
+  right: calc(var(--u) * -40);
+  width: calc(var(--u) * 540);
   height: 100%;
   object-fit: contain;
+  object-position: 50% 30%;
+  pointer-events: none;
 }
 
-.detail {
-  margin-top: calc(var(--u) * 18);
+.detailNoArt {
+  position: absolute;
+  top: 40%;
+  right: calc(var(--u) * 150);
+  font-size: calc(var(--u) * 120);
+  color: rgb(42 22 6 / 0.45);
 }
 
-.formName {
-  margin-top: calc(var(--u) * 4);
-  font-size: calc(var(--u) * 26);
+.statColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 6);
+  width: calc(var(--u) * 212);
+  margin: 0;
+}
+
+/* stat-plate (440x92 at 2x) stretched by its rim: 20 px slices are 10 logical px. */
+.statPlate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--u) * 40);
+  padding: 0 calc(var(--u) * 6);
+  border: calc(var(--u) * 10) solid transparent;
+  border-image: url("/assets/ui/stat-plate.webp") 20 fill / calc(var(--u) * 10) stretch;
+}
+
+.statLabel,
+.statValue {
+  --stroke: 3;
+  font-size: calc(var(--u) * 20);
+  white-space: nowrap;
+}
+
+.statLabel {
   color: #f6d88a;
 }
 
-.stats {
-  width: 100%;
-  margin-top: calc(var(--u) * 18);
-  border-collapse: collapse;
-  font-family: system-ui, sans-serif;
+.statValue {
+  margin: 0;
+}
+
+.expBar {
+  height: calc(var(--u) * 12);
+  margin: calc(var(--u) * -2) calc(var(--u) * 2) 0;
+  padding: calc(var(--u) * 2);
+  border: calc(var(--u) * 2) solid #b88a36;
+  border-radius: calc(var(--u) * 6);
+  background: #14100a;
+  box-shadow: 0 calc(var(--u) * 1) 0 rgb(0 0 0 / 0.5);
+}
+
+.expBar > span {
+  display: block;
+  height: 100%;
+  border-radius: calc(var(--u) * 3);
+  background: linear-gradient(#bfeaff, #4fb4f2 55%, #2a7fc6);
+}
+
+.actions {
+  position: absolute;
+  right: calc(var(--u) * 12);
+  bottom: calc(var(--u) * 14);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 8);
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 150);
+  height: calc(var(--u) * 50);
+  background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
   font-size: calc(var(--u) * 22);
-  color: #f2ead6;
+  text-decoration: none;
 }
 
-.stats th,
-.stats td {
-  padding: calc(var(--u) * 8) calc(var(--u) * 10);
-  border-bottom: calc(var(--u) * 2) solid rgb(201 154 58 / 0.35);
-  text-align: right;
+.enhanceButton,
+.actionButton:hover,
+.actionButton:focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
 }
 
-.stats th:first-child {
-  text-align: left;
-  color: #f6d88a;
+.skills {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 6);
+  padding: 0 calc(var(--u) * 8) calc(var(--u) * 10);
 }
 
-.stats thead th {
-  font-size: calc(var(--u) * 18);
-  color: #d8d0bc;
+/* One skill row: the tag at its own aspect over a stretched stat-plate bar, the name in gold. */
+.skillRow {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  height: calc(var(--u) * 50);
+  padding-right: calc(var(--u) * 8);
+  border: calc(var(--u) * 6) solid transparent;
+  border-left-width: 0;
+  border-image: url("/assets/ui/stat-plate.webp") 20 fill / calc(var(--u) * 10) stretch;
 }
 
-.note {
-  margin-top: calc(var(--u) * 12);
+.skillTag {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 170);
+  aspect-ratio: 340 / 59;
+}
+
+.skillTag[data-tag="skill-tag-red"] {
+  aspect-ratio: 340 / 70;
+}
+
+.skillTagText {
+  --stroke: 3;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 17);
+  white-space: nowrap;
+}
+
+.skillName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(var(--u) * 22);
+  color: #f6c342;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 3) #1a0e03;
+}
+
+.detailNote {
+  padding: 0 calc(var(--u) * 14) calc(var(--u) * 10);
   font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 18);
-  color: #a9a08c;
+  font-size: calc(var(--u) * 16);
+  color: #fff;
 }

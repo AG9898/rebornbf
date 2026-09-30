@@ -87,6 +87,23 @@ export function draftProblem(draft: SquadDraft): string | null {
   return null;
 }
 
+/**
+ * Squad positions in the Manage Squad pedestal order (M3-03F): the leader's position first (the
+ * centre pedestal), then the other four positions in squad order (top left, top right, bottom
+ * left, bottom right). A position past the squad's last unit is an empty pedestal.
+ */
+export function pedestalOrder(draft: SquadDraft): number[] {
+  const leader =
+    draft.leaderIndex >= 0 && draft.leaderIndex < draft.unitIds.length ? draft.leaderIndex : 0;
+  const rest = Array.from({ length: SQUAD_SIZE }, (_, i) => i).filter((i) => i !== leader);
+  return [leader, ...rest];
+}
+
+/** The squad slot an arrow moves to from `slot`, wrapping round the ten slots. */
+export function stepSquadSlot(slot: number, step: -1 | 1): number {
+  return (slot + step + SQUAD_SLOTS) % SQUAD_SLOTS;
+}
+
 /** A `?slot=` query value as a squad slot (0–9), defaulting to 0. */
 export function parseSquadSlot(value: string | string[] | undefined): number {
   const raw = Array.isArray(value) ? value[0] : value;

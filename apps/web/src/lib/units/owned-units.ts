@@ -1,4 +1,12 @@
-import { type Element, type Form, type Rarity, type Stats, type Unit, UnitSchema } from "@bfr/data";
+import {
+  type Element,
+  type Form,
+  type Rarity,
+  type Stats,
+  totalExpForLevel,
+  type Unit,
+  UnitSchema,
+} from "@bfr/data";
 import aurelle from "@bfr/data/content/units/aurelle.json";
 import brand from "@bfr/data/content/units/brand.json";
 import brassCrucible from "@bfr/data/content/units/brass-crucible.json";
@@ -41,7 +49,13 @@ import voltAthanor from "@bfr/data/content/units/volt-athanor.json";
 import voltFlask from "@bfr/data/content/units/volt-flask.json";
 import voltGrail from "@bfr/data/content/units/volt-grail.json";
 import voltSprite from "@bfr/data/content/units/volt-sprite.json";
-import { formStatsAtLevel, LORD_ROLL, typeRollProblem, type UnitTypeRoll } from "@bfr/engine";
+import {
+  formStatsAtLevel,
+  LORD_ROLL,
+  typeRollProblem,
+  type UnitType,
+  type UnitTypeRoll,
+} from "@bfr/engine";
 
 /**
  * The unit collection (M3-03A): the player's `owned_units` rows, read under RLS, joined with the
@@ -279,15 +293,59 @@ function raritySortKey(rarity: Rarity | null): number {
   return rarity === "omni" ? 8 : rarity;
 }
 
-/** Collection order: highest rarity first, then highest level, then name, then row id. */
-export function sortOwnedUnits(units: readonly OwnedUnitView[]): OwnedUnitView[] {
-  return [...units].sort(
-    (a, b) =>
-      raritySortKey(b.rarity) - raritySortKey(a.rarity) ||
-      b.level - a.level ||
-      a.name.localeCompare(b.name) ||
-      a.id.localeCompare(b.id),
-  );
+/** The Units list's sort keys, in the order its Sort button cycles through them (M3-03E). */
+export const UNIT_SORT_KEYS = ["rarity", "level", "element", "name"] as const;
+
+export type UnitSortKey = (typeof UNIT_SORT_KEYS)[number];
+
+export const UNIT_SORT_LABELS: Readonly<Record<UnitSortKey, string>> = {
+  rarity: "Rarity",
+  level: "Level",
+  element: "Element",
+  name: "Name",
+};
+
+/** A `?sort=` value as a sort key; anything else is the default, rarity. */
+export function parseUnitSort(value: string | string[] | undefined): UnitSortKey {
+  return UNIT_SORT_KEYS.find((key) => key === value) ?? "rarity";
+}
+
+/** The key the Sort button moves to after `key`, wrapping round. */
+export function nextUnitSort(key: UnitSortKey): UnitSortKey {
+  return UNIT_SORT_KEYS[(UNIT_SORT_KEYS.indexOf(key) + 1) % UNIT_SORT_KEYS.length] ?? "rarity";
+}
+
+const ELEMENT_ORDER: readonly Element[] = ["fire", "water", "earth", "thunder", "light", "dark"];
+
+function elementSortKey(element: Element | null): number {
+  return element === null ? ELEMENT_ORDER.length : ELEMENT_ORDER.indexOf(element);
+}
+
+/**
+ * Collection order. The default (rarity): highest rarity first, then highest level, then name,
+ * then row id. The other keys put their own comparison first and fall back to that order.
+ */
+export function sortOwnedUnits(
+  units: readonly OwnedUnitView[],
+  key: UnitSortKey = "rarity",
+): OwnedUnitView[] {
+  const byRarity = (a: OwnedUnitView, b: OwnedUnitView) =>
+    raritySortKey(b.rarity) - raritySortKey(a.rarity) ||
+    b.level - a.level ||
+    a.name.localeCompare(b.name) ||
+    a.id.localeCompare(b.id);
+  const first: Record<UnitSortKey, (a: OwnedUnitView, b: OwnedUnitView) => number> = {
+    rarity: () => 0,
+    level: (a, b) => b.level - a.level,
+    element: (a, b) => elementSortKey(a.element) - elementSortKey(b.element),
+    name: (a, b) => a.name.localeCompare(b.name),
+  };
+  return [...units].sort((a, b) => first[key](a, b) || byRarity(a, b));
+}
+
+/** The level under a Units list icon: "Lv.N", or "Lv.MAX" at the form's level cap. */
+export function levelLabel(unit: Pick<OwnedUnitView, "level" | "maxLevel">): string {
+  return unit.maxLevel !== null && unit.level >= unit.maxLevel ? "Lv.MAX" : `Lv.${unit.level}`;
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -305,3 +363,68 @@ export const ELEMENT_LABELS: Readonly<Record<Element, string>> = {
   light: "Light",
   dark: "Dark",
 };
+
+export const UNIT_TYPE_LABELS: Readonly<Record<UnitType, string>> = {
+  lord: "Lord",
+  anima: "Anima",
+  breaker: "Breaker",
+  guardian: "Guardian",
+  oracle: "Oracle",
+  rex: "Rex",
+};
+
+/** The Unit detail page's extra fields (M3-03G): the type, EXP to the next level, and skill names. */
+export type UnitDetailView = OwnedUnitView & {
+  /** The persisted type roll's name; a unit without a roll is a Lord. */
+  typeLabel: string;
+  /** EXP still needed for the next level; null at the form's cap or for an invalid row. */
+  expToNext: number | null;
+  /** How far the unit is through its current level, 0–1 (1 at the cap). */
+  expProgress: number;
+  /** The form's Leader Skill, Extra Skill, and Brave Burst names; null when the form has none. */
+  skills: { leader: string | null; extra: string | null; burst: string | null };
+};
+
+/**
+ * EXP to the next level and progress through the current one on the unit's curve (GAME_DESIGN §6
+ * → Level EXP and fusion). `exp` is cumulative within the form, as `fuse` stores it.
+ */
+function expProgress(
+  unit: Unit,
+  form: Form,
+  level: number,
+  exp: number,
+): { expToNext: number | null; expProgress: number } {
+  if (!(Number.isInteger(level) && level >= 1 && level <= form.maxLevel)) {
+    return { expToNext: null, expProgress: 0 };
+  }
+  if (level === form.maxLevel) return { expToNext: null, expProgress: 1 };
+  const curve = unit.expCurve ?? 10;
+  const floor = totalExpForLevel(curve, level);
+  const next = totalExpForLevel(curve, level + 1);
+  const current = Math.min(Math.max(exp, floor), next);
+  return { expToNext: next - current, expProgress: (current - floor) / (next - floor) };
+}
+
+/** A form's Leader Skill name (the Squad editor's Leader Skill bar, M3-03F); null when it has none. */
+export function formLeaderSkill(unitId: string, formId: string): string | null {
+  return unitContent(unitId)?.forms.find((f) => f.id === formId)?.leaderSkill?.name ?? null;
+}
+
+export function toUnitDetailView(row: OwnedUnitRow): UnitDetailView {
+  const view = toOwnedUnitView(row);
+  const unit = unitContent(row.unit_id);
+  const form = unit?.forms.find((f) => f.id === row.form_id);
+  return {
+    ...view,
+    typeLabel: UNIT_TYPE_LABELS[row.unit_type?.type ?? "lord"] ?? "Lord",
+    ...(unit && form
+      ? expProgress(unit, form, view.level, view.exp)
+      : { expToNext: null, expProgress: 0 }),
+    skills: {
+      leader: form?.leaderSkill?.name ?? null,
+      extra: form?.extraSkill?.name ?? null,
+      burst: form?.bursts.bb.name ?? null,
+    },
+  };
+}
