@@ -18,6 +18,7 @@ import {
   type OwnedUnitRow,
   unitContent,
 } from "../../../../../lib/units/owned-units.ts";
+import { UNIT_STACK_COLUMNS, type UnitStackRow } from "../../../../../lib/units/unit-stacks.ts";
 import units from "../../units.module.css";
 import { EvolveButton } from "./EvolveButton.tsx";
 import evolve from "./evolve.module.css";
@@ -42,8 +43,9 @@ function FormCard({ form, alt }: { form: EvolutionFormView; alt: string }): Reac
 
 /**
  * The evolution screen (M4-02C): the unit's current and next form, the recipe's material units,
- * items, and Zel against what the player owns (all read under RLS), and an Evolve (or Omni Evolve)
- * button that calls the `evolve` RPC through a Server Action. The page never writes inventory.
+ * items, and Zel against what the player owns (all read under RLS; stacked copies count, M4-05C, and
+ * are spent before owned rows), and an Evolve (or Omni Evolve) button that calls the `evolve` RPC
+ * through a Server Action. The page never writes inventory.
  */
 export default async function EvolvePage({
   params,
@@ -57,12 +59,18 @@ export default async function EvolvePage({
   if (!supabase || !userId) redirect(`${SIGN_IN_PATH}?next=/units`);
   if (!isOwnedUnitId(id)) notFound();
 
-  const [ownedResult, squadsResult, itemsResult, walletResult] = await Promise.all([
+  const [ownedResult, stacksResult, squadsResult, itemsResult, walletResult] = await Promise.all([
     supabase
       .from("owned_units")
       .select(OWNED_UNIT_COLUMNS)
       .eq("user_id", userId)
       .overrideTypes<OwnedUnitRow[], { merge: false }>(),
+    supabase
+      .from("owned_unit_stacks")
+      .select(UNIT_STACK_COLUMNS)
+      .eq("user_id", userId)
+      .gt("count", 0)
+      .overrideTypes<UnitStackRow[], { merge: false }>(),
     supabase
       .from("squads")
       .select("unit_ids, ally_unit_id")
@@ -80,7 +88,11 @@ export default async function EvolvePage({
   if (!ownedResult.error && !target) notFound();
 
   const loadFailed =
-    ownedResult.error || squadsResult.error || itemsResult.error || walletResult.error;
+    ownedResult.error ||
+    stacksResult.error ||
+    squadsResult.error ||
+    itemsResult.error ||
+    walletResult.error;
   const plan =
     target && !loadFailed
       ? evolutionPlan(
@@ -89,6 +101,7 @@ export default async function EvolvePage({
           squadsResult.data ?? [],
           itemsResult.data ?? [],
           Number(walletResult.data?.zel ?? 0),
+          stacksResult.data ?? [],
         )
       : null;
   const name = target ? (unitContent(target.unit_id)?.name ?? target.unit_id) : "Unit";
@@ -127,7 +140,9 @@ export default async function EvolvePage({
                   {need.name} ×{need.count}
                 </span>
                 <span className={evolve.have}>
-                  {need.owned} owned{need.inSquad > 0 ? ` (+${need.inSquad} in squads)` : ""}
+                  {need.owned} owned
+                  {need.stacked > 0 ? ` (${need.stacked} stacked)` : ""}
+                  {need.inSquad > 0 ? ` (+${need.inSquad} in squads)` : ""}
                 </span>
               </li>
             ))}
@@ -160,6 +175,7 @@ export default async function EvolvePage({
           <EvolveButton
             unitId={id}
             materialIds={plan.materialIds}
+            materialStacks={plan.materialStacks}
             label={plan.omni ? "Omni Evolve" : "Evolve"}
             disabled={plan.problems.length > 0}
           />

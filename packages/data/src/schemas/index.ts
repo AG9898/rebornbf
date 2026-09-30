@@ -7,6 +7,7 @@ export * from "./enemy.ts";
 export * from "./guest.ts";
 export * from "./item.ts";
 export * from "./skill.ts";
+export * from "./sphere.ts";
 export * from "./sprite-sheet.ts";
 export * from "./stage.ts";
 export * from "./unit.ts";

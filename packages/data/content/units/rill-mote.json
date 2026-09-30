@@ -2,6 +2,7 @@
   "id": "rill-mote",
   "name": "Rill Mote",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-mote-1",

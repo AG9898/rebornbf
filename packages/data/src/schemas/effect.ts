@@ -48,6 +48,7 @@ export const EFFECT_IDS = [
   "bb.fill_per_turn",
   "bb.fill_rate",
   "bb.fill_on_hit",
+  "bb.fill_on_attack",
   "bb.fill_on_guard",
   "bb.fill_on_damage_taken",
   "bb.fill_on_spark",
@@ -284,6 +285,7 @@ const RANGE_IDS = [
   "bb.fill_on_spark",
   "bb.fill_on_hit",
   "bb.consumption_reduction",
+  "bb.fill_on_attack",
   "hp_drain",
 ] as const satisfies readonly EffectId[];
 /** Range IDs whose `min`/`max` are whole percents written as fractions, not integers. */

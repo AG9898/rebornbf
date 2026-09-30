@@ -2,6 +2,7 @@
   "id": "volt-athanor",
   "name": "Volt Athanor",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-athanor-5",

@@ -2,6 +2,7 @@
   "id": "moss-athanor",
   "name": "Moss Athanor",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-athanor-5",

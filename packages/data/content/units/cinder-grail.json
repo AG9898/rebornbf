@@ -2,6 +2,7 @@
   "id": "cinder-grail",
   "name": "Cinder Grail",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-grail-5",

@@ -2,6 +2,7 @@
   "id": "glint-alembic",
   "name": "Glint Alembic",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-alembic-4",

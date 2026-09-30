@@ -2,6 +2,7 @@
   "id": "cinder-alembic",
   "name": "Cinder Alembic",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-alembic-4",

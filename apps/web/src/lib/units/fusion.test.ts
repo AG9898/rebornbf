@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { fusionDraftProblem, fusionPreview } from "./fusion.ts";
+import { canBeFodder, fusionDraftProblem, fusionPreview } from "./fusion.ts";
 import type { OwnedUnitRow } from "./owned-units.ts";
+import { stackCopies } from "./unit-stacks.ts";
 
 const target: OwnedUnitRow = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -112,5 +113,43 @@ describe("fusion draft validation", () => {
     ] as [string, string[]][]) {
       expect(fusionDraftProblem(id, fodder)).not.toBeNull();
     }
+  });
+});
+
+describe("stacked fodder (M4-05C)", () => {
+  const stack = { id: "00000000-0000-4000-8000-00000000aaaa", count: 4 };
+  const flaskStack = { ...stack, unit_id: "cinder-flask", form_id: "cinder-flask-3" };
+
+  it("counts stacked copies toward the 1–5 fodder limit", () => {
+    expect(fusionDraftProblem(target.id, [], { [stack.id]: 1 })).toBeNull();
+    expect(fusionDraftProblem(target.id, [flask.id], { [stack.id]: 4 })).toBeNull();
+    expect(fusionDraftProblem(target.id, [flask.id], { [stack.id]: 5 })).toBe(
+      "Choose 1–5 fodder units.",
+    );
+    expect(fusionDraftProblem(target.id, [], {})).toBe("Choose 1–5 fodder units.");
+    expect(fusionDraftProblem(target.id, [], { "not-a-stack": 1 })).toBe(
+      "Choose valid stacked units.",
+    );
+    expect(fusionDraftProblem(target.id, [], { [stack.id]: 1.5 })).toBe(
+      "Choose valid stacked units.",
+    );
+  });
+
+  it("previews stacked copies exactly like the same number of rows", () => {
+    const copies = stackCopies([flaskStack], { [stack.id]: 2 });
+    expect(copies).toHaveLength(2);
+    expect(fusionPreview(target, copies)).toEqual(
+      fusionPreview(target, [flask, { ...flask, id: "00000000-0000-4000-8000-000000000003" }]),
+    );
+    expect(fusionPreview(target, copies)?.cost).toBe(200);
+  });
+});
+
+describe("canBeFodder", () => {
+  it("rejects 1★ forms without fixed fusion EXP, as fodder_fusion_exp does", () => {
+    expect(canBeFodder("cinder-flask", "cinder-flask-3")).toBe(true);
+    expect(canBeFodder("moss-sprite", "moss-sprite-2")).toBe(true);
+    expect(canBeFodder("cinder-mote", "cinder-mote-1")).toBe(false);
+    expect(canBeFodder("nobody", "nobody-3")).toBe(false);
   });
 });

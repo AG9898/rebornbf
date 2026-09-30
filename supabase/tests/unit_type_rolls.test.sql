@@ -92,8 +92,8 @@ select ok(public.unit_type_roll_valid(
   'a pre-Omni grant stores a roll');
 select is((public.grant_unit('00000000-0000-0000-0000-0000000001d1', 'brand', 'brand-omni')).unit_type,
   null, 'an Omni grant stores no pre-Omni roll');
-select is((public.grant_unit('00000000-0000-0000-0000-0000000001d1', 'cinder-flask')).unit_type,
-  null, 'a single-form fodder unit stores no roll');
+select is(public.unit_type_for_grant('cinder-flask', 'cinder-flask-3'),
+  null, 'a single-form fodder unit gets no roll (it is stacked, M4-05A)');
 select throws_ok($$select public.grant_unit('00000000-0000-0000-0000-0000000001d1', 'no-such-unit')$$,
   '22023', null, 'an unknown unit is rejected');
 select throws_ok($$select public.grant_unit('00000000-0000-0000-0000-0000000001d1', 'brand', 'maren-3')$$,

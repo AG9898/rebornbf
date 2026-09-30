@@ -2,6 +2,7 @@
   "id": "glint-sprite",
   "name": "Glint Sprite",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-sprite-2",

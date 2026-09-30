@@ -2,6 +2,7 @@
   "id": "glint-urn",
   "name": "Glint Urn",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-urn-3",

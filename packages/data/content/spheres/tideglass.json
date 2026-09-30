@@ -1,0 +1,20 @@
+{
+  "id": "tideglass",
+  "name": "Tideglass",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "maren",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "hp", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "rec", "target": "self" },
+    {
+      "id": "heal.over_time",
+      "value": 0,
+      "min": 2000,
+      "max": 3000,
+      "recBonus": 0.1,
+      "target": "self"
+    },
+    { "id": "hits.add_normal", "value": 1, "target": "self" }
+  ]
+}

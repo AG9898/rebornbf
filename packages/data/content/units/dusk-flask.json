@@ -2,6 +2,7 @@
   "id": "dusk-flask",
   "name": "Dusk Flask",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-flask-3",

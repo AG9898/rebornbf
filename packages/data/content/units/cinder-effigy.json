@@ -2,6 +2,7 @@
   "id": "cinder-effigy",
   "name": "Cinder Effigy",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-effigy-3",

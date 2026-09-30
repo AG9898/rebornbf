@@ -2,6 +2,7 @@
   "id": "dusk-cairn",
   "name": "Dusk Cairn",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-cairn-4",

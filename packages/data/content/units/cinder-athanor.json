@@ -2,6 +2,7 @@
   "id": "cinder-athanor",
   "name": "Cinder Athanor",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-athanor-5",

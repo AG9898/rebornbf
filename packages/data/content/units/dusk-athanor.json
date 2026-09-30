@@ -2,6 +2,7 @@
   "id": "dusk-athanor",
   "name": "Dusk Athanor",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-athanor-5",

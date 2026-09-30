@@ -106,9 +106,23 @@ export const UnitSchema = z
      * (GAME_DESIGN §6 → Level EXP and fusion, RESOLVED-57). Omitted means base 10.
      */
     expCurve: z.union([z.literal(10), z.literal(21)]).optional(),
+    /**
+     * Set on every single-form fodder and material unit (Sprites and Motes, Crucibles, EXP
+     * vessels, evolution materials): a player's untouched copies are one count per unit and form
+     * in `owned_unit_stacks`, not a row per copy (GAME_DESIGN §6 → Growth fodder → Stacking,
+     * RESOLVED-75). Rejected on a unit with more than one form.
+     */
+    stackable: z.literal(true).optional(),
     forms: z.array(FormSchema).min(1),
   })
   .superRefine((unit, ctx) => {
+    if (unit.stackable && unit.forms.length > 1) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["stackable"],
+        message: "only a single-form unit can be stackable",
+      });
+    }
     const seen = new Set<string>();
     unit.forms.forEach((form, i) => {
       if (seen.has(form.id)) {

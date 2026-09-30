@@ -2,6 +2,7 @@
   "id": "cinder-flask",
   "name": "Cinder Flask",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-flask-3",

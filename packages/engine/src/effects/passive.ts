@@ -134,6 +134,9 @@ function skillsInForce(state: BattleState): SkillOwner[] {
     skills.push({ owner: ally, source: "ally_leader", effects: state.leaderSkills.ally.effects });
   }
   for (const unit of state.party) {
+    for (const sphere of unit.spheres ?? []) {
+      skills.push({ owner: unit, source: "sphere", effects: sphere.effects });
+    }
     if (unit.form.extraSkill) {
       skills.push({ owner: unit, source: "extra", effects: unit.form.extraSkill.effects });
     }
@@ -153,6 +156,8 @@ export function passivesFor(state: BattleState, recipient: BattleUnit): ActiveEf
     turn: state.turn,
     bc: recipient.bc,
     bbCost: recipient.form.bursts.bb.cost,
+    signatureSphere:
+      recipient.spheres?.some((sphere) => sphere.signatureUnit === recipient.unitId) ?? false,
   };
   const result: ActiveEffect[] = [];
   for (const { owner, source, effects } of skillsInForce(state)) {

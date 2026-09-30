@@ -1,0 +1,13 @@
+{
+  "id": "gravewell",
+  "name": "Gravewell",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "morrick",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "hp", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "def", "target": "self" },
+    { "id": "hp_drain", "value": 0, "min": 0.15, "max": 0.3, "target": "self" },
+    { "id": "bb.fill_on_attack", "value": 0, "min": 4, "max": 6, "target": "self" }
+  ]
+}

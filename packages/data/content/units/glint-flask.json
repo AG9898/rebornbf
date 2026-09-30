@@ -2,6 +2,7 @@
   "id": "glint-flask",
   "name": "Glint Flask",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-flask-3",

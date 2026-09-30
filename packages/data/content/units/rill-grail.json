@@ -2,6 +2,7 @@
   "id": "rill-grail",
   "name": "Rill Grail",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-grail-5",

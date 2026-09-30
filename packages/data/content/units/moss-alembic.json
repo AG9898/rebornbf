@@ -2,6 +2,7 @@
   "id": "moss-alembic",
   "name": "Moss Alembic",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-alembic-4",

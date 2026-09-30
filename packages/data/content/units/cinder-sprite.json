@@ -2,6 +2,7 @@
   "id": "cinder-sprite",
   "name": "Cinder Sprite",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-sprite-2",

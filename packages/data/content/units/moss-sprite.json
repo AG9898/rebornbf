@@ -2,6 +2,7 @@
   "id": "moss-sprite",
   "name": "Moss Sprite",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-sprite-2",

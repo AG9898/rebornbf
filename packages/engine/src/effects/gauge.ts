@@ -13,6 +13,7 @@ export const GAUGE_IDS = [
   "bb.fill_per_turn",
   "bb.fill_rate",
   "bb.fill_on_hit",
+  "bb.fill_on_attack",
   "bb.fill_on_guard",
   "bb.fill_on_damage_taken",
   "bb.fill_on_spark",
@@ -38,6 +39,7 @@ export const GAUGE_HANDLERS: Readonly<Record<GaugeId, EffectHandler>> = {
   "bb.fill_per_turn": replaceBuff,
   "bb.fill_rate": replaceBuff,
   "bb.fill_on_hit": replaceBuff,
+  "bb.fill_on_attack": replaceBuff,
   "bb.fill_on_guard": replaceBuff,
   "bb.fill_on_damage_taken": replaceBuff,
   // Filled per sparked hit by `rollBcFillOnSpark` (effects/spark.ts).
@@ -126,10 +128,26 @@ export function rollBcFillWhenAttacked(
   effects: readonly ActiveEffect[],
   rng: RngState,
 ): RngDraw<number> {
+  return rollBcFill(effects, rng, "bb.fill_on_hit");
+}
+
+/** Once per accepted attacking action, not per hit or target (signature sphere). */
+export function rollBcFillOnAttack(
+  effects: readonly ActiveEffect[],
+  rng: RngState,
+): RngDraw<number> {
+  return rollBcFill(effects, rng, "bb.fill_on_attack");
+}
+
+function rollBcFill(
+  effects: readonly ActiveEffect[],
+  rng: RngState,
+  id: Effect["id"],
+): RngDraw<number> {
   let fill = 0;
   let current = rng;
   for (const effect of effects) {
-    if (effect.id !== "bb.fill_on_hit") continue;
+    if (effect.id !== id) continue;
     if (effect.min === undefined || effect.max === undefined) {
       fill += effect.value;
       continue;

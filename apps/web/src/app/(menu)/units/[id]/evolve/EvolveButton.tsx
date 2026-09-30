@@ -9,11 +9,14 @@ import evolve from "./evolve.module.css";
 export function EvolveButton({
   unitId,
   materialIds,
+  materialStacks,
   label,
   disabled,
 }: {
   unitId: string;
   materialIds: string[];
+  /** Stacked copies to spend, `{ "<stack id>": copies }` (M4-05C). */
+  materialStacks: Record<string, number>;
   label: string;
   disabled: boolean;
 }): ReactNode {
@@ -24,7 +27,7 @@ export function EvolveButton({
   function run(): void {
     setError(null);
     startTransition(async () => {
-      const result = await evolveUnit(unitId, materialIds);
+      const result = await evolveUnit(unitId, materialIds, materialStacks);
       if (result.ok) router.push(`/units/${unitId}`);
       else setError(result.message);
     });

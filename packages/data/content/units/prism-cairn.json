@@ -2,6 +2,7 @@
   "id": "prism-cairn",
   "name": "Prism Cairn",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "prism-cairn-5",

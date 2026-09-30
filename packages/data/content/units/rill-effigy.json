@@ -2,6 +2,7 @@
   "id": "rill-effigy",
   "name": "Rill Effigy",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-effigy-3",

@@ -12,33 +12,56 @@ import brand from "@bfr/data/content/units/brand.json";
 import brassCrucible from "@bfr/data/content/units/brass-crucible.json";
 import cinderAlembic from "@bfr/data/content/units/cinder-alembic.json";
 import cinderAthanor from "@bfr/data/content/units/cinder-athanor.json";
+import cinderCairn from "@bfr/data/content/units/cinder-cairn.json";
+import cinderColossus from "@bfr/data/content/units/cinder-colossus.json";
+import cinderEffigy from "@bfr/data/content/units/cinder-effigy.json";
 import cinderFlask from "@bfr/data/content/units/cinder-flask.json";
 import cinderGrail from "@bfr/data/content/units/cinder-grail.json";
+import cinderMote from "@bfr/data/content/units/cinder-mote.json";
 import cinderSprite from "@bfr/data/content/units/cinder-sprite.json";
 import duskAlembic from "@bfr/data/content/units/dusk-alembic.json";
 import duskAthanor from "@bfr/data/content/units/dusk-athanor.json";
+import duskCairn from "@bfr/data/content/units/dusk-cairn.json";
+import duskColossus from "@bfr/data/content/units/dusk-colossus.json";
+import duskEffigy from "@bfr/data/content/units/dusk-effigy.json";
 import duskFlask from "@bfr/data/content/units/dusk-flask.json";
 import duskGrail from "@bfr/data/content/units/dusk-grail.json";
+import duskMote from "@bfr/data/content/units/dusk-mote.json";
 import duskSprite from "@bfr/data/content/units/dusk-sprite.json";
+import duskUrn from "@bfr/data/content/units/dusk-urn.json";
 import garrick from "@bfr/data/content/units/garrick.json";
 import glintAlembic from "@bfr/data/content/units/glint-alembic.json";
 import glintAthanor from "@bfr/data/content/units/glint-athanor.json";
+import glintCairn from "@bfr/data/content/units/glint-cairn.json";
+import glintColossus from "@bfr/data/content/units/glint-colossus.json";
+import glintEffigy from "@bfr/data/content/units/glint-effigy.json";
 import glintFlask from "@bfr/data/content/units/glint-flask.json";
 import glintGrail from "@bfr/data/content/units/glint-grail.json";
+import glintMote from "@bfr/data/content/units/glint-mote.json";
 import glintSprite from "@bfr/data/content/units/glint-sprite.json";
+import glintUrn from "@bfr/data/content/units/glint-urn.json";
 import maren from "@bfr/data/content/units/maren.json";
 import morrick from "@bfr/data/content/units/morrick.json";
 import mossAlembic from "@bfr/data/content/units/moss-alembic.json";
 import mossAthanor from "@bfr/data/content/units/moss-athanor.json";
+import mossCairn from "@bfr/data/content/units/moss-cairn.json";
+import mossColossus from "@bfr/data/content/units/moss-colossus.json";
+import mossEffigy from "@bfr/data/content/units/moss-effigy.json";
 import mossFlask from "@bfr/data/content/units/moss-flask.json";
 import mossGrail from "@bfr/data/content/units/moss-grail.json";
+import mossMote from "@bfr/data/content/units/moss-mote.json";
 import mossSprite from "@bfr/data/content/units/moss-sprite.json";
 import placeholderEmber from "@bfr/data/content/units/placeholder-ember.json";
 import placeholderTide from "@bfr/data/content/units/placeholder-tide.json";
+import prismCairn from "@bfr/data/content/units/prism-cairn.json";
 import rillAlembic from "@bfr/data/content/units/rill-alembic.json";
 import rillAthanor from "@bfr/data/content/units/rill-athanor.json";
+import rillCairn from "@bfr/data/content/units/rill-cairn.json";
+import rillColossus from "@bfr/data/content/units/rill-colossus.json";
+import rillEffigy from "@bfr/data/content/units/rill-effigy.json";
 import rillFlask from "@bfr/data/content/units/rill-flask.json";
 import rillGrail from "@bfr/data/content/units/rill-grail.json";
+import rillMote from "@bfr/data/content/units/rill-mote.json";
 import rillSprite from "@bfr/data/content/units/rill-sprite.json";
 import rook from "@bfr/data/content/units/rook.json";
 import silverCrucible from "@bfr/data/content/units/silver-crucible.json";
@@ -46,9 +69,14 @@ import solen from "@bfr/data/content/units/solen.json";
 import vespera from "@bfr/data/content/units/vespera.json";
 import voltAlembic from "@bfr/data/content/units/volt-alembic.json";
 import voltAthanor from "@bfr/data/content/units/volt-athanor.json";
+import voltCairn from "@bfr/data/content/units/volt-cairn.json";
+import voltColossus from "@bfr/data/content/units/volt-colossus.json";
+import voltEffigy from "@bfr/data/content/units/volt-effigy.json";
 import voltFlask from "@bfr/data/content/units/volt-flask.json";
 import voltGrail from "@bfr/data/content/units/volt-grail.json";
+import voltMote from "@bfr/data/content/units/volt-mote.json";
 import voltSprite from "@bfr/data/content/units/volt-sprite.json";
+import wyrmCoffer from "@bfr/data/content/units/wyrm-coffer.json";
 import {
   formStatsAtLevel,
   LORD_ROLL,
@@ -154,6 +182,35 @@ const UNIT_CONTENT: ReadonlyMap<string, Unit> = new Map(
     solen,
     vespera,
     voltSprite,
+    // Evolution material units (RESOLVED-66), so stacks of them show a name and element frame.
+    cinderCairn,
+    cinderColossus,
+    cinderEffigy,
+    cinderMote,
+    duskCairn,
+    duskColossus,
+    duskEffigy,
+    duskMote,
+    duskUrn,
+    glintCairn,
+    glintColossus,
+    glintEffigy,
+    glintMote,
+    glintUrn,
+    mossCairn,
+    mossColossus,
+    mossEffigy,
+    mossMote,
+    prismCairn,
+    rillCairn,
+    rillColossus,
+    rillEffigy,
+    rillMote,
+    voltCairn,
+    voltColossus,
+    voltEffigy,
+    voltMote,
+    wyrmCoffer,
   ].map((json) => {
     const unit = UnitSchema.parse(json);
     return [unit.id, unit];
@@ -325,10 +382,10 @@ function elementSortKey(element: Element | null): number {
  * Collection order. The default (rarity): highest rarity first, then highest level, then name,
  * then row id. The other keys put their own comparison first and fall back to that order.
  */
-export function sortOwnedUnits(
-  units: readonly OwnedUnitView[],
+export function sortOwnedUnits<T extends OwnedUnitView>(
+  units: readonly T[],
   key: UnitSortKey = "rarity",
-): OwnedUnitView[] {
+): T[] {
   const byRarity = (a: OwnedUnitView, b: OwnedUnitView) =>
     raritySortKey(b.rarity) - raritySortKey(a.rarity) ||
     b.level - a.level ||

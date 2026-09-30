@@ -46,6 +46,7 @@ export interface ConditionContext {
   /** The recipient's BB gauge (BC) and its form's BB cost, the length "BB gauge %" measures. */
   readonly bc: number;
   readonly bbCost: number;
+  readonly signatureSphere?: boolean;
 }
 
 /**
@@ -62,8 +63,8 @@ export function bbGaugeFraction(bc: number, bbCost: number): number {
  * - `cond.hp_above`: HP > `value` × max HP (`value` is a fraction; 0.5 = "HP > 50%").
  * - `cond.hp_below`: HP < `value` × max HP.
  * - `cond.first_turns`: battle turn ≤ `value`.
- * - `cond.after_hc_collected`, `cond.sphere_type_equipped`, `cond.signature_sphere`: never yet —
- *   the battle state tracks neither HC collection history nor equipped spheres.
+ * - `cond.signature_sphere`: the recipient wears its own signature sphere.
+ * - `cond.after_hc_collected`, `cond.sphere_type_equipped`: not tracked yet.
  * - `cond.bb_above`: BB gauge fraction (`bbGaugeFraction`) > `value` (GAME_DESIGN §4 → Kit
  *   additions (M2-04H)).
  */
@@ -80,6 +81,8 @@ export function conditionHolds(
       return context.turn <= effect.value;
     case "cond.bb_above":
       return bbGaugeFraction(context.bc, context.bbCost) > effect.value;
+    case "cond.signature_sphere":
+      return context.signatureSphere === true;
     default:
       return false;
   }

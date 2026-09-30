@@ -2,6 +2,7 @@
   "id": "rill-sprite",
   "name": "Rill Sprite",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-sprite-2",

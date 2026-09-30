@@ -2,6 +2,7 @@
   "id": "rill-cairn",
   "name": "Rill Cairn",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-cairn-4",

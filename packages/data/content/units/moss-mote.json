@@ -2,6 +2,7 @@
   "id": "moss-mote",
   "name": "Moss Mote",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-mote-1",

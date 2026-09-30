@@ -1,6 +1,4 @@
 begin;
--- Local DB verification skipped by owner authorization after the existing content-seed
--- privilege assertion crashed Postgres. These assertions remain unverified locally.
 select no_plan();
 
 select ok(has_function_privilege('authenticated', 'public.summon(text,integer)', 'execute'), 'player RPC');
@@ -13,8 +11,9 @@ select ok((select bool_and(relrowsecurity) from pg_class where oid in
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000005001', 'summon-a@example.test'),
   ('00000000-0000-0000-0000-000000005002', 'summon-b@example.test');
-update public.wallets set gems = 1000 where user_id = '00000000-0000-0000-0000-000000005001';
-update public.wallets set gems = 4 where user_id = '00000000-0000-0000-0000-000000005002';
+insert into public.wallets(user_id, gems) values
+  ('00000000-0000-0000-0000-000000005001', 1000),
+  ('00000000-0000-0000-0000-000000005002', 4);
 -- Fixtures are independent of the shared local seed. One zero-rate featured unit forces pity.
 insert into public.content_items (kind, id, data) values
   ('unit', 'summon-feature', '{"forms":[{"id":"summon-feature-5","rarity":5}]}'),

@@ -83,6 +83,7 @@ export interface GaugeFilledEvent {
     | "bb.fill_instant"
     | "bb.fill_on_guard"
     | "bb.fill_on_hit"
+    | "bb.fill_on_attack"
     | "bb.fill_on_damage_taken"
     | "bb.fill_on_damage_dealt"
     | "bb.fill_on_spark"

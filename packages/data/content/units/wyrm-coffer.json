@@ -2,6 +2,7 @@
   "id": "wyrm-coffer",
   "name": "Wyrm Coffer",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "wyrm-coffer-5",

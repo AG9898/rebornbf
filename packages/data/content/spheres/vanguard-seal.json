@@ -1,0 +1,11 @@
+{
+  "id": "vanguard-seal",
+  "name": "Vanguard Seal",
+  "kind": "all-stat",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.2, "stat": "hp", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.2, "stat": "atk", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.2, "stat": "def", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.2, "stat": "rec", "target": "self" }
+  ]
+}

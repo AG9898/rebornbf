@@ -2,6 +2,7 @@
   "id": "volt-alembic",
   "name": "Volt Alembic",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-alembic-4",

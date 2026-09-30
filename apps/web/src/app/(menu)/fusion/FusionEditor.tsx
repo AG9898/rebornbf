@@ -4,22 +4,38 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState, useTransition } from "react";
-import { fusionPreview } from "../../../lib/units/fusion.ts";
+import { canBeFodder, fusionPreview } from "../../../lib/units/fusion.ts";
 import {
   type OwnedUnitRow,
   sortOwnedUnits,
   toOwnedUnitView,
 } from "../../../lib/units/owned-units.ts";
+import {
+  FUSION_FODDER_LIMIT,
+  type StackQuantities,
+  setStackQuantity,
+  stackCopies,
+  stackCopyRow,
+  stackQuantityTotal,
+  type UnitStackRow,
+} from "../../../lib/units/unit-stacks.ts";
 import { fuseUnits } from "./actions.ts";
 import styles from "./fusion.module.css";
 
+/**
+ * The fusion screen's editor (M4-01B): target, fodder, preview, and confirm. Stacked copies
+ * (M4-05C) show once per stack with a quantity stepper capped by the stack's count and the 1–5
+ * fodder limit; a stack cannot be the target until a copy is split out on its detail page.
+ */
 export function FusionEditor({
   rows,
+  stacks,
   blocked,
   zel,
   initialTarget,
 }: {
   rows: OwnedUnitRow[];
+  stacks: UnitStackRow[];
   blocked: string[];
   zel: number;
   initialTarget?: string;
@@ -29,18 +45,30 @@ export function FusionEditor({
     rows.some((r) => r.id === initialTarget) ? (initialTarget ?? "") : "",
   );
   const [fodderIds, setFodderIds] = useState<string[]>([]);
+  const [stackQty, setStackQty] = useState<StackQuantities>({});
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const target = rows.find((r) => r.id === targetId);
   const preview = target
-    ? fusionPreview(
-        target,
-        rows.filter((r) => fodderIds.includes(r.id)),
-      )
+    ? fusionPreview(target, [
+        ...rows.filter((r) => fodderIds.includes(r.id)),
+        ...stackCopies(stacks, stackQty),
+      ])
     : null;
   const units = sortOwnedUnits(rows.map(toOwnedUnitView));
-  const canFuse = preview !== null && fodderIds.length > 0 && zel >= preview.cost;
+  const stackViews = sortOwnedUnits(
+    stacks
+      .filter((stack) => canBeFodder(stack.unit_id, stack.form_id))
+      .map((stack) => ({ ...toOwnedUnitView(stackCopyRow(stack)), stack })),
+  );
+  const copies = fodderIds.length + stackQuantityTotal(stackQty);
+  const canFuse = preview !== null && copies > 0 && zel >= preview.cost;
+
+  function changeStack(stack: UnitStackRow, wanted: number): void {
+    setStackQty(setStackQuantity(stackQty, stack, wanted, fodderIds.length));
+    resetConfirmation();
+  }
 
   function resetConfirmation(): void {
     setConfirming(false);
@@ -50,7 +78,7 @@ export function FusionEditor({
   return (
     <>
       <p className={styles.balance}>{zel.toLocaleString("en-US")} Zel available</p>
-      {rows.length === 0 ? (
+      {rows.length === 0 && stacks.length === 0 ? (
         <p>You have no units yet. Play the story to collect units.</p>
       ) : (
         <>
@@ -65,6 +93,7 @@ export function FusionEditor({
             onChange={(event) => {
               setTargetId(event.target.value);
               setFodderIds([]);
+              setStackQty({});
               resetConfirmation();
             }}
           >
@@ -77,9 +106,12 @@ export function FusionEditor({
                 </option>
               ))}
           </select>
-          <h2 className={styles.label}>Fodder · {fodderIds.length}/5</h2>
+          <h2 className={styles.label}>
+            Fodder · {copies}/{FUSION_FODDER_LIMIT}
+          </h2>
           <p className={styles.note}>
-            Fodder is consumed permanently. Units in any squad or ally slot are protected.
+            Fodder is consumed permanently. Units in any squad or ally slot are protected. Stacked
+            units are chosen by quantity; split a copy out on its detail page to level it instead.
           </p>
           <ul className={styles.grid}>
             {units
@@ -98,7 +130,8 @@ export function FusionEditor({
                         !target ||
                         inSquad ||
                         !u.maxLevel ||
-                        (!selected && fodderIds.length >= 5)
+                        !canBeFodder(u.unitId, u.formId) ||
+                        (!selected && copies >= FUSION_FODDER_LIMIT)
                       }
                       onClick={() => {
                         setFodderIds(
@@ -122,6 +155,51 @@ export function FusionEditor({
                 );
               })}
           </ul>
+          {stackViews.length > 0 && (
+            <ul className={styles.grid} aria-label="Stacked units">
+              {stackViews.map((u) => {
+                const chosen = stackQty[u.stack.id] ?? 0;
+                const room = chosen < u.stack.count && copies < FUSION_FODDER_LIMIT;
+                return (
+                  <li key={u.stack.id}>
+                    <div className={styles.card} data-chosen={chosen > 0 || undefined}>
+                      <span className={styles.thumbBox}>
+                        {u.thumb ? (
+                          <Image src={u.thumb} alt="" width={256} height={256} unoptimized />
+                        ) : (
+                          <span>{u.name.charAt(0)}</span>
+                        )}
+                        <span className={styles.stackBadge}>×{u.stack.count}</span>
+                      </span>
+                      <span>{u.name}</span>
+                      <small>
+                        {u.rarityLabel} · Lv {u.level}
+                      </small>
+                      <span className={styles.stepper}>
+                        <button
+                          type="button"
+                          aria-label={`One fewer ${u.name}`}
+                          disabled={pending || !target || chosen === 0}
+                          onClick={() => changeStack(u.stack, chosen - 1)}
+                        >
+                          −
+                        </button>
+                        <output aria-label={`${u.name} chosen`}>{chosen}</output>
+                        <button
+                          type="button"
+                          aria-label={`One more ${u.name}`}
+                          disabled={pending || !target || !room}
+                          onClick={() => changeStack(u.stack, chosen + 1)}
+                        >
+                          +
+                        </button>
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           {preview && (
             <section className={styles.preview} aria-live="polite">
               <p>EXP gained: {preview.gain.toLocaleString("en-US")}</p>
@@ -155,8 +233,7 @@ export function FusionEditor({
           {confirming ? (
             <section className={styles.preview} aria-label="Confirm fusion">
               <p>
-                Consume {fodderIds.length} selected units for{" "}
-                {preview?.cost.toLocaleString("en-US")} Zel?
+                Consume {copies} selected units for {preview?.cost.toLocaleString("en-US")} Zel?
               </p>
               <button
                 type="button"
@@ -164,11 +241,12 @@ export function FusionEditor({
                 onClick={() =>
                   startTransition(async () => {
                     try {
-                      const result = await fuseUnits(targetId, fodderIds);
+                      const result = await fuseUnits(targetId, fodderIds, stackQty);
                       setMessage(result.message);
                       setConfirming(false);
                       if (result.ok) {
                         setFodderIds([]);
+                        setStackQty({});
                         router.refresh();
                       }
                     } catch {

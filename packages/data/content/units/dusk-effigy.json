@@ -2,6 +2,7 @@
   "id": "dusk-effigy",
   "name": "Dusk Effigy",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-effigy-3",

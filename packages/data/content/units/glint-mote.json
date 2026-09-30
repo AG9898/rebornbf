@@ -2,6 +2,7 @@
   "id": "glint-mote",
   "name": "Glint Mote",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-mote-1",

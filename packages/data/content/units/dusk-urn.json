@@ -2,6 +2,7 @@
   "id": "dusk-urn",
   "name": "Dusk Urn",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-urn-3",

@@ -75,6 +75,49 @@
 .card:disabled {
   opacity: 0.45;
 }
+.card[data-chosen] {
+  border-color: #fff0b4;
+  background: #53432b;
+}
+/* A stack's thumb carries its ×N count inside the top-right corner, as on the Units list. */
+.thumbBox {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.stackBadge {
+  position: absolute;
+  top: calc(var(--u) * 6);
+  right: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 24);
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #2a1606;
+  line-height: 1;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  margin-top: calc(var(--u) * 6);
+}
+.stepper button {
+  width: calc(var(--u) * 44);
+  height: calc(var(--u) * 40);
+  border: 2px solid #c99a3a;
+  border-radius: 8px;
+  background: #59452c;
+  color: #fff0b4;
+  font-size: calc(var(--u) * 26);
+  line-height: 1;
+}
+.stepper button:disabled {
+  opacity: 0.45;
+}
+.stepper output {
+  min-width: calc(var(--u) * 28);
+  text-align: center;
+}
 .preview {
   margin: calc(var(--u) * 22) 0;
   padding: calc(var(--u) * 18);

@@ -2,6 +2,7 @@
   "id": "rill-flask",
   "name": "Rill Flask",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-flask-3",

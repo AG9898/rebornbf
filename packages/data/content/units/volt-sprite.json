@@ -2,6 +2,7 @@
   "id": "volt-sprite",
   "name": "Volt Sprite",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-sprite-2",

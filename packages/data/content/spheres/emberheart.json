@@ -1,0 +1,12 @@
+{
+  "id": "emberheart",
+  "name": "Emberheart",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "brand",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "atk", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "hp", "target": "self" },
+    { "id": "bb.fill_per_turn", "value": 2, "target": "self" }
+  ]
+}

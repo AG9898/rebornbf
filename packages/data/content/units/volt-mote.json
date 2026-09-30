@@ -2,6 +2,7 @@
   "id": "volt-mote",
   "name": "Volt Mote",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-mote-1",

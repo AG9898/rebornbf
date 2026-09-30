@@ -2,6 +2,7 @@
   "id": "glint-colossus",
   "name": "Glint Colossus",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-colossus-5",

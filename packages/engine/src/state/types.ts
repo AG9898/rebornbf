@@ -6,6 +6,7 @@ import type {
   Form,
   Item,
   LeaderSkill,
+  Sphere,
   Stats,
   Unit,
 } from "@bfr/data";
@@ -29,6 +30,9 @@ interface SquadMemberBase {
    * values. Below 10 the bursts scale down, and the UBB is unavailable.
    */
   readonly burstLevels?: BurstLevels;
+  readonly spheres?: readonly Sphere[];
+  /** Unit-specific persisted unlock, never inferred from rarity. */
+  readonly secondSphereSlot?: boolean;
 }
 
 /** A member whose base stats are given as-is (demo squads, guests, tests). */
@@ -148,6 +152,7 @@ export interface BattleUnit {
   readonly isLeader: boolean;
   /** Set only on the 6th-slot unit. */
   readonly allyKind?: AllySetup["kind"];
+  readonly spheres?: readonly Sphere[];
 }
 
 export interface BattleEnemy {

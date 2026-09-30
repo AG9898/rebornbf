@@ -5,6 +5,7 @@ import menu from "../../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../components/menu/UiImage.tsx";
 import type { UnitDetailView } from "../../../../lib/units/owned-units.ts";
+import { SplitButton } from "../stack/[stackId]/SplitButton.tsx";
 import styles from "../units.module.css";
 
 const SKILL_ROWS = [
@@ -17,15 +18,19 @@ const SKILL_ROWS = [
  * One owned unit as the original's Unit Info (M3-03G, ART_GUIDE → UI → Units, Squad, and Unit
  * detail screens): the title plate with orb, stars, and names; the splash over element-tinted
  * `bg-olive`; the stat plate column; Enhance / Evolve; and the skill rows. Presentational only;
- * `page.tsx` reads the row.
+ * `page.tsx` reads the row. A stack (M4-05C) shows its copy count and Split in place of Enhance /
+ * Evolve, since a stacked copy must be split out before it can be levelled or fielded.
  */
 export function UnitDetail({
   unit,
   evolveLabel,
+  stack,
 }: {
   unit: UnitDetailView;
   /** "Evolve" or "Omni Evolve" when the form has a next form to evolve into; otherwise null. */
   evolveLabel: string | null;
+  /** Set when this is a stack of untouched copies: its `owned_unit_stacks` id and count. */
+  stack?: { id: string; count: number };
 }): ReactNode {
   const stats = unit.currentStats;
   const statRows: readonly [string, string][] = [
@@ -75,6 +80,7 @@ export function UnitDetail({
           )}
 
           <dl className={styles.statColumn}>
+            {stack ? <StatPlate label="Copies" value={`×${stack.count}`} /> : null}
             <StatPlate label="Type" value={unit.typeLabel} />
             <StatPlate
               label="Lv."
@@ -98,19 +104,23 @@ export function UnitDetail({
             ))}
           </dl>
 
-          <div className={styles.actions}>
-            <Link
-              href={`/fusion?target=${unit.id}`}
-              className={`${styles.actionButton} ${styles.enhanceButton}`}
-            >
-              <span className={styles.outline}>Enhance</span>
-            </Link>
-            {evolveLabel ? (
-              <Link href={`/units/${unit.id}/evolve`} className={styles.actionButton}>
-                <span className={styles.outline}>{evolveLabel}</span>
+          {stack ? (
+            <SplitButton stackId={stack.id} />
+          ) : (
+            <div className={styles.actions}>
+              <Link
+                href={`/fusion?target=${unit.id}`}
+                className={`${styles.actionButton} ${styles.enhanceButton}`}
+              >
+                <span className={styles.outline}>Enhance</span>
               </Link>
-            ) : null}
-          </div>
+              {evolveLabel ? (
+                <Link href={`/units/${unit.id}/evolve`} className={styles.actionButton}>
+                  <span className={styles.outline}>{evolveLabel}</span>
+                </Link>
+              ) : null}
+            </div>
+          )}
         </section>
 
         <section className={styles.skills} aria-label="Skills">
@@ -141,7 +151,11 @@ export function UnitDetail({
         )}
       </div>
 
-      <p className={menu.ticker}>Enhance a unit through fusion, or evolve it at its level cap.</p>
+      <p className={menu.ticker}>
+        {stack
+          ? "Split a copy out of the stack to level, equip, or field it."
+          : "Enhance a unit through fusion, or evolve it at its level cap."}
+      </p>
     </div>
   );
 }

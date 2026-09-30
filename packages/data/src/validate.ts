@@ -3,6 +3,7 @@ import { BannerSchema } from "./schemas/banner.ts";
 import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
 import { GuestSchema } from "./schemas/guest.ts";
 import { ItemContentSchema } from "./schemas/item.ts";
+import { SphereSchema } from "./schemas/sphere.ts";
 import { isBossStage, type Stage, StageSchema } from "./schemas/stage.ts";
 import { type Unit, UnitSchema } from "./schemas/unit.ts";
 
@@ -85,6 +86,19 @@ export function validateEvolutionRefs(
 /** Validates one parsed item file (battle or material item; schema and file name). */
 export function validateItemFile(file: string, json: unknown): string[] {
   return validateContentFile(ItemContentSchema, file, json).errors;
+}
+
+/** Validates equipment and its signature unit reference. */
+export function validateSphereFile(
+  file: string,
+  json: unknown,
+  unitIds: ReadonlySet<string>,
+): string[] {
+  const result = validateContentFile(SphereSchema, file, json);
+  if (result.data?.signatureUnit && !unitIds.has(result.data.signatureUnit)) {
+    result.errors.push(`${file}: signatureUnit: unknown unit "${result.data.signatureUnit}"`);
+  }
+  return result.errors;
 }
 
 /** Validates guest entries and their unit reference. */

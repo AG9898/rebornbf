@@ -2,6 +2,7 @@
   "id": "cinder-cairn",
   "name": "Cinder Cairn",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-cairn-4",

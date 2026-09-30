@@ -5,11 +5,11 @@ begin;
 select plan(36);
 
 -- Privileges --------------------------------------------------------------------------------------
-select ok(has_function_privilege('authenticated', 'public.evolve(uuid, uuid[])', 'execute'),
+select ok(has_function_privilege('authenticated', 'public.evolve(uuid, uuid[], jsonb)', 'execute'),
   'authenticated may call evolve');
-select ok(not has_function_privilege('anon', 'public.evolve(uuid, uuid[])', 'execute'),
+select ok(not has_function_privilege('anon', 'public.evolve(uuid, uuid[], jsonb)', 'execute'),
   'anon may not call evolve');
-select ok((select prosecdef from pg_proc where oid = 'public.evolve(uuid, uuid[])'::regprocedure),
+select ok((select prosecdef from pg_proc where oid = 'public.evolve(uuid, uuid[], jsonb)'::regprocedure),
   'evolve is security definer');
 
 -- Fixtures ----------------------------------------------------------------------------------------

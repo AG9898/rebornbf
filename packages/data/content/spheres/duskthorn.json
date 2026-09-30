@@ -1,0 +1,12 @@
+{
+  "id": "duskthorn",
+  "name": "Duskthorn",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "vespera",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "atk", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "hp", "target": "self" },
+    { "id": "buff.elem_weak_dmg", "value": 0.5, "target": "self" }
+  ]
+}

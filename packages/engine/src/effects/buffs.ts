@@ -3,7 +3,7 @@ import { type Effect, ELEMENTS, type Element } from "@bfr/data";
 /** Burst tiers that apply effects. */
 export type BurstSource = "bb" | "sbb" | "ubb";
 /** Skills whose effects are passives: the leader's and ally's leader skills and Extra Skills. */
-export type PassiveSource = "leader" | "ally_leader" | "extra";
+export type PassiveSource = "leader" | "ally_leader" | "extra" | "sphere";
 /**
  * Effects a passive grants when its trigger fires (`mitigation_after_damage` → `mitigation`). They
  * count in the passive slot but survive `refreshPassives` and expire by their own `turns`.
@@ -11,7 +11,9 @@ export type PassiveSource = "leader" | "ally_leader" | "extra";
 export type TriggeredSource = "triggered";
 
 export function isPassiveSource(source: ActiveEffect["source"]): source is PassiveSource {
-  return source === "leader" || source === "ally_leader" || source === "extra";
+  return (
+    source === "leader" || source === "ally_leader" || source === "extra" || source === "sphere"
+  );
 }
 
 /** An effect currently attached to a combatant. Omitted turns means permanent. */

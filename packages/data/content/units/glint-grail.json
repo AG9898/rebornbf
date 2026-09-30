@@ -2,6 +2,7 @@
   "id": "glint-grail",
   "name": "Glint Grail",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-grail-5",

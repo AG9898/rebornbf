@@ -2,6 +2,7 @@
   "id": "glint-athanor",
   "name": "Glint Athanor",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-athanor-5",

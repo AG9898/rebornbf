@@ -4,6 +4,7 @@ import {
   EnemySkillSchema,
   type Form,
   ItemSchema,
+  SphereSchema,
   type Stats,
   StatsSchema,
   UnitSchema,
@@ -79,6 +80,22 @@ function toBattleUnit(
     throw new BattleSetupError(`${path}.formId: unit "${unit.id}" has no form "${member.formId}"`);
   }
   const stats = memberStats(member, form, path);
+  const spheres = (member.spheres ?? []).map((sphere, i) => {
+    const parsed = SphereSchema.safeParse(sphere);
+    assertParsed(parsed, `${path}.spheres[${i}]`);
+    if (!parsed.success) throw new BattleSetupError(`${path}.spheres[${i}]: invalid sphere`);
+    for (const effect of parsed.data.effects) assertKnownEffect(effect.id);
+    return parsed.data;
+  });
+  if (member.secondSphereSlot !== undefined && typeof member.secondSphereSlot !== "boolean") {
+    throw new BattleSetupError(`${path}.secondSphereSlot: must be a boolean`);
+  }
+  if (spheres.length > (member.secondSphereSlot === true ? 2 : 1)) {
+    throw new BattleSetupError(`${path}.spheres: sphere slot is locked`);
+  }
+  if (spheres.filter((sphere) => sphere.kind === "all-stat").length > 1) {
+    throw new BattleSetupError(`${path}.spheres: cannot equip two all-stat spheres`);
+  }
   for (const tier of ["bb", "sbb"] as const) {
     const level = member.burstLevels?.[tier];
     if (
@@ -116,6 +133,7 @@ function toBattleUnit(
     damageDealt: 0,
     isLeader,
     ...(allyKind ? { allyKind } : {}),
+    ...(spheres.length ? { spheres } : {}),
   };
 }
 

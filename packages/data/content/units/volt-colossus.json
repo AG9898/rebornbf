@@ -2,6 +2,7 @@
   "id": "volt-colossus",
   "name": "Volt Colossus",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-colossus-5",

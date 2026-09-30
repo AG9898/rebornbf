@@ -1,0 +1,12 @@
+{
+  "id": "rootward",
+  "name": "Rootward",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "rook",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "def", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "hp", "target": "self" },
+    { "id": "ailment.null", "value": 1, "target": "self" }
+  ]
+}

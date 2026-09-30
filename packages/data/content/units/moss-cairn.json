@@ -2,6 +2,7 @@
   "id": "moss-cairn",
   "name": "Moss Cairn",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-cairn-4",

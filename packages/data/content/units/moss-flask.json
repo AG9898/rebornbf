@@ -2,6 +2,7 @@
   "id": "moss-flask",
   "name": "Moss Flask",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-flask-3",

@@ -2,6 +2,7 @@
   "id": "rill-colossus",
   "name": "Rill Colossus",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-colossus-5",

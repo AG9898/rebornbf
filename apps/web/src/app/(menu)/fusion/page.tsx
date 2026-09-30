@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import menu from "../../../components/menu/menu.module.css";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import { OWNED_UNIT_COLUMNS, type OwnedUnitRow } from "../../../lib/units/owned-units.ts";
+import { UNIT_STACK_COLUMNS, type UnitStackRow } from "../../../lib/units/unit-stacks.ts";
 import { FusionEditor } from "./FusionEditor.tsx";
 import styles from "./fusion.module.css";
 
@@ -19,12 +20,18 @@ export default async function FusionPage({
   const { data: claims } = supabase ? await supabase.auth.getClaims() : { data: null };
   const userId = claims?.claims.sub;
   if (!supabase || !userId) redirect("/sign-in?next=/fusion");
-  const [units, squads, wallet] = await Promise.all([
+  const [units, stacks, squads, wallet] = await Promise.all([
     supabase
       .from("owned_units")
       .select(OWNED_UNIT_COLUMNS)
       .eq("user_id", userId)
       .overrideTypes<OwnedUnitRow[], { merge: false }>(),
+    supabase
+      .from("owned_unit_stacks")
+      .select(UNIT_STACK_COLUMNS)
+      .eq("user_id", userId)
+      .gt("count", 0)
+      .overrideTypes<UnitStackRow[], { merge: false }>(),
     supabase
       .from("squads")
       .select("unit_ids, ally_unit_id")
@@ -47,11 +54,12 @@ export default async function FusionPage({
         <h1 className={menu.gold}>Fusion</h1>
         <Link href="/units">‹ Units</Link>
       </header>
-      {units.error || squads.error || wallet.error ? (
+      {units.error || stacks.error || squads.error || wallet.error ? (
         <p role="alert">Your fusion materials could not be loaded. Try again shortly.</p>
       ) : (
         <FusionEditor
           rows={units.data ?? []}
+          stacks={stacks.data ?? []}
           blocked={blocked}
           zel={Number(wallet.data?.zel ?? 0)}
           initialTarget={target}

@@ -2,6 +2,7 @@
   "id": "rill-athanor",
   "name": "Rill Athanor",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-athanor-5",

@@ -2,6 +2,7 @@
   "id": "silver-crucible",
   "name": "Silver Crucible",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "silver-crucible-3",

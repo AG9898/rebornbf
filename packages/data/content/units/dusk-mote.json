@@ -2,6 +2,7 @@
   "id": "dusk-mote",
   "name": "Dusk Mote",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-mote-1",

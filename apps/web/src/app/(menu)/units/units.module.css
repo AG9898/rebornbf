@@ -280,6 +280,18 @@
   color: #ffe34a;
 }
 
+/* A stack's copy count (M4-05C): white outlined text inside the frame's top-right corner. */
+.stackCount {
+  --stroke: 4;
+  position: absolute;
+  top: 9%;
+  right: 10%;
+  font-size: calc(var(--u) * 20);
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* ---------- Unit detail (M3-03G) ---------- */
 
 .detailPage {
@@ -489,6 +501,29 @@
   background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
   font-size: calc(var(--u) * 22);
   text-decoration: none;
+}
+
+/* The stack detail's Split button (M4-05C) is a <button>, so it drops the browser's own chrome. */
+button.actionButton {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.actionButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.splitError {
+  max-width: calc(var(--u) * 150);
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 16);
+  color: #ffd2c4;
+  text-shadow: 0 1px 2px #000;
 }
 
 .enhanceButton,

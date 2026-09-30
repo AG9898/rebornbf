@@ -2,6 +2,7 @@
   "id": "volt-grail",
   "name": "Volt Grail",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-grail-5",

@@ -2,6 +2,7 @@
   "id": "glint-cairn",
   "name": "Glint Cairn",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-cairn-4",

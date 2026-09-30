@@ -1,0 +1,12 @@
+{
+  "id": "dawnrelay",
+  "name": "Dawnrelay",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "solen",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "atk", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "def", "target": "self" },
+    { "id": "bb.fill_rate", "value": 0.4, "target": "self" }
+  ]
+}

@@ -6,6 +6,12 @@ import {
   totalExpForLevel,
 } from "@bfr/data";
 import { isOwnedUnitId, type OwnedUnitRow, unitContent } from "./owned-units.ts";
+import {
+  FUSION_FODDER_LIMIT,
+  type StackQuantities,
+  stackQuantitiesProblem,
+  stackQuantityTotal,
+} from "./unit-stacks.ts";
 
 export type FusionPreview = {
   bbLevel: number;
@@ -18,16 +24,41 @@ export type FusionPreview = {
   discarded: number;
 };
 
-export function fusionDraftProblem(target: string, fodder: readonly string[]): string | null {
+/**
+ * Rejects a malformed fusion draft before the RPC: the target, 1–5 fodder copies in total (owned
+ * rows plus stacked copies, M4-05C), and well-formed ids and stack quantities.
+ */
+export function fusionDraftProblem(
+  target: string,
+  fodder: readonly string[],
+  stacks: StackQuantities = {},
+): string | null {
   if (!isOwnedUnitId(target)) return "Choose a target unit.";
-  if (fodder.length < 1 || fodder.length > 5) return "Choose 1–5 fodder units.";
+  const stackProblem = stackQuantitiesProblem(stacks);
+  if (stackProblem) return stackProblem;
+  const copies = fodder.length + stackQuantityTotal(stacks);
+  if (copies < 1 || copies > FUSION_FODDER_LIMIT) return "Choose 1–5 fodder units.";
   if (fodder.some((id) => !isOwnedUnitId(id))) return "Choose valid fodder units.";
   if (new Set(fodder).size !== fodder.length) return "A fodder unit is repeated.";
   if (fodder.includes(target)) return "The target cannot be its own fodder.";
   return null;
 }
 
-/** Mirrors M4-01C's deterministic preview. Ownership, squad safety and payment remain in fuse. */
+/** Whether a form gives fusion EXP: fixed `fusionExp`, or any rarity but 1★ (`fodder_fusion_exp`). */
+function givesFusionExp(form: { rarity: unknown; fusionExp?: number }): boolean {
+  return form.fusionExp !== undefined || form.rarity !== 1;
+}
+
+/** Whether a unit form can be fusion fodder at all (the `fuse` RPC rejects the others). */
+export function canBeFodder(unitId: string, formId: string): boolean {
+  const form = unitContent(unitId)?.forms.find((f) => f.id === formId);
+  return form !== undefined && givesFusionExp(form);
+}
+
+/**
+ * Mirrors M4-01C's deterministic preview. Stacked copies come in as rows, one per copy
+ * (`stackCopies`). Ownership, squad safety and payment remain in fuse.
+ */
 export function fusionPreview(
   target: OwnedUnitRow,
   fodder: readonly OwnedUnitRow[],
@@ -40,7 +71,7 @@ export function fusionPreview(
   for (const row of fodder) {
     const content = unitContent(row.unit_id);
     const fodderForm = content?.forms.find((f) => f.id === row.form_id);
-    if (!content || !fodderForm || fodderForm.rarity === 1) return null;
+    if (!content || !fodderForm || !givesFusionExp(fodderForm)) return null;
     const duplicate = row.unit_id === target.unit_id;
     if (duplicate) burstGain += 10;
     gain +=

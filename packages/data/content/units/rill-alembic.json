@@ -2,6 +2,7 @@
   "id": "rill-alembic",
   "name": "Rill Alembic",
   "element": "water",
+  "stackable": true,
   "forms": [
     {
       "id": "rill-alembic-4",

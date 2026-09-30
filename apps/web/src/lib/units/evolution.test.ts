@@ -9,6 +9,8 @@ import {
 import type { OwnedUnitRow } from "./owned-units.ts";
 
 const TARGET = "00000000-0000-4000-8000-000000000001";
+const STACK = "00000000-0000-4000-8000-00000000aaaa";
+const EMPTY_STACK = "00000000-0000-4000-8000-00000000bbbb";
 let seq = 100;
 
 function unit(unitId: string, overrides: Partial<OwnedUnitRow> = {}): OwnedUnitRow {
@@ -58,10 +60,45 @@ describe("evolutionPlan (M4-02C)", () => {
       problems: [],
     });
     expect(plan?.units).toEqual([
-      { unitId: "cinder-effigy", name: "Cinder Effigy", count: 1, owned: 1, inSquad: 0 },
-      { unitId: "cinder-sprite", name: expect.any(String), count: 1, owned: 1, inSquad: 0 },
+      {
+        unitId: "cinder-effigy",
+        name: "Cinder Effigy",
+        count: 1,
+        owned: 1,
+        stacked: 0,
+        inSquad: 0,
+      },
+      {
+        unitId: "cinder-sprite",
+        name: expect.any(String),
+        count: 1,
+        owned: 1,
+        stacked: 0,
+        inSquad: 0,
+      },
     ]);
     expect(plan?.materialIds).toEqual([effigy.id, sprite.id]);
+    expect(plan?.materialStacks).toEqual({});
+  });
+
+  it("spends stacked copies first and counts them as owned (M4-05C)", () => {
+    const brand4: OwnedUnitRow = { ...brand3, form_id: "brand-4", level: 60 };
+    const row = unit("cinder-mote");
+    const stack = { id: STACK, unit_id: "cinder-mote", form_id: "cinder-mote-1", count: 1 };
+    const empty = { id: EMPTY_STACK, unit_id: "cinder-mote", form_id: "cinder-mote-1", count: 0 };
+    const plan = evolutionPlan(brand4, [brand4, row], [], [], 0, [empty, stack]);
+    expect(plan?.units.find((need) => need.unitId === "cinder-mote")).toMatchObject({
+      count: 2,
+      owned: 2,
+      stacked: 1,
+    });
+    expect(plan?.materialStacks).toEqual({ [STACK]: 1 });
+    expect(plan?.materialIds).toEqual([row.id]);
+
+    const plenty = evolutionPlan(brand4, [brand4, row], [], [], 0, [{ ...stack, count: 9 }]);
+    expect(plenty?.materialStacks).toEqual({ [STACK]: 2 });
+    expect(plenty?.materialIds).not.toContain(row.id);
+    expect(plenty?.units.find((need) => need.unitId === "cinder-mote")?.owned).toBe(10);
   });
 
   it("lists every shortfall: level, missing materials, squad-locked copies, and Zel", () => {

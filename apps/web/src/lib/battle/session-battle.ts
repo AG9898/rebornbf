@@ -1,4 +1,11 @@
-import { CONTENT_VERSION, type Enemy, EnemySchema, type Stage } from "@bfr/data";
+import {
+  CONTENT_VERSION,
+  type Enemy,
+  EnemySchema,
+  type Sphere,
+  type Stage,
+  sphereContent,
+} from "@bfr/data";
 import ashboundSentry from "@bfr/data/content/enemies/ch1-ashbound-sentry.json";
 import bramblePup from "@bfr/data/content/enemies/ch1-bramble-pup.json";
 import cinderMoth from "@bfr/data/content/enemies/ch1-cinder-moth.json";
@@ -34,6 +41,8 @@ export type SnapshotUnit = {
   level: number;
   bb_level?: number;
   sbb_level?: number;
+  spheres?: string[];
+  second_sphere_slot?: boolean;
   /** The owned unit's persisted type roll (snapshotted since M3-01D); null or absent means Lord. */
   unit_type?: UnitTypeRoll | null;
 };
@@ -127,6 +136,18 @@ function member(row: SnapshotUnit): Member | string {
   )
     return `${unit.name}'s burst levels are not valid in this version of the game.`;
   const art = formArtFile(unit.id, form.rarity);
+  const spheres: Sphere[] = [];
+  for (const id of row.spheres ?? []) {
+    const sphere = sphereContent(id);
+    if (!sphere) return `${unit.name}'s sphere is not in this version of the game.`;
+    spheres.push(sphere);
+  }
+  if (
+    spheres.length > (row.second_sphere_slot === true ? 2 : 1) ||
+    spheres.filter((sphere) => sphere.kind === "all-stat").length > 1
+  ) {
+    return `${unit.name}'s sphere slots are not valid in this version of the game.`;
+  }
   return {
     setup: {
       unit,
@@ -136,6 +157,7 @@ function member(row: SnapshotUnit): Member | string {
         ? { burstLevels: { bb: row.bb_level, sbb: row.sbb_level } }
         : {}),
       ...(row.unit_type ? { unitType: row.unit_type } : {}),
+      ...(spheres.length ? { spheres, secondSphereSlot: row.second_sphere_slot === true } : {}),
     },
     art: art ? unit.id : "",
     artForm: art ?? undefined,

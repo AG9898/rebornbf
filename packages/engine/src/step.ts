@@ -42,6 +42,7 @@ import {
   fillGauge,
   gaugeModifiersFromEffects,
   odFillRate,
+  rollBcFillOnAttack,
   rollConsumptionReduction,
 } from "./effects/gauge.ts";
 import { applyEffect, endedEffectIds } from "./effects/index.ts";
@@ -675,6 +676,26 @@ function startAttack(m: Mutable, input: AttackInput | BurstInput, events: Battle
       gaugeBefore: unit.bc,
       gaugeAfter,
     };
+  }
+  if (attacks.length > 0) {
+    const index = m.party.findIndex((member) => member.slot === unit.slot);
+    const attacker = m.party[index] ?? unit;
+    const fill = rollBcFillOnAttack(attacker.effects, m.rng);
+    m.rng = fill.rng;
+    if (fill.value > 0) {
+      const bc = fillGauge(attacker, fill.value);
+      m.party[index] = { ...attacker, bc };
+      applied.push({
+        type: "GaugeFilled",
+        tick: input.tick,
+        actionId,
+        actor: unit.slot,
+        target: unit.slot,
+        gained: bc - attacker.bc,
+        gauge: bc,
+        effect: "bb.fill_on_attack",
+      });
+    }
   }
   const activeUnit = m.party.find((member) => member.slot === unit.slot) ?? unit;
   const activeTarget = m.enemies.find((enemy) => enemy.slot === target) ?? targetEnemy;

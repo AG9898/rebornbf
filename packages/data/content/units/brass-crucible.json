@@ -2,6 +2,7 @@
   "id": "brass-crucible",
   "name": "Brass Crucible",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "brass-crucible-2",

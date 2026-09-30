@@ -2,6 +2,7 @@
   "id": "cinder-mote",
   "name": "Cinder Mote",
   "element": "fire",
+  "stackable": true,
   "forms": [
     {
       "id": "cinder-mote-1",

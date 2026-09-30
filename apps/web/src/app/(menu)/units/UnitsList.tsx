@@ -8,25 +8,29 @@ import { THUMB_ART_SIZE } from "../../../components/menu/ui-assets.ts";
 import {
   levelLabel,
   nextUnitSort,
-  type OwnedUnitView,
   UNIT_SORT_LABELS,
   type UnitSortKey,
 } from "../../../lib/units/owned-units.ts";
+import { type CollectionEntry, collectionHref } from "../../../lib/units/unit-stacks.ts";
 import styles from "./units.module.css";
 
 /**
  * The Units list as the original's All Units (M3-03E, ART_GUIDE → UI → Units, Squad, and Unit
  * detail screens): title bar, a five-column grid of element-framed thumbs over `bg-olive`, and
- * the help ticker. Presentational only; `page.tsx` reads the rows.
+ * the help ticker. A stack of untouched copies (M4-05C) is one tile with a ×N badge. Presentational
+ * only; `page.tsx` reads the rows.
  */
 export function UnitsList({
   units,
+  total,
   party,
   sort,
   failed,
 }: {
-  /** The player's units, already sorted by `sort`. */
-  units: readonly OwnedUnitView[];
+  /** The player's owned rows and stacks, already sorted by `sort`. */
+  units: readonly CollectionEntry[];
+  /** Units owned, counting every stacked copy. */
+  total: number;
   /** `owned_units` ids that sit in any saved squad; they show PARTY. */
   party: ReadonlySet<string>;
   sort: UnitSortKey;
@@ -35,7 +39,7 @@ export function UnitsList({
 }): ReactNode {
   return (
     <div className={styles.listPage}>
-      <TitleBar sort={sort} count={failed ? null : units.length} />
+      <TitleBar sort={sort} count={failed ? null : total} />
 
       <div className={styles.list}>
         {failed ? (
@@ -55,7 +59,7 @@ export function UnitsList({
           <ul className={styles.grid}>
             {units.map((unit) => (
               <li key={unit.id}>
-                <UnitIcon unit={unit} inParty={party.has(unit.id)} />
+                <UnitIcon unit={unit} inParty={unit.stackCount === null && party.has(unit.id)} />
               </li>
             ))}
           </ul>
@@ -101,15 +105,19 @@ function TitleBar({ sort, count }: { sort: UnitSortKey; count: number | null }):
   );
 }
 
-/** One grid icon: the form's thumb in its element frame, the level across the bottom, PARTY on top. */
-function UnitIcon({ unit, inParty }: { unit: OwnedUnitView; inParty: boolean }): ReactNode {
+/**
+ * One grid icon: the form's thumb in its element frame, the level across the bottom, PARTY on top,
+ * and a stack's ×N count in the top-right corner.
+ */
+function UnitIcon({ unit, inParty }: { unit: CollectionEntry; inParty: boolean }): ReactNode {
   const level = levelLabel(unit);
+  const copies = unit.stackCount === null ? "" : `, ${unit.stackCount} copies`;
   return (
     <Link
-      href={`/units/${unit.id}`}
+      href={collectionHref(unit)}
       className={styles.icon}
       data-element={unit.element ?? undefined}
-      aria-label={`${unit.name}, ${unit.rarityLabel}, ${level}${inParty ? ", in a squad" : ""}`}
+      aria-label={`${unit.name}, ${unit.rarityLabel}, ${level}${copies}${inParty ? ", in a squad" : ""}`}
     >
       <span className={styles.iconArt}>
         {unit.thumb ? (
@@ -140,6 +148,11 @@ function UnitIcon({ unit, inParty }: { unit: OwnedUnitView; inParty: boolean }):
         <UiImage name={`unit-frame-${unit.element}`} className={styles.iconFrame} />
       ) : null}
       {inParty ? <span className={`${styles.party} ${styles.outline}`}>PARTY</span> : null}
+      {unit.stackCount !== null ? (
+        <span className={`${styles.stackCount} ${styles.outline}`} aria-hidden>
+          ×{unit.stackCount}
+        </span>
+      ) : null}
       <span className={`${styles.level} ${styles.outline}`}>{level}</span>
     </Link>
   );

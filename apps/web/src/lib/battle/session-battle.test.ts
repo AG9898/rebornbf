@@ -35,6 +35,52 @@ function row(overrides: Partial<BattleSessionRow> = {}): BattleSessionRow {
 }
 
 describe("session battle (M3-04B)", () => {
+  it("resolves frozen sphere IDs identically for playback and replay", () => {
+    const result = sessionBattle(
+      row({
+        squad: {
+          leader_index: 0,
+          units: [
+            {
+              ...snap("brand", "brand-3"),
+              spheres: ["wayfarer-seal", "emberheart"],
+              second_sphere_slot: true,
+            },
+          ],
+          ally: null,
+        },
+      }),
+    );
+    if (!result.ok) throw new Error(result.message);
+    expect(result.battle.setup.squad[0]?.spheres?.map((s) => s.id)).toEqual([
+      "wayfarer-seal",
+      "emberheart",
+    ]);
+    expect(
+      createBattle(result.battle.setup, result.battle.seed).party[0]?.effects.filter(
+        (e) => e.source === "sphere",
+      ),
+    ).toHaveLength(7);
+  });
+  it("refuses unknown sphere IDs, a locked second slot, and two all-stat spheres", () => {
+    for (const gear of [
+      { spheres: ["missing"] },
+      { spheres: ["wayfarer-seal", "emberheart"] },
+      { spheres: ["wayfarer-seal", "vanguard-seal"], second_sphere_slot: true },
+    ]) {
+      expect(
+        sessionBattle(
+          row({
+            squad: {
+              leader_index: 0,
+              units: [{ ...snap("brand", "brand-omni"), ...gear }],
+              ally: null,
+            },
+          }),
+        ).ok,
+      ).toBe(false);
+    }
+  });
   it("uses the frozen burst levels for playback and replay", () => {
     const result = sessionBattle(
       row({

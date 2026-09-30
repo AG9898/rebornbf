@@ -2,6 +2,7 @@
   "id": "dusk-sprite",
   "name": "Dusk Sprite",
   "element": "dark",
+  "stackable": true,
   "forms": [
     {
       "id": "dusk-sprite-2",

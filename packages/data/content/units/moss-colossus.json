@@ -2,6 +2,7 @@
   "id": "moss-colossus",
   "name": "Moss Colossus",
   "element": "earth",
+  "stackable": true,
   "forms": [
     {
       "id": "moss-colossus-5",

@@ -12,6 +12,7 @@ import {
   validateEvolutionRefs,
   validateGuestFile,
   validateItemFile,
+  validateSphereFile,
   validateStageFile,
   validateStory,
   validateTutorials,
@@ -56,6 +57,7 @@ validateDir("items", validateItemFile);
 const unitIds = new Set(jsonFiles("units").map((file) => file.slice("units/".length, -5)));
 const itemIds = new Set(jsonFiles("items").map((file) => file.slice("items/".length, -5)));
 validateDir("guests", (file, json) => validateGuestFile(file, json, unitIds));
+validateDir("spheres", (file, json) => validateSphereFile(file, json, unitIds));
 for (const unit of units) {
   errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
 }

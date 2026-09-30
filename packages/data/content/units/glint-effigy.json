@@ -2,6 +2,7 @@
   "id": "glint-effigy",
   "name": "Glint Effigy",
   "element": "light",
+  "stackable": true,
   "forms": [
     {
       "id": "glint-effigy-3",

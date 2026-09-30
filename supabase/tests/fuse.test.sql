@@ -4,11 +4,11 @@ begin;
 select plan(37);
 
 -- Privileges --------------------------------------------------------------------------------------
-select ok(has_function_privilege('authenticated', 'public.fuse(uuid, uuid[])', 'execute'),
+select ok(has_function_privilege('authenticated', 'public.fuse(uuid, uuid[], jsonb)', 'execute'),
   'authenticated may call fuse');
-select ok(not has_function_privilege('anon', 'public.fuse(uuid, uuid[])', 'execute'),
+select ok(not has_function_privilege('anon', 'public.fuse(uuid, uuid[], jsonb)', 'execute'),
   'anon may not call fuse');
-select ok((select prosecdef from pg_proc where oid = 'public.fuse(uuid, uuid[])'::regprocedure),
+select ok((select prosecdef from pg_proc where oid = 'public.fuse(uuid, uuid[], jsonb)'::regprocedure),
   'fuse is security definer');
 select ok(not has_table_privilege('authenticated', 'public.level_exp_curves', 'select'),
   'clients cannot read the curve table directly');

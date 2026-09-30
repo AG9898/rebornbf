@@ -1,0 +1,12 @@
+{
+  "id": "sunshard",
+  "name": "Sunshard",
+  "kind": "signature",
+  "rarity": 6,
+  "signatureUnit": "aurelle",
+  "effects": [
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "atk", "target": "self" },
+    { "id": "passive.stat_pct", "value": 0.3, "stat": "def", "target": "self" },
+    { "id": "buff.crit_dmg", "value": 0.5, "target": "self" }
+  ]
+}

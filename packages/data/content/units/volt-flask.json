@@ -2,6 +2,7 @@
   "id": "volt-flask",
   "name": "Volt Flask",
   "element": "thunder",
+  "stackable": true,
   "forms": [
     {
       "id": "volt-flask-3",
