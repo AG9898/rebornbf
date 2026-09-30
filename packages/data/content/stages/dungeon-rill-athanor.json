@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-rill-athanor",
+  "name": "Rill Athanor Kiln",
+  "dungeon": {
+    "series": "athanor",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-rill-athanor"
+        },
+        {
+          "enemy": "dg-rill-athanor"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-athanor"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-athanor",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    }
+  ]
+}

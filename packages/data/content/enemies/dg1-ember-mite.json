@@ -1,0 +1,66 @@
+{
+  "id": "dg1-ember-mite",
+  "name": "Ember Mite",
+  "element": "fire",
+  "stats": {
+    "hp": 4000,
+    "atk": 850,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 18,
+    "hitFrames": [0, 8, 16],
+    "damageDistribution": [30, 30, 40],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "flare-nip",
+      "name": "Flare Nip",
+      "attacks": [
+        {
+          "moveType": "melee",
+          "startDelayFrames": 22,
+          "hitFrames": [0, 10],
+          "damageDistribution": [50, 50],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.st",
+          "value": 1.2,
+          "target": "enemy"
+        },
+        {
+          "id": "buff.atk",
+          "value": 0.3,
+          "turns": 2,
+          "target": "self"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "flare-nip",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}

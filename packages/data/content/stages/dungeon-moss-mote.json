@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-moss-mote",
+  "name": "Moss Mote Hollow",
+  "dungeon": {
+    "series": "mote",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-moss-mote"
+        },
+        {
+          "enemy": "dg-moss-mote"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-mote"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-mote",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-glint-colossus",
+  "name": "Glint Colossus Forge",
+  "dungeon": {
+    "series": "colossus",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 45
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-glint-colossus"
+        },
+        {
+          "enemy": "dg-glint-colossus"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-colossus"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-colossus",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

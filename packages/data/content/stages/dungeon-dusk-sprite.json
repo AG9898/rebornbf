@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-dusk-sprite",
+  "name": "Dusk Sprite Den",
+  "dungeon": {
+    "series": "sprite",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-dusk-sprite"
+        },
+        {
+          "enemy": "dg-dusk-sprite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-sprite"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-sprite",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

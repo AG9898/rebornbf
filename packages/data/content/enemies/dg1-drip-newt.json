@@ -1,0 +1,60 @@
+{
+  "id": "dg1-drip-newt",
+  "name": "Drip Newt",
+  "element": "water",
+  "stats": {
+    "hp": 4000,
+    "atk": 850,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 24,
+    "hitFrames": [0],
+    "damageDistribution": [100],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "cold-seep",
+      "name": "Cold Seep",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 28,
+          "hitFrames": [0, 8, 16],
+          "damageDistribution": [30, 30, 40],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.5,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "cold-seep",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}

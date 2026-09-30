@@ -1,0 +1,53 @@
+{
+  "id": "dg1-root-crawler",
+  "name": "Root Crawler",
+  "element": "earth",
+  "stats": {
+    "hp": 4000,
+    "atk": 850,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 22,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "burrow",
+      "name": "Burrow",
+      "attacks": [],
+      "effects": [
+        {
+          "id": "buff.def",
+          "value": 0.5,
+          "turns": 2,
+          "target": "self"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "burrow",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}

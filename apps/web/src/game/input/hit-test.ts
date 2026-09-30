@@ -4,7 +4,12 @@ import type { EnemySlotId, PlayerSlotId } from "@bfr/engine";
 export type InputTarget =
   | { readonly kind: "unit"; readonly slot: PlayerSlotId }
   | { readonly kind: "enemy"; readonly slot: EnemySlotId }
-  | { readonly kind: "od" };
+  | { readonly kind: "od" }
+  /** An item bar slot, by its item's content ID (M2-02D). */
+  | { readonly kind: "item"; readonly item: string }
+  /** The Auto and Speed pills (M2-02D): scene controls, never engine inputs. */
+  | { readonly kind: "auto" }
+  | { readonly kind: "speed" };
 
 /** A rectangular touch area on the 640×1136 logical grid. */
 export interface HitRegion {

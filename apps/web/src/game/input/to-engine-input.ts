@@ -11,10 +11,14 @@ import {
 import type { Gesture } from "./gesture.ts";
 import type { InputTarget } from "./hit-test.ts";
 
-/** UI-only input state: the selected enemy and whether the OD button is waiting for a unit. */
+/**
+ * UI-only input state: the selected enemy, whether the OD button is waiting for a unit, and the
+ * single-target item waiting for the unit to use it on (M2-02D).
+ */
 export interface InputUiState {
   readonly selectedTarget?: EnemySlotId;
   readonly odArmed: boolean;
+  readonly selectedItem?: string;
 }
 
 export const INITIAL_INPUT_UI: InputUiState = { odArmed: false };
@@ -45,11 +49,17 @@ export function inputTick(state: BattleState, timeMs: number): number {
  * - Tap enemy: select it as the target (UI state only; no engine input).
  * - Tap OD button: arm (or disarm) Overdrive selection while the OD gauge is full.
  * - Any gesture on a unit while OD is armed: `overdrive` for that unit, then disarm.
+ * - Tap item (M2-02D): a `party` item is used at once (`item` input, actor = first party unit;
+ *   it reaches every unit); a `single` item is selected (tap it again to deselect). Items with
+ *   none left are ignored. Selecting an item disarms OD, and arming OD drops the item.
+ * - Tap unit while an item is selected: `item` on that unit (dead units too, for revives), then
+ *   deselect.
  * - Tap unit: `attack`; swipe up: `burst` at the highest charged tier (nothing if none);
  *   swipe down: `guard`. Attacks and bursts carry the selected target.
  *
- * Gestures on dead units, unknown slots, or nothing are ignored. Every other legality rule
- * (already acted, phase, gauge) is the engine's to decide when it receives the input.
+ * Auto and Speed are scene controls and produce nothing here. Other gestures on dead units,
+ * unknown slots, or nothing are ignored. Every other legality rule (already acted, phase, gauge,
+ * whether an item would do anything) is the engine's to decide when it receives the input.
  */
 export function toEngineInput(
   ui: InputUiState,
@@ -68,13 +78,34 @@ export function toEngineInput(
     return { ui: { ...ui, selectedTarget: enemy.slot } };
   }
 
+  if (target.kind === "auto" || target.kind === "speed") return { ui };
+
   if (target.kind === "od") {
     if (gesture.kind !== "tap") return { ui };
-    return { ui: { ...ui, odArmed: !ui.odArmed && isOdFull(state.od) } };
+    const { selectedItem: _dropped, ...rest } = ui;
+    return { ui: { ...rest, odArmed: !ui.odArmed && isOdFull(state.od) } };
+  }
+
+  if (target.kind === "item") {
+    const stack = state.items.find((s) => s.item.id === target.item);
+    const actor = state.party[0]?.slot;
+    if (gesture.kind !== "tap" || !stack || stack.count <= 0 || !actor) return { ui };
+    const { selectedItem, ...rest } = ui;
+    if (stack.item.target === "party") {
+      return { ui: rest, input: { type: "item", tick, actor, item: stack.item.id } };
+    }
+    if (selectedItem === stack.item.id) return { ui: rest };
+    return { ui: { ...rest, odArmed: false, selectedItem: stack.item.id } };
   }
 
   const unit = state.party.find((u) => u.slot === target.slot);
-  if (!unit || unit.hp <= 0) return { ui };
+  if (!unit) return { ui };
+  if (ui.selectedItem !== undefined) {
+    if (gesture.kind !== "tap") return { ui };
+    const { selectedItem: item, ...rest } = ui;
+    return { ui: rest, input: { type: "item", tick, actor: unit.slot, item } };
+  }
+  if (unit.hp <= 0) return { ui };
   const aim = ui.selectedTarget === undefined ? {} : { target: ui.selectedTarget };
 
   if (ui.odArmed) {

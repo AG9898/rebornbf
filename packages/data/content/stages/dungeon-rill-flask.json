@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-rill-flask",
+  "name": "Rill Flask Cellar",
+  "dungeon": {
+    "series": "flask",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-rill-flask"
+        },
+        {
+          "enemy": "dg-rill-flask"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-flask"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-flask",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    }
+  ]
+}

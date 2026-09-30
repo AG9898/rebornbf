@@ -24,10 +24,13 @@ describe("demo battle (M2-05B)", () => {
     expect(DEMO_BATTLE_SPEC.enemyWaves?.[2]).toEqual([{ id: "demo-ashen-warden", size: 256 }]);
   });
 
-  it("resolves a background for every bundled stage", () => {
+  // Farming-dungeon stages get the chapter 1 dungeon background and their sprites in M6-07M
+  // (RESOLVED-72); until then they have no battle art and are skipped here.
+  it("resolves a background for every bundled non-dungeon stage", () => {
     const dir = join(import.meta.dirname, "../../../../../packages/data/content/stages");
     for (const file of readdirSync(dir).filter((name) => name.endsWith(".json"))) {
       const stage = StageSchema.parse(JSON.parse(readFileSync(join(dir, file), "utf8")));
+      if (stage.dungeon) continue;
       expect(stageBackground(stage), file).toBe("plains");
     }
   });

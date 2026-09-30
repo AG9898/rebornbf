@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-dusk-cairn",
+  "name": "Dusk Cairn Barrow",
+  "dungeon": {
+    "series": "cairn",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-dusk-cairn"
+        },
+        {
+          "enemy": "dg-dusk-cairn"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-cairn"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-cairn",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

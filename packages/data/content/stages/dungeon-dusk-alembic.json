@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-dusk-alembic",
+  "name": "Dusk Alembic Still",
+  "dungeon": {
+    "series": "alembic",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-dusk-alembic"
+        },
+        {
+          "enemy": "dg-dusk-alembic"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-alembic"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-alembic",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

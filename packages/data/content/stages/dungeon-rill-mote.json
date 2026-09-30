@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-rill-mote",
+  "name": "Rill Mote Hollow",
+  "dungeon": {
+    "series": "mote",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-rill-mote"
+        },
+        {
+          "enemy": "dg-rill-mote"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-mote"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-mote",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    }
+  ]
+}

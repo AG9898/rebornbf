@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-cinder-athanor",
+  "name": "Cinder Athanor Kiln",
+  "dungeon": {
+    "series": "athanor",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-cinder-athanor"
+        },
+        {
+          "enemy": "dg-cinder-athanor"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-athanor"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-athanor",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    }
+  ]
+}

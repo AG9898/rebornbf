@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-rill-colossus",
+  "name": "Rill Colossus Forge",
+  "dungeon": {
+    "series": "colossus",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 45
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-rill-colossus"
+        },
+        {
+          "enemy": "dg-rill-colossus"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-colossus"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-colossus",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    }
+  ]
+}

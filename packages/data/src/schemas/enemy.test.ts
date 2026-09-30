@@ -183,6 +183,15 @@ describe("StageSchema", () => {
     ]);
   });
 
+  it("accepts a whole-percent ramp from 1 to 100 and rejects 0, fractions, and over 100", () => {
+    const withRamp = (ramp: number) => ({ ...dungeon, dungeon: { ...dungeon.dungeon, ramp } });
+    expect(StageSchema.safeParse(withRamp(10)).success).toBe(true);
+    expect(StageSchema.safeParse(withRamp(100)).success).toBe(true);
+    for (const bad of [0, 2.5, 101]) {
+      expect(StageSchema.safeParse(withRamp(bad)).success).toBe(false);
+    }
+  });
+
   it("rejects a stage that is both story and dungeon", () => {
     const both = { ...dungeon, story: { chapter: 1, number: 1, text: "x" } };
     expect(issues(StageSchema.safeParse(both))).toEqual([

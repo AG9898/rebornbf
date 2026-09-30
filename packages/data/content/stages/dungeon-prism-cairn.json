@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-prism-cairn",
+  "name": "Prism Cairn Vault",
+  "dungeon": {
+    "series": "prism-cairn",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-prism-cairn"
+        },
+        {
+          "enemy": "dg-prism-cairn"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-prism-cairn"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-prism-cairn",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

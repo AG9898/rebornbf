@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-dusk-colossus",
+  "name": "Dusk Colossus Forge",
+  "dungeon": {
+    "series": "colossus",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 45
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-dusk-colossus"
+        },
+        {
+          "enemy": "dg-dusk-colossus"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-colossus"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-colossus",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-dusk-mote",
+  "name": "Dusk Mote Hollow",
+  "dungeon": {
+    "series": "mote",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-dusk-mote"
+        },
+        {
+          "enemy": "dg-dusk-mote"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-mote"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-mote",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

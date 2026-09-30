@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-glint-sprite",
+  "name": "Glint Sprite Den",
+  "dungeon": {
+    "series": "sprite",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-glint-sprite"
+        },
+        {
+          "enemy": "dg-glint-sprite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-sprite"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-sprite",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

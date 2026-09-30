@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-rill-sprite",
+  "name": "Rill Sprite Den",
+  "dungeon": {
+    "series": "sprite",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-rill-sprite"
+        },
+        {
+          "enemy": "dg-rill-sprite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-sprite"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-drip-newt"
+        },
+        {
+          "enemy": "dg-rill-sprite",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-drip-newt"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-dusk-effigy",
+  "name": "Dusk Effigy Crypt",
+  "dungeon": {
+    "series": "effigy",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-dusk-effigy"
+        },
+        {
+          "enemy": "dg-dusk-effigy"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-effigy"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-dusk-effigy",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

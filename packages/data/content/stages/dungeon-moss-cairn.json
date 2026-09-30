@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-moss-cairn",
+  "name": "Moss Cairn Barrow",
+  "dungeon": {
+    "series": "cairn",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-moss-cairn"
+        },
+        {
+          "enemy": "dg-moss-cairn"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-cairn"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-cairn",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    }
+  ]
+}

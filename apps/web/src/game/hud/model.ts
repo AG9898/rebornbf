@@ -43,6 +43,15 @@ export interface HudEnemy {
   readonly effects: readonly EffectId[];
 }
 
+/** One battle item on the item bar (M2-02D): its count follows `ItemUsed.remaining`. */
+export interface HudItem {
+  readonly id: string;
+  readonly name: string;
+  /** `single`: tap the item, then the unit to use it on; `party`: used on tap. */
+  readonly target: "single" | "party";
+  readonly count: number;
+}
+
 export interface HudState {
   readonly units: readonly HudUnit[];
   readonly enemies: readonly HudEnemy[];
@@ -57,6 +66,8 @@ export interface HudState {
    */
   readonly counters: { readonly damage: number; readonly sparks: number; readonly turn: number };
   readonly result?: BattleResult;
+  /** The battle's item inventory, in setup order. */
+  readonly items: readonly HudItem[];
   /** Enemy wave rosters (names, elements, and max HP), for `WaveStarted`. */
   readonly waves: readonly (readonly {
     readonly name: string;
@@ -96,6 +107,12 @@ export function initHud(state: BattleState): HudState {
     turn: state.turn,
     counters: { damage: 0, sparks: 0, turn: state.turn },
     ...(state.result ? { result: state.result } : {}),
+    items: state.items.map(({ item, count }) => ({
+      id: item.id,
+      name: item.name,
+      target: item.target,
+      count,
+    })),
     waves: state.waves.map((wave) =>
       wave.map((enemy) => ({ name: enemy.name, element: enemy.element, hp: enemy.stats.hp })),
     ),
@@ -238,9 +255,14 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
     case "EnemyActionStarted":
     case "WaveCleared":
     case "ContinueRejected":
-    // The item bar and its counts arrive with M2-02D.
-    case "ItemUsed":
       return hud;
+    case "ItemUsed":
+      return {
+        ...hud,
+        items: hud.items.map((item) =>
+          item.id === event.item ? { ...item, count: event.remaining } : item,
+        ),
+      };
   }
 }
 

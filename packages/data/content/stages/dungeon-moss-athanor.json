@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-moss-athanor",
+  "name": "Moss Athanor Kiln",
+  "dungeon": {
+    "series": "athanor",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-moss-athanor"
+        },
+        {
+          "enemy": "dg-moss-athanor"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-athanor"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-athanor",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    }
+  ]
+}

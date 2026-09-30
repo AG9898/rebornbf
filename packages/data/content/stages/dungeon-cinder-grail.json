@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-cinder-grail",
+  "name": "Cinder Grail Chapel",
+  "dungeon": {
+    "series": "grail",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-cinder-grail"
+        },
+        {
+          "enemy": "dg-cinder-grail"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-grail"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-grail",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    }
+  ]
+}

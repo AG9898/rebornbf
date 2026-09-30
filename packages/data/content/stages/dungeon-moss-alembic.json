@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-moss-alembic",
+  "name": "Moss Alembic Still",
+  "dungeon": {
+    "series": "alembic",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-moss-alembic"
+        },
+        {
+          "enemy": "dg-moss-alembic"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-alembic"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-alembic",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-glint-mote",
+  "name": "Glint Mote Hollow",
+  "dungeon": {
+    "series": "mote",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-glint-mote"
+        },
+        {
+          "enemy": "dg-glint-mote"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-mote"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-mote",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

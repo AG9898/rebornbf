@@ -48,11 +48,14 @@ export type KeyItemRule = z.infer<typeof KeyItemRuleSchema>;
  * Where a farming-dungeon stage sits (GAME_DESIGN §7 → Farming dungeons, RESOLVED-67/70): its
  * `series` and the `gate` stage whose first clear opens it (a story stage, or Trial 1 for the
  * Zenith Core and growth series). `keyItem` is set on the Crown Shard and Zenith Core stages.
+ * `ramp` is the series' difficulty ramp in percent (RESOLVED-71): every enemy's HP and ATK are
+ * raised by it when the battle is built (`rampedStats`); absent means 0.
  */
 export const DungeonPlacementSchema = z.strictObject({
   series: ContentIdSchema,
   gate: ContentIdSchema,
   keyItem: KeyItemRuleSchema.optional(),
+  ramp: z.number().int().min(1).max(100).optional(),
 });
 export type DungeonPlacement = z.infer<typeof DungeonPlacementSchema>;
 

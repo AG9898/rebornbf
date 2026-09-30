@@ -13,10 +13,13 @@ import {
   CARD_PARTS,
   enemyRect,
   HUD,
+  ITEM_SLOTS,
+  itemSlotRect,
   PARTY_SLOTS,
   type Rect,
   unitCardRect,
 } from "../playback/layout.ts";
+import { type BattleControls, speedLabel } from "./controls.ts";
 import { bossEnemy, gaugeView, type HudState, type HudUnit, resultTitle } from "./model.ts";
 
 /** The menu's outlined label style (ART_GUIDE.md → UI): white with a dark brown outline. */
@@ -35,6 +38,9 @@ export const HUD_COLORS = {
   downCard: 0x806060,
   downPortrait: 0x5a3434,
   overdrive: 0xffc0ea,
+  /** Item slots: the selected single-target item (gold), and an item with none left (dimmed). */
+  itemSelected: 0xffd36a,
+  itemEmpty: 0x6a6a78,
 } as const;
 
 /** Top counter label colours (ART_GUIDE.md → Effects): Damage orange, Spark green. */
@@ -86,6 +92,18 @@ interface CardView {
   readonly tier: Phaser.GameObjects.Text;
 }
 
+interface ItemSlotView {
+  readonly slot: Phaser.GameObjects.Image;
+  readonly name: Phaser.GameObjects.Text;
+  readonly count: Phaser.GameObjects.Text;
+}
+
+interface PillView {
+  readonly rect: Rect;
+  parts: readonly Phaser.GameObjects.Image[];
+  readonly label: Phaser.GameObjects.Text;
+}
+
 interface EnemyBarView {
   readonly fill: Phaser.GameObjects.Rectangle;
   readonly width: number;
@@ -128,6 +146,12 @@ export class HudView {
   private bossOrb!: Phaser.GameObjects.Image;
   private bossHp!: Fill;
   private result: Phaser.GameObjects.GameObject[] = [];
+  private items: ItemSlotView[] = [];
+  private itemIds: string[] = [];
+  private itemCounts: number[] = [];
+  private selectedItem: string | undefined;
+  private autoPill!: PillView;
+  private speedPill!: PillView;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -147,7 +171,7 @@ export class HudView {
       this.piece("unit-card-empty", { ...r, y: r.y + (r.height - height) / 2, height });
     }
     this.buildOd();
-    this.buildItems();
+    this.buildItems(hud);
     this.buildEnemies(hud);
     this.render(hud);
   }
@@ -191,6 +215,45 @@ export class HudView {
     const full = hud.od.points >= hud.od.limit;
     this.setFill(this.od, hud.od.points / hud.od.limit);
     this.odText.setText(full ? "OVERDRIVE" : "OD").setColor(full ? "#ffd6f0" : "#ffffff");
+    this.itemCounts = hud.items.map((item) => item.count);
+    this.items.forEach((view, i) => {
+      const item = hud.items[i];
+      view.name.setText(item?.name ?? "");
+      view.count.setText(item ? `x${item.count}` : "");
+    });
+    this.paintItems();
+  }
+
+  /** The Auto pill lights while auto-battle is on; the Speed pill shows x1 or x2. */
+  setControls(controls: BattleControls): void {
+    this.lightPill(this.autoPill, controls.auto);
+    this.lightPill(this.speedPill, controls.speed === 2);
+    this.speedPill.label.setText(speedLabel(controls.speed));
+  }
+
+  /** Redraws a pill in the lit or plain art (their heights differ), its label kept on top. */
+  private lightPill(view: PillView, lit: boolean): void {
+    for (const part of view.parts) part.destroy();
+    view.parts = this.pill(view.rect, lit ? "btn-pill-lit" : "btn-pill");
+    view.label.setToTop().setColor(lit ? "#fff4b0" : "#ffffff");
+  }
+
+  /** Rings the selected single-target item's slot in gold until it is used or deselected. */
+  setSelectedItem(item: string | undefined): void {
+    this.selectedItem = item;
+    this.paintItems();
+  }
+
+  /** Dims used-up items and rings the selected one. */
+  private paintItems(): void {
+    this.items.forEach((view, i) => {
+      const empty = (this.itemCounts[i] ?? 0) <= 0;
+      view.name.setAlpha(empty ? 0.5 : 1);
+      view.count.setAlpha(empty ? 0.5 : 1);
+      if (empty) view.slot.setTint(HUD_COLORS.itemEmpty);
+      else if (this.itemIds[i] === this.selectedItem) view.slot.setTint(HUD_COLORS.itemSelected);
+      else view.slot.clearTint();
+    });
   }
 
   /** Lights the OD gauge while Overdrive selection is armed. */
@@ -278,14 +341,14 @@ export class HudView {
       .image(orb.x, orb.y, uiPiece("orb-fire").key)
       .setDisplaySize(orb.size, orb.size);
     this.bossName = this.text(HUD.bossName.x, HUD.bossName.y, "", 22).setOrigin(0, 0.5);
-    // Visual only until M2-02D wires Auto and Speed.
-    for (const [pill, label] of [
-      [HUD.autoPill, "Auto"],
-      [HUD.speedPill, "x1"],
-    ] as const) {
-      this.pill(pill);
-      this.text(pill.x + pill.width / 2, pill.y + pill.height / 2, label, 19).setOrigin(0.5);
-    }
+    // Tapped through the scene's hit regions; `setControls` shows their state (M2-02D).
+    const pill = (rect: Rect, label: string): PillView => ({
+      rect,
+      parts: this.pill(rect, "btn-pill"),
+      label: this.text(rect.x + rect.width / 2, rect.y + rect.height / 2, label, 19).setOrigin(0.5),
+    });
+    this.autoPill = pill(HUD.autoPill, "Auto");
+    this.speedPill = pill(HUD.speedPill, "x1");
     this.piece("boss-hp-frame", HUD.bossHpFrame);
     this.bossHp = this.fill("fill-boss", HUD.bossHpTrough);
   }
@@ -297,11 +360,23 @@ export class HudView {
     this.odText = this.text(t.x + 12, t.y + t.height / 2, "OD", 17).setOrigin(0, 0.5);
   }
 
-  /** The item panel and its five empty slots (M2-02D fills them). */
-  private buildItems(): void {
+  /**
+   * The item panel and its five slots (M2-02D): the first five inventory items in setup order,
+   * each with its name and count; slots past the inventory stay empty.
+   */
+  private buildItems(hud: HudState): void {
     this.piece("item-panel", HUD.itemPanel);
-    const slot = HUD.itemSlot;
-    for (let i = 0; i < 5; i++) this.piece("item-slot", { ...slot, x: slot.x + i * slot.pitch });
+    this.itemIds = hud.items.slice(0, ITEM_SLOTS).map((item) => item.id);
+    this.items = [];
+    for (let i = 0; i < ITEM_SLOTS; i++) {
+      const r = itemSlotRect(i);
+      const slot = this.piece("item-slot", r);
+      if (i >= this.itemIds.length) continue;
+      const name = this.text(r.x + r.width / 2, r.y + r.height * 0.42, "", 16).setOrigin(0.5);
+      name.setAlign("center").setWordWrapWidth(r.width - 12);
+      const count = this.text(r.x + r.width - 10, r.y + r.height - 10, "", 18).setOrigin(1, 1);
+      this.items.push({ slot, name, count });
+    }
   }
 
   private buildCard(unit: HudUnit, r: Rect, portraitKey: string | undefined): CardView {
@@ -405,9 +480,9 @@ export class HudView {
    * A pill narrower than its art: the two rounded caps at the art's scale and the plain middle
    * stretched between them, so the ends are not squashed.
    */
-  private pill(rect: Rect): void {
-    const key = uiPiece("btn-pill").key;
-    const { width, height } = uiPieceSize("btn-pill");
+  private pill(rect: Rect, piece: "btn-pill" | "btn-pill-lit"): Phaser.GameObjects.Image[] {
+    const key = uiPiece(piece).key;
+    const { width, height } = uiPieceSize(piece);
     const cap = 32;
     const sy = rect.height / height;
     const left = this.scene.add.image(rect.x, rect.y, key).setOrigin(0).setScale(ART_SCALE, sy);
@@ -423,6 +498,7 @@ export class HudView {
       .setOrigin(0)
       .setScale(middleScale, sy);
     middle.setCrop(cap, 0, width - 2 * cap, height);
+    return [left, right, middle];
   }
 
   /** A fill strip fitted to its trough, clipped to the trough's rounded ends. */

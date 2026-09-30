@@ -1,0 +1,37 @@
+{
+  "id": "dg-volt-colossus",
+  "name": "Volt Colossus",
+  "element": "thunder",
+  "stats": {
+    "hp": 9000,
+    "atk": 1800,
+    "def": 1500,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 50,
+      "amount": 120
+    },
+    "capture": {
+      "unit": "volt-colossus",
+      "rate": 25
+    }
+  }
+}

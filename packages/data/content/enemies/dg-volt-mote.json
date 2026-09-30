@@ -1,0 +1,37 @@
+{
+  "id": "dg-volt-mote",
+  "name": "Volt Mote",
+  "element": "thunder",
+  "stats": {
+    "hp": 4000,
+    "atk": 1400,
+    "def": 1200,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 50,
+      "amount": 30
+    },
+    "capture": {
+      "unit": "volt-mote",
+      "rate": 25
+    }
+  }
+}

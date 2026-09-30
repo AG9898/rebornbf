@@ -1,0 +1,37 @@
+{
+  "id": "dg-glint-urn",
+  "name": "Glint Urn",
+  "element": "light",
+  "stats": {
+    "hp": 6000,
+    "atk": 1600,
+    "def": 1800,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 50,
+      "amount": 80
+    },
+    "capture": {
+      "unit": "glint-urn",
+      "rate": 25
+    }
+  }
+}

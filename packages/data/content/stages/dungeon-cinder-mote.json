@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-cinder-mote",
+  "name": "Cinder Mote Hollow",
+  "dungeon": {
+    "series": "mote",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-cinder-mote"
+        },
+        {
+          "enemy": "dg-cinder-mote"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-mote"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-mote",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    }
+  ]
+}

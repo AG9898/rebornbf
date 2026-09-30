@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-cinder-colossus",
+  "name": "Cinder Colossus Forge",
+  "dungeon": {
+    "series": "colossus",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 45
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-cinder-colossus"
+        },
+        {
+          "enemy": "dg-cinder-colossus"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-colossus"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-colossus",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    }
+  ]
+}

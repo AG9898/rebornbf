@@ -1,0 +1,33 @@
+{
+  "id": "dg1-static-eel",
+  "name": "Static Eel",
+  "element": "thunder",
+  "stats": {
+    "hp": 4000,
+    "atk": 850,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 6, 12],
+    "damageDistribution": [30, 30, 40],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}

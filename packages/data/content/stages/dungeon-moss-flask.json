@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-moss-flask",
+  "name": "Moss Flask Cellar",
+  "dungeon": {
+    "series": "flask",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-moss-flask"
+        },
+        {
+          "enemy": "dg-moss-flask"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-flask"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-root-crawler"
+        },
+        {
+          "enemy": "dg-moss-flask",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-root-crawler"
+        }
+      ]
+    }
+  ]
+}

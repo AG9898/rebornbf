@@ -1,0 +1,37 @@
+{
+  "id": "dg-moss-effigy",
+  "name": "Moss Effigy",
+  "element": "earth",
+  "stats": {
+    "hp": 3500,
+    "atk": 650,
+    "def": 700,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 50,
+      "amount": 40
+    },
+    "capture": {
+      "unit": "moss-effigy",
+      "rate": 25
+    }
+  }
+}

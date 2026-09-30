@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-cinder-flask",
+  "name": "Cinder Flask Cellar",
+  "dungeon": {
+    "series": "flask",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-cinder-flask"
+        },
+        {
+          "enemy": "dg-cinder-flask"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-flask"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-ember-mite"
+        },
+        {
+          "enemy": "dg-cinder-flask",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-ember-mite"
+        }
+      ]
+    }
+  ]
+}

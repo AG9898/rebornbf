@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-glint-urn",
+  "name": "Glint Urn Reliquary",
+  "dungeon": {
+    "series": "glint-urn",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 45
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-glint-urn"
+        },
+        {
+          "enemy": "dg-glint-urn"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-urn"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-glint-urn",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

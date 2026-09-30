@@ -1,0 +1,47 @@
+{
+  "id": "dungeon-volt-effigy",
+  "name": "Volt Effigy Crypt",
+  "dungeon": {
+    "series": "effigy",
+    "gate": "story-04-rustwood-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-volt-effigy"
+        },
+        {
+          "enemy": "dg-volt-effigy"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-volt-effigy"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-volt-effigy",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-volt-athanor",
+  "name": "Volt Athanor Kiln",
+  "dungeon": {
+    "series": "athanor",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-volt-athanor"
+        },
+        {
+          "enemy": "dg-volt-athanor"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-volt-athanor"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-volt-athanor",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    }
+  ]
+}

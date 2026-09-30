@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-volt-mote",
+  "name": "Volt Mote Hollow",
+  "dungeon": {
+    "series": "mote",
+    "gate": "story-06-sunken-waystation",
+    "ramp": 10
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-volt-mote"
+        },
+        {
+          "enemy": "dg-volt-mote"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-volt-mote"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-volt-mote",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    }
+  ]
+}

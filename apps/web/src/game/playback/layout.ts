@@ -130,7 +130,7 @@ export const HUD = {
     height: 39 * ART_SCALE * PANEL_STRETCH,
   },
   itemPanel: { x: 0, y: 948, width: 640, height: panelHeight(318) },
-  /** Five item slots (M2-02D fills them). */
+  /** Five item slots; the first five inventory items fill them in setup order (M2-02D). */
   itemSlot: { x: 13, y: 972, width: 116, height: panelHeight(248), pitch: 123 },
 } as const;
 
@@ -157,7 +157,19 @@ export const CARD_PARTS = {
 /** The OD gauge is its own touch region: the whole `od-frame`. */
 export const OD_BUTTON: Rect = { x: 0, y: 911, width: 640, height: 40 };
 
-/** Touch regions for the current battle: unit sprites and cards, enemies, and the OD button. */
+/** Item bar slots drawn and touchable. */
+export const ITEM_SLOTS = 5;
+
+/** The `index`-th item slot's rectangle. */
+export function itemSlotRect(index: number): Rect {
+  const { x, y, width, height, pitch } = HUD.itemSlot;
+  return { x: x + index * pitch, y, width, height };
+}
+
+/**
+ * Touch regions for the current battle: unit sprites and cards, enemies, the OD button, the item
+ * slots holding items, and the Auto and Speed pills.
+ */
 export function hitRegions(state: BattleState, enemyBounds = enemyRect): HitRegion[] {
   const regions: HitRegion[] = [];
   state.enemies.forEach((enemy, i) => {
@@ -168,6 +180,14 @@ export function hitRegions(state: BattleState, enemyBounds = enemyRect): HitRegi
     regions.push({ target, ...unitTouchRect(i) }, { target, ...unitCardRect(i) });
   });
   regions.push({ target: { kind: "od" }, ...OD_BUTTON });
+  state.items.slice(0, ITEM_SLOTS).forEach((stack, i) => {
+    regions.push({ target: { kind: "item", item: stack.item.id }, ...itemSlotRect(i) });
+  });
+  const { autoPill, speedPill } = HUD;
+  regions.push(
+    { target: { kind: "auto" }, ...autoPill },
+    { target: { kind: "speed" }, ...speedPill },
+  );
   return regions;
 }
 

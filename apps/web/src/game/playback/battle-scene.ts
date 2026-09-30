@@ -19,6 +19,14 @@ import {
 } from "../assets/ui.ts";
 import type { BattleBridge } from "../bridge.ts";
 import { BATTLE_HEIGHT, BATTLE_WIDTH, CANVAS_ZOOM } from "../bridge.ts";
+import {
+  type BattleControls,
+  dueAutoInputs,
+  INITIAL_CONTROLS,
+  playbackSteps,
+  toggleAuto,
+  toggleSpeed,
+} from "../hud/controls.ts";
 import { applyHudEvents, type HudState, initHud } from "../hud/model.ts";
 import { FALLBACK_FONT, HudView, hudTextStyle } from "../hud/view.ts";
 import {
@@ -194,6 +202,8 @@ export class BattleScene extends Phaser.Scene {
   private hud!: HudState;
   private hudView!: HudView;
   private ui: InputUiState = INITIAL_INPUT_UI;
+  /** Auto and Speed; kept across replays (`scene.restart`) like a player's setting. */
+  private controls: BattleControls = INITIAL_CONTROLS;
   private clockMs = 0;
   private playbackMs = 0;
   private cutinRemainingMs = 0;
@@ -307,6 +317,8 @@ export class BattleScene extends Phaser.Scene {
       (i) => this.enemyBounds(i),
     );
     this.hudView.build(this.hud);
+    this.hudView.setControls(this.controls);
+    this.applySpeed();
     this.overlay = new FieldOverlay(this, (i) => this.enemyBounds(i));
     this.overlay.build(this.hud);
     this.overlay.render(this.hud);
@@ -327,18 +339,24 @@ export class BattleScene extends Phaser.Scene {
   override update(_time: number, delta: number): void {
     const elapsed = Math.min(delta, MAX_FRAME_MS);
     this.clockMs += elapsed;
-    if (this.cutinRemainingMs > 0) {
-      this.cutinRemainingMs = Math.max(0, this.cutinRemainingMs - elapsed);
-      return;
+    // Speed is presentation only: at x2 each frame runs two x1 steps, so engine ticks are unchanged.
+    for (const stepMs of playbackSteps(elapsed, this.controls.speed)) {
+      if (this.cutinRemainingMs > 0) {
+        this.cutinRemainingMs = Math.max(0, this.cutinRemainingMs - stepMs);
+        continue;
+      }
+      if (this.heldEvents.length > 0) {
+        this.showEvents(this.heldEvents);
+        continue;
+      }
+      this.playbackMs += stepMs;
+      for (const input of dueAutoInputs(this.controls, this.live, this.ui.selectedTarget)) {
+        this.live = queueInput(this.live, input);
+      }
+      const { live, events } = advanceLive(this.live, this.playbackMs);
+      this.live = live;
+      this.showEvents(events);
     }
-    if (this.heldEvents.length > 0) {
-      this.showEvents(this.heldEvents);
-      return;
-    }
-    this.playbackMs += elapsed;
-    const { live, events } = advanceLive(this.live, this.playbackMs);
-    this.live = live;
-    this.showEvents(events);
   }
 
   /** Stop at a cut-in even when the engine released later events in the same frame. */
@@ -382,6 +400,7 @@ export class BattleScene extends Phaser.Scene {
     this.down = undefined;
     if (!down) return;
     const gesture = classifyGesture(down, up);
+    if (this.overAtMs === undefined && gesture.kind === "tap" && this.onControl(gesture)) return;
     if (this.overAtMs !== undefined) {
       if (
         !this.spec.singleRun &&
@@ -410,6 +429,29 @@ export class BattleScene extends Phaser.Scene {
     this.ui = result.ui;
     if (result.input) this.live = queueInput(this.live, result.input);
     this.showSelection(state);
+  }
+
+  /** Auto and Speed pills: they work at any point of the battle, enemy phase and cut-ins included. */
+  private onControl(point: { x: number; y: number }): boolean {
+    const target = hitTest(
+      hitRegions(this.live.state, (i) => this.enemyBounds(i)),
+      point.x,
+      point.y,
+    );
+    if (target?.kind === "auto") this.controls = toggleAuto(this.controls);
+    else if (target?.kind === "speed") this.controls = toggleSpeed(this.controls);
+    else return false;
+    this.hudView.setControls(this.controls);
+    this.applySpeed();
+    return true;
+  }
+
+  /** Tweens, timers, and sprite animations run at the playback speed too. */
+  private applySpeed(): void {
+    const { speed } = this.controls;
+    this.tweens.timeScale = speed;
+    this.time.timeScale = speed;
+    this.anims.globalTimeScale = speed;
   }
 
   /** Plays one cue. Every number and flag drawn here was copied from an engine event. */
@@ -524,7 +566,10 @@ export class BattleScene extends Phaser.Scene {
         this.buildEnemyBodies();
         this.hudView.buildEnemies(this.hud);
         this.overlay.resetEnemies();
-        this.ui = { odArmed: this.ui.odArmed };
+        this.ui = {
+          odArmed: this.ui.odArmed,
+          ...(this.ui.selectedItem === undefined ? {} : { selectedItem: this.ui.selectedItem }),
+        };
         this.showSelection(this.live.state);
         this.banners(cue.banners);
         return;
@@ -718,6 +763,7 @@ export class BattleScene extends Phaser.Scene {
     const enemy = this.hud.enemies[index];
     this.overlay.target(enemy && enemy.hp > 0 ? index : undefined);
     this.hudView.setOdArmed(this.ui.odArmed && isOdFull(state.od));
+    this.hudView.setSelectedItem(this.ui.selectedItem);
   }
 
   private unitView(slot: PlayerSlotId): UnitView | undefined {

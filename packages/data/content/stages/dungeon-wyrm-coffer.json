@@ -1,0 +1,48 @@
+{
+  "id": "dungeon-wyrm-coffer",
+  "name": "Wyrm Coffer Tomb",
+  "dungeon": {
+    "series": "wyrm-coffer",
+    "gate": "story-08-beacon-hollow",
+    "ramp": 25
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-wyrm-coffer"
+        },
+        {
+          "enemy": "dg-wyrm-coffer"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-wyrm-coffer"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gloom-bat"
+        },
+        {
+          "enemy": "dg-wyrm-coffer",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gloom-bat"
+        }
+      ]
+    }
+  ]
+}

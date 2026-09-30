@@ -1,0 +1,37 @@
+{
+  "id": "dg-rill-alembic",
+  "name": "Rill Alembic",
+  "element": "water",
+  "stats": {
+    "hp": 3500,
+    "atk": 1000,
+    "def": 1300,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 50,
+      "amount": 80
+    },
+    "capture": {
+      "unit": "rill-alembic",
+      "rate": 25
+    }
+  }
+}

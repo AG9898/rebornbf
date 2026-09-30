@@ -1,0 +1,33 @@
+{
+  "id": "dg1-gloom-bat",
+  "name": "Gloom Bat",
+  "element": "dark",
+  "stats": {
+    "hp": 4000,
+    "atk": 850,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 20,
+    "hitFrames": [0, 8],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "lowest_hp"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}

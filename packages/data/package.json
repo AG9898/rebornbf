@@ -12,7 +12,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "validate": "node scripts/validate.ts",
-    "seed": "node scripts/seed.ts"
+    "seed": "node scripts/seed.ts",
+    "dungeons": "node scripts/dungeons.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"

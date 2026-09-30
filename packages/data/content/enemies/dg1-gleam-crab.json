@@ -1,0 +1,60 @@
+{
+  "id": "dg1-gleam-crab",
+  "name": "Gleam Crab",
+  "element": "light",
+  "stats": {
+    "hp": 4000,
+    "atk": 850,
+    "def": 160,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 12],
+    "damageDistribution": [40, 60],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "shell-glare",
+      "name": "Shell Glare",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 26,
+          "hitFrames": [0, 10],
+          "damageDistribution": [50, 50],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.5,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 4,
+      "skill": "shell-glare",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 40
+    }
+  }
+}
