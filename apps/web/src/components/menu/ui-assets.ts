@@ -42,6 +42,7 @@ export const UI_ASSETS = {
   "battle-top": { width: 1280, height: 117 },
   "btn-pill": { width: 300, height: 63 },
   "btn-pill-lit": { width: 300, height: 65 },
+  "btn-hub": { width: 520, height: 237 },
   "boss-band": { width: 1280, height: 138 },
   "boss-crest": { width: 240, height: 132 },
   "boss-hp-frame": { width: 1280, height: 67 },
@@ -122,6 +123,7 @@ export type UiAsset = keyof typeof UI_ASSETS;
  * UI pieces).
  */
 export const UI_TEXT_BOXES = {
+  "btn-hub": { x: 36, y: 26, width: 448, height: 185 },
   "boss-band": { x: 224, y: 68, width: 596, height: 62 },
   "cutin-ribbon-bb": { x: 92, y: 112, width: 688, height: 100 },
   "cutin-ribbon-sbb": { x: 92, y: 112, width: 688, height: 100 },
