@@ -168,7 +168,9 @@ const UNITS: UnitPreview[] = [
 ];
 
 /** Summon filler units (RESOLVED-14): one form each, exported as `<file>` art like the main units. */
-const FILLERS: { id: string; name: string; element: string; file: string; label: string }[] = [
+type SingleFormUnit = { id: string; name: string; element: string; file: string; label: string };
+
+const FILLERS: SingleFormUnit[] = [
   { id: "cinder-sprite", name: "Cinder Sprite", element: "Fire", file: "2star", label: "2★" },
   { id: "rill-sprite", name: "Rill Sprite", element: "Water", file: "2star", label: "2★" },
   { id: "moss-sprite", name: "Moss Sprite", element: "Earth", file: "2star", label: "2★" },
@@ -178,6 +180,83 @@ const FILLERS: { id: string; name: string; element: string; file: string; label:
   { id: "brass-crucible", name: "Brass Crucible", element: "Earth", file: "2star", label: "2★" },
   { id: "silver-crucible", name: "Silver Crucible", element: "Light", file: "3star", label: "3★" },
 ];
+
+const VESSEL_ELEMENTS = [
+  ["cinder", "Cinder", "Fire"],
+  ["rill", "Rill", "Water"],
+  ["moss", "Moss", "Earth"],
+  ["volt", "Volt", "Thunder"],
+  ["glint", "Glint", "Light"],
+  ["dusk", "Dusk", "Dark"],
+] as const;
+
+const VESSEL_TIERS = [
+  ["flask", "Flask", 3],
+  ["alembic", "Alembic", 4],
+  ["athanor", "Athanor", 5],
+  ["grail", "Grail", 5],
+] as const;
+
+/** Growth fodder (RESOLVED-55) with a locked splash and sprite; the other toads and hobs follow. */
+const GROWTH_FODDER: SingleFormUnit[] = [
+  ...VESSEL_TIERS.flatMap(([tier, tierName, stars]) =>
+    VESSEL_ELEMENTS.map(([prefix, prefixName, element]) => ({
+      id: `${prefix}-${tier}`,
+      name: `${prefixName} ${tierName}`,
+      element,
+      file: `${stars}star`,
+      label: `${stars}★`,
+    })),
+  ),
+  { id: "lantern-toad", name: "Lantern Toad", element: "Fire", file: "3star", label: "3★" },
+  { id: "vital-hob", name: "Vital Hob", element: "Fire", file: "3star", label: "3★" },
+];
+
+function SingleFormSection({
+  eyebrow,
+  title,
+  intro,
+  units,
+}: {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  units: SingleFormUnit[];
+}): ReactNode {
+  return (
+    <section className="mt-10 rounded-3xl border border-amber-500/20 bg-[#181723] px-6 py-5">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">{eyebrow}</p>
+      <h2 className="mt-2 text-lg font-semibold text-amber-50">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-stone-300">{intro}</p>
+      <ol className="mt-4 grid grid-cols-2 gap-3">
+        {units.map((unit) => (
+          <li
+            key={unit.id}
+            className="flex flex-col items-center rounded-2xl bg-[#10131d] px-2 py-3"
+          >
+            <Image
+              src={`/assets/units/${unit.id}/illustration-${unit.file}.png`}
+              alt={`${unit.name}, an original ${unit.element} ${eyebrow.toLowerCase()} unit`}
+              width={1024}
+              height={1024}
+              className="h-32 w-32"
+            />
+            <Image
+              src={`/assets/units/${unit.id}/battle-idle-${unit.file}.png`}
+              alt={`Pixel-art battle sprite of ${unit.name}`}
+              width={128}
+              height={128}
+              className="h-24 w-24 [image-rendering:pixelated]"
+            />
+            <span className="text-xs font-semibold text-amber-100/80">
+              {unit.name} · {unit.label}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
 
 export default function GalleryPage(): ReactNode {
   return (
@@ -280,39 +359,19 @@ export default function GalleryPage(): ReactNode {
         </article>
       ))}
 
-      <section className="mt-10 rounded-3xl border border-amber-500/20 bg-[#181723] px-6 py-5">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Summon filler</p>
-        <h2 className="mt-2 text-lg font-semibold text-amber-50">Sprites and Crucibles</h2>
-        <p className="mt-2 text-sm leading-6 text-stone-300">
-          Evolution-material Sprites and EXP-fodder Crucibles from the launch Rare Summon.
-        </p>
-        <ol className="mt-4 grid grid-cols-2 gap-3">
-          {FILLERS.map((unit) => (
-            <li
-              key={unit.id}
-              className="flex flex-col items-center rounded-2xl bg-[#10131d] px-2 py-3"
-            >
-              <Image
-                src={`/assets/units/${unit.id}/illustration-${unit.file}.png`}
-                alt={`${unit.name}, an original ${unit.element} summon filler unit`}
-                width={1024}
-                height={1024}
-                className="h-32 w-32"
-              />
-              <Image
-                src={`/assets/units/${unit.id}/battle-idle-${unit.file}.png`}
-                alt={`Pixel-art battle sprite of ${unit.name}`}
-                width={128}
-                height={128}
-                className="h-24 w-24 [image-rendering:pixelated]"
-              />
-              <span className="text-xs font-semibold text-amber-100/80">
-                {unit.name} · {unit.label}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <SingleFormSection
+        eyebrow="Summon filler"
+        title="Sprites and Crucibles"
+        intro="Evolution-material Sprites and EXP-fodder Crucibles from the launch Rare Summon."
+        units={FILLERS}
+      />
+
+      <SingleFormSection
+        eyebrow="Growth fodder"
+        title="Vessels, toads, and hobs"
+        intro="EXP vessels in four tiers per element, plus the first lantern toad and stat hob."
+        units={GROWTH_FODDER}
+      />
 
       <p className="mt-8 text-center text-xs leading-5 text-stone-500">
         A free, non-commercial fan tribute.

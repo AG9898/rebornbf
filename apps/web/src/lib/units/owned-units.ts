@@ -2,20 +2,44 @@ import { type Element, type Form, type Rarity, type Stats, type Unit, UnitSchema
 import aurelle from "@bfr/data/content/units/aurelle.json";
 import brand from "@bfr/data/content/units/brand.json";
 import brassCrucible from "@bfr/data/content/units/brass-crucible.json";
+import cinderAlembic from "@bfr/data/content/units/cinder-alembic.json";
+import cinderAthanor from "@bfr/data/content/units/cinder-athanor.json";
+import cinderFlask from "@bfr/data/content/units/cinder-flask.json";
+import cinderGrail from "@bfr/data/content/units/cinder-grail.json";
 import cinderSprite from "@bfr/data/content/units/cinder-sprite.json";
+import duskAlembic from "@bfr/data/content/units/dusk-alembic.json";
+import duskAthanor from "@bfr/data/content/units/dusk-athanor.json";
+import duskFlask from "@bfr/data/content/units/dusk-flask.json";
+import duskGrail from "@bfr/data/content/units/dusk-grail.json";
 import duskSprite from "@bfr/data/content/units/dusk-sprite.json";
 import garrick from "@bfr/data/content/units/garrick.json";
+import glintAlembic from "@bfr/data/content/units/glint-alembic.json";
+import glintAthanor from "@bfr/data/content/units/glint-athanor.json";
+import glintFlask from "@bfr/data/content/units/glint-flask.json";
+import glintGrail from "@bfr/data/content/units/glint-grail.json";
 import glintSprite from "@bfr/data/content/units/glint-sprite.json";
 import maren from "@bfr/data/content/units/maren.json";
 import morrick from "@bfr/data/content/units/morrick.json";
+import mossAlembic from "@bfr/data/content/units/moss-alembic.json";
+import mossAthanor from "@bfr/data/content/units/moss-athanor.json";
+import mossFlask from "@bfr/data/content/units/moss-flask.json";
+import mossGrail from "@bfr/data/content/units/moss-grail.json";
 import mossSprite from "@bfr/data/content/units/moss-sprite.json";
 import placeholderEmber from "@bfr/data/content/units/placeholder-ember.json";
 import placeholderTide from "@bfr/data/content/units/placeholder-tide.json";
+import rillAlembic from "@bfr/data/content/units/rill-alembic.json";
+import rillAthanor from "@bfr/data/content/units/rill-athanor.json";
+import rillFlask from "@bfr/data/content/units/rill-flask.json";
+import rillGrail from "@bfr/data/content/units/rill-grail.json";
 import rillSprite from "@bfr/data/content/units/rill-sprite.json";
 import rook from "@bfr/data/content/units/rook.json";
 import silverCrucible from "@bfr/data/content/units/silver-crucible.json";
 import solen from "@bfr/data/content/units/solen.json";
 import vespera from "@bfr/data/content/units/vespera.json";
+import voltAlembic from "@bfr/data/content/units/volt-alembic.json";
+import voltAthanor from "@bfr/data/content/units/volt-athanor.json";
+import voltFlask from "@bfr/data/content/units/volt-flask.json";
+import voltGrail from "@bfr/data/content/units/volt-grail.json";
 import voltSprite from "@bfr/data/content/units/volt-sprite.json";
 import { formStatsAtLevel, LORD_ROLL, typeRollProblem, type UnitTypeRoll } from "@bfr/engine";
 
@@ -81,6 +105,30 @@ const UNIT_CONTENT: ReadonlyMap<string, Unit> = new Map(
     maren,
     morrick,
     mossSprite,
+    cinderFlask,
+    rillFlask,
+    mossFlask,
+    voltFlask,
+    glintFlask,
+    duskFlask,
+    cinderAlembic,
+    rillAlembic,
+    mossAlembic,
+    voltAlembic,
+    glintAlembic,
+    duskAlembic,
+    cinderAthanor,
+    rillAthanor,
+    mossAthanor,
+    voltAthanor,
+    glintAthanor,
+    duskAthanor,
+    cinderGrail,
+    rillGrail,
+    mossGrail,
+    voltGrail,
+    glintGrail,
+    duskGrail,
     placeholderEmber,
     placeholderTide,
     rillSprite,
@@ -97,6 +145,31 @@ const UNIT_CONTENT: ReadonlyMap<string, Unit> = new Map(
 
 /** Units with exported art under `public/assets/units/<id>/` (3★ through Omni, or one filler form). */
 const UNITS_WITH_ART: ReadonlySet<string> = new Set([
+  // Growth fodder EXP vessels (RESOLVED-55): one 3★–5★ form each.
+  "cinder-flask",
+  "rill-flask",
+  "moss-flask",
+  "volt-flask",
+  "glint-flask",
+  "dusk-flask",
+  "cinder-alembic",
+  "rill-alembic",
+  "moss-alembic",
+  "volt-alembic",
+  "glint-alembic",
+  "dusk-alembic",
+  "cinder-athanor",
+  "rill-athanor",
+  "moss-athanor",
+  "volt-athanor",
+  "glint-athanor",
+  "dusk-athanor",
+  "cinder-grail",
+  "rill-grail",
+  "moss-grail",
+  "volt-grail",
+  "glint-grail",
+  "dusk-grail",
   "aurelle",
   "brand",
   "brass-crucible",

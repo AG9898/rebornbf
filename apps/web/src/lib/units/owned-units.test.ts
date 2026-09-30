@@ -106,6 +106,13 @@ describe("toOwnedUnitView", () => {
     expect(formArtFile("silver-crucible", 3)).toBe("3star");
   });
 
+  it("gives growth fodder vessels their single form's art", () => {
+    const view = toOwnedUnitView(row({ unit_id: "volt-athanor", form_id: "volt-athanor-5" }));
+    expect(view.name).toBe("Volt Athanor");
+    expect(view.sprite).toBe("/assets/units/volt-athanor/battle-idle-5star.png");
+    expect(view.thumb).toBe("/assets/ui/cards/thumb/volt-athanor-5star.webp");
+  });
+
   it("degrades to the raw ids when the content is missing", () => {
     const view = toOwnedUnitView(row({ unit_id: "retired-unit", form_id: "retired-unit-5" }));
     expect(view).toMatchObject({
