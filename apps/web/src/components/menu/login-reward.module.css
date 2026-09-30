@@ -1,0 +1,125 @@
+/*
+ * Home login-reward popup (M5-03B; ART_GUIDE.md -> Login reward popup). Sizes are logical px via
+ * the menu's --u. Built only from locked pieces: item-panel (gold frame), bg-slate, icon-gem,
+ * btn-pill-lit, in the onboarding panel's style.
+ */
+
+/* Dims the page below the status bar, which stays lit so the new gem total reads. */
+.dock {
+  position: absolute;
+  inset: calc(var(--u) * 109) 0 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(var(--u) * 48) calc(var(--u) * 120);
+  background: rgb(4 6 12 / 0.6);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 14);
+  width: 100%;
+  padding: calc(var(--u) * 20) calc(var(--u) * 28) calc(var(--u) * 28);
+  border: calc(var(--u) * 32) solid transparent;
+  border-image: url("/assets/ui/item-panel.webp") 110 / calc(var(--u) * 32) / 0 stretch;
+  background: #82ceff url("/assets/ui/bg-slate.webp") center / calc(var(--u) * 256);
+  background-blend-mode: multiply;
+  background-clip: padding-box;
+  box-shadow: 0 calc(var(--u) * 12) calc(var(--u) * 38) rgb(0 0 0 / 0.6);
+}
+
+.kicker {
+  margin: 0;
+  font-size: calc(var(--u) * 26);
+  color: rgb(255 246 200 / 0.85);
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #2a1606;
+}
+
+.title {
+  margin: 0;
+  font-size: calc(var(--u) * 64);
+  font-weight: 400;
+  line-height: 1;
+  background: linear-gradient(#fff6c8 10%, #f6c342 45%, #c9811c 75%, #fbe39a 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 calc(var(--u) * 3) 0 #3a1c05) drop-shadow(0 0 calc(var(--u) * 2) #3a1c05);
+}
+
+.rewards {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 10);
+  width: 100%;
+  margin: calc(var(--u) * 6) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reward {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 16);
+  padding: calc(var(--u) * 10) calc(var(--u) * 18);
+  border: calc(var(--u) * 2) solid rgb(201 154 58 / 0.7);
+  border-radius: calc(var(--u) * 12);
+  background: rgb(4 6 12 / 0.55);
+}
+
+.icon {
+  flex: none;
+  width: calc(var(--u) * 48);
+  height: auto;
+}
+
+/* No ticket art is locked yet: a gold CSS ticket with "10" for the free 10-pull. */
+.ticket {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 48);
+  height: calc(var(--u) * 34);
+  border-radius: calc(var(--u) * 6);
+  background:
+    radial-gradient(circle at 0 50%, transparent calc(var(--u) * 6), transparent 0) left / 51% 100%
+    no-repeat,
+    linear-gradient(#fbe39a, #d49a2a);
+  box-shadow: inset 0 0 0 calc(var(--u) * 2) #7a4a10;
+  color: #2a1606;
+  font-size: calc(var(--u) * 20);
+}
+
+.label {
+  font-size: calc(var(--u) * 30);
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 5) #2a1606;
+}
+
+.button {
+  width: calc(var(--u) * 240);
+  aspect-ratio: 300 / 65;
+  border: 0;
+  background: url("/assets/ui/btn-pill-lit.webp") center / 100% 100% no-repeat;
+  color: #fff;
+  font: inherit;
+  font-size: calc(var(--u) * 30);
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 5) #0b1d4a;
+  cursor: pointer;
+}
+
+.button:hover {
+  filter: brightness(1.12);
+}
+
+.button:focus-visible {
+  outline: calc(var(--u) * 4) solid #fbe39a;
+  outline-offset: calc(var(--u) * 4);
+  border-radius: calc(var(--u) * 99);
+}

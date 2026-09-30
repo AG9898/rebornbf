@@ -7,7 +7,12 @@ import {
 } from "@bfr/engine";
 import Phaser from "phaser";
 import { pieceTextBox } from "../../components/menu/text-box.ts";
-import { type UnitSpriteSheet, unitIdleSprite } from "../assets/sprites.ts";
+import {
+  loadUnitIdleSheet,
+  type UnitSpriteSheet,
+  unitIdleSheet,
+  unitIdleSprite,
+} from "../assets/sprites.ts";
 import { backgroundUrl } from "../assets/stage-art.ts";
 import {
   battleUiTextureKeys,
@@ -158,11 +163,17 @@ interface UnitView {
   readonly sheet?: UnitSpriteSheet;
 }
 
-/** Registers a sheet's `idle` (looping) and `attack` animations with per-frame durations. */
-function createSheetAnimations(scene: Phaser.Scene, { key, sheet }: UnitSpriteSheet): void {
+/**
+ * Registers a sheet's `idle` (looping) animation, and its `attack` when the sheet drives the
+ * engine's attack timing, with per-frame durations.
+ */
+function createSheetAnimations(
+  scene: Phaser.Scene,
+  { key, sheet, attackTiming }: UnitSpriteSheet,
+): void {
   const names = Object.keys(sheet.frames);
   for (const tag of sheet.meta.frameTags) {
-    if (tag.name !== "idle" && tag.name !== "attack") continue;
+    if (tag.name !== "idle" && !(tag.name === "attack" && attackTiming)) continue;
     const animKey = `${key}-${tag.name}`;
     if (scene.anims.exists(animKey)) continue;
     const frames = names.slice(tag.from, tag.to + 1).map((frame) => ({
@@ -255,6 +266,14 @@ export class BattleScene extends Phaser.Scene {
     }
     this.spec.partyArt.forEach((art, i) => {
       if (!art || art === animated?.art) return;
+      // Forms with a baked idle sheet (M6-05B) loop it; the rest draw their still idle sprite.
+      const sheet = unitIdleSheet(art, this.artForm(i));
+      if (sheet) {
+        if (!this.textures.exists(sheet.key)) {
+          this.load.aseprite(sheet.key, sheet.imageUrl, sheet.jsonUrl);
+        }
+        return;
+      }
       const idle = unitIdleSprite(art, this.artForm(i));
       if (!this.textures.exists(idle.key)) this.load.image(idle.key, idle.imageUrl);
     });
@@ -301,8 +320,14 @@ export class BattleScene extends Phaser.Scene {
       const spriteRect = unitSpriteRect(i);
       this.groundShadow(spriteRect);
       const art = this.spec.partyArt[i];
+      const idleSheet = art ? unitIdleSheet(art, this.artForm(i)) : undefined;
       if (art && art === this.spec.sheet?.art) {
         this.units.push(this.sheetUnit(spriteRect, this.spec.sheet.sheet));
+      } else if (idleSheet) {
+        // `load.aseprite` keeps the sheet's JSON in the JSON cache under the texture key.
+        const sheet = loadUnitIdleSheet(idleSheet, this.cache.json.get(idleSheet.key));
+        createSheetAnimations(this, sheet);
+        this.units.push(this.sheetUnit(spriteRect, sheet));
       } else if (art) {
         this.units.push(this.idleUnit(spriteRect, unitIdleSprite(art, this.artForm(i)).key));
       } else {
