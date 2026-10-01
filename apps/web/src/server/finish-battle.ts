@@ -16,9 +16,10 @@ import { createSupabaseAdminClient } from "./supabase-admin.ts";
  * 2. Authenticates the caller from the Supabase session cookies (`getClaims`; 401 when signed out).
  * 3. Loads the session with the secret key, so a foreign session is found and refused (403)
  *    rather than hidden by RLS; finished (409), expired (410), or other-content sessions and bad
- *    logs are refused by `verifyFinish`, which replays the log with the engine (422 unless a win).
- * 4. On a verified win, the service-role reward RPC claims the session and grants rewards in
- *    one transaction; concurrent submissions get 409.
+ *    logs are refused by `verifyFinish`, which replays the log with the engine (422 unless ended).
+ * 4. A verified win grants rewards; a loss settles without rewards. Both service-only RPCs
+ *    claim and refund replay-derived unused items atomically; concurrent submissions get 409.
+ *    A continue request instead proves the loss without settling or refunding.
  */
 
 function json(status: number, body: Record<string, unknown>): Response {
@@ -76,7 +77,7 @@ export async function finishBattle(request: Request, continuing = false): Promis
     userId,
     inputLog,
     new Date(),
-    continuing ? "lose" : "win",
+    continuing ? "lose" : "either",
   );
   if (!verdict.ok) return fail(verdict.status, verdict.error);
 
@@ -93,9 +94,13 @@ export async function finishBattle(request: Request, continuing = false): Promis
     return json(200, { ok: true });
   }
 
-  const { data: rewards, error: claimError } = await admin.rpc("grant_battle_rewards", {
-    p_session_id: sessionId,
-  });
+  const { data: rewards, error: claimError } = await admin.rpc(
+    verdict.result === "win" ? "grant_battle_rewards" : "settle_battle_loss",
+    {
+      p_session_id: sessionId,
+      p_remaining: verdict.remainingItems,
+    },
+  );
   if (claimError?.code === "P0002") return fail(409, "This battle is already finished.");
   if (claimError || !rewards)
     return fail(503, "This battle could not be finished. Try again shortly.");

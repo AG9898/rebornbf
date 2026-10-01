@@ -103,7 +103,7 @@ describe("Satchel Toad (RESOLVED-55, M4-04D)", () => {
     expect(ordinaryFusionExp(3, 1, 1, "water", "water")).toBe(150);
   });
 
-  it("only the toads carry a fusion effect", () => {
+  it("only the toads and hobs carry a fusion effect", () => {
     const withEffect = readdirSync(unitsDir)
       .filter((name) => name.endsWith(".json"))
       .flatMap((name) => loadUnit(name.slice(0, -".json".length)).forms)
@@ -111,10 +111,15 @@ describe("Satchel Toad (RESOLVED-55, M4-04D)", () => {
       .map((form) => form.id)
       .sort();
     expect(withEffect).toEqual([
+      "grand-hob-3",
       "lantern-toad-3",
       "matriarch-toad-4",
+      "mend-hob-3",
+      "might-hob-3",
       "regent-toad-4",
       "satchel-toad-3",
+      "vital-hob-3",
+      "ward-hob-3",
     ]);
   });
 });

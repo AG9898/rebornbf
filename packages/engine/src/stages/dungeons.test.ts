@@ -5,9 +5,12 @@ import {
   crownShardStage,
   DUNGEON_FAMILIES,
   dungeonStage,
+  dungeonWaves,
   type Enemy,
   EnemySchema,
   familyElements,
+  HOB_DUNGEONS,
+  hobStage,
   ITEM_DUNGEONS,
   itemCarrierId,
   itemStage,
@@ -158,7 +161,7 @@ function playOut(
       squad,
       leaderIndex: 0,
       ...(options.ally ? { ally: ally(stage) } : {}),
-      waves: stage.waves.map((wave) =>
+      waves: dungeonWaves(stage, seed).map((wave) =>
         wave.enemies.map((slot) => enemySetup(slot.enemy, options.ramp)),
       ),
     },
@@ -210,6 +213,10 @@ const itemStages = ITEM_DUNGEONS.map((entry) => ({
   stage: StageSchema.parse(load(`stages/${itemStage(entry).id}.json`)),
 }));
 
+const hobStages = HOB_DUNGEONS.map((entry) =>
+  StageSchema.parse(load(`stages/${hobStage(entry).id}.json`)),
+);
+
 /** Every dungeon stage the battle tests play: the material, key-item, and battle item stages. */
 const playable = [
   ...stages.map(({ stage }) => stage),
@@ -238,6 +245,59 @@ const EXPECTED: Readonly<Record<string, { gate: string; ramp: number | undefined
 const SEEDS = [1, 7, 2024, 11, 500];
 
 describe("farming dungeon series (M4-03C–F)", () => {
+  it.each(hobStages.map((stage) => [stage.id, stage] as const))(
+    "the Trial 1 squad, ally and +20%% spheres clear %s with a Grand Hob in every wave",
+    (_id, stage) => {
+      for (const seed of [...SEEDS, 0, 10000, 20000, 1500]) {
+        expect(playOut(stage, seed, { ramp: stage.dungeon?.ramp, ally: true }).result).toBe("win");
+      }
+    },
+  );
+
+  it("seeded hob settlement captures regular hobs at 25%, and one Grand at 15% per clear across waves", () => {
+    for (const stage of hobStages) {
+      let rng = createRng(4242);
+      let grand = 0;
+      let regular = 0;
+      let rolled = 0;
+      const waves = [0, 0, 0];
+      const clears = 10000;
+      for (let i = 0; i < clears; i++) {
+        const seed = nextFloat(rng);
+        rng = seed.rng;
+        const resolved = {
+          ...stage,
+          waves: dungeonWaves(stage, Math.floor(seed.value * 0x100000000)),
+        };
+        const encountered = resolved.waves.flatMap((wave, w) =>
+          wave.enemies.filter((slot) => slot.enemy === "dg-grand-hob").map(() => w),
+        );
+        expect(encountered.length).toBeLessThanOrEqual(1);
+        for (const w of encountered) waves[w] = (waves[w] ?? 0) + 1;
+        const settled = settleCaptures(resolved, rng);
+        rng = settled.rng;
+        expect(settled.units.filter((id) => id === "grand-hob")).toHaveLength(encountered.length);
+        grand += encountered.length;
+        const sureRegular =
+          resolved.waves[2]?.enemies.filter(
+            (slot) => slot.capture === "always" && slot.enemy !== "dg-grand-hob",
+          ).length ?? 0;
+        regular += settled.units.filter((id) => id !== "grand-hob").length - sureRegular;
+        rolled += resolved.waves
+          .slice(0, 2)
+          .flatMap((wave) => wave.enemies)
+          .filter((slot) => slot.enemy === stage.dungeon?.rareSpawn?.replaces).length;
+      }
+      expect(grand / clears).toBeGreaterThan(0.14);
+      expect(grand / clears).toBeLessThan(0.16);
+      expect(regular / rolled).toBeGreaterThan(0.24);
+      expect(regular / rolled).toBeLessThan(0.26);
+      for (const count of waves) {
+        expect(count / grand).toBeGreaterThan(0.3);
+        expect(count / grand).toBeLessThan(0.37);
+      }
+    }
+  });
   it("has 58 material stages, each at its family's gate and ramp", () => {
     expect(stages).toHaveLength(58);
     for (const { family, stage } of stages) {

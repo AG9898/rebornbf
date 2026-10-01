@@ -151,7 +151,7 @@ export default async function EvolvePage({
       .overrideTypes<UnitStackRow[], { merge: false }>(),
     supabase
       .from("squads")
-      .select("unit_ids, ally_unit_id")
+      .select("unit_ids")
       .eq("user_id", userId)
       .overrideTypes<SquadUseRow[], { merge: false }>(),
     supabase

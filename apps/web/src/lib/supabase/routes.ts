@@ -4,6 +4,7 @@ export const PROTECTED_PATH_PREFIXES: readonly string[] = [
   "/units",
   "/fusion",
   "/squad",
+  "/start",
   "/summon",
   "/owner",
   "/onboarding",

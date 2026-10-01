@@ -12,6 +12,9 @@ describe("quest map (M3-04A)", () => {
     expect(chapter?.title).toBe("The Ember Road");
     expect(chapter?.stages.map((s) => s.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(chapter?.stages.filter((s) => s.boss).map((s) => s.number)).toEqual([8]);
+    expect(chapter?.stages.map((s) => s.waves)).toEqual(
+      STORY_STAGES.slice(0, 8).map((stage) => stage.waves.length),
+    );
   });
 
   it("chapter 2 stays locked until stage 8, then opens in story order", () => {

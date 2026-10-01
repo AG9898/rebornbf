@@ -5,6 +5,7 @@
   "forms": [
     {
       "id": "rook-2",
+      "impCaps": { "hp": 200, "atk": 160, "def": 80, "rec": 160 },
       "name": "Wire Apprentice",
       "rarity": 2,
       "maxLevel": 12,
@@ -67,6 +68,7 @@
     },
     {
       "id": "rook-3",
+      "impCaps": { "hp": 300, "atk": 200, "def": 120, "rec": 200 },
       "name": "Spark Rigger",
       "rarity": 3,
       "maxLevel": 40,
@@ -143,6 +145,7 @@
     },
     {
       "id": "rook-4",
+      "impCaps": { "hp": 350, "atk": 260, "def": 140, "rec": 260 },
       "name": "Storm Rigger",
       "rarity": 4,
       "maxLevel": 60,
@@ -227,6 +230,7 @@
     },
     {
       "id": "rook-5",
+      "impCaps": { "hp": 500, "atk": 400, "def": 200, "rec": 400 },
       "name": "Thunder Rigger",
       "rarity": 5,
       "maxLevel": 80,
@@ -315,6 +319,7 @@
     },
     {
       "id": "rook-6",
+      "impCaps": { "hp": 700, "atk": 580, "def": 280, "rec": 580 },
       "name": "Stormcaller",
       "rarity": 6,
       "maxLevel": 100,
@@ -439,6 +444,7 @@
     },
     {
       "id": "rook-7",
+      "impCaps": { "hp": 1000, "atk": 840, "def": 400, "rec": 840 },
       "name": "Storm Legend",
       "rarity": 7,
       "maxLevel": 120,
@@ -643,6 +649,7 @@
     },
     {
       "id": "rook-omni",
+      "impCaps": { "hp": 1300, "atk": 1100, "def": 520, "rec": 1100 },
       "name": "Tempest Sovereign",
       "rarity": "omni",
       "maxLevel": 150,

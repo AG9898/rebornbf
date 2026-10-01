@@ -160,9 +160,9 @@ insert into public.owned_units (id, user_id, unit_id, form_id, level, exp) value
 insert into public.unit_log (user_id, owned_unit_id, unit_id, form_id, delta, reason) values
   ('00000000-0000-0000-0000-00000000a503', '00000000-0000-0000-0000-00000000a5c1', 'rill-mote', 'rill-mote-1', 1, 'summon');
 update public.owned_units set bb_level = 2 where id = '00000000-0000-0000-0000-00000000a5c3';
-insert into public.squads (user_id, slot, unit_ids, leader_index, ally_unit_id) values
-  ('00000000-0000-0000-0000-00000000a503', 0, array['00000000-0000-0000-0000-00000000a5c2']::uuid[], 0,
-   '00000000-0000-0000-0000-00000000a5c4');
+insert into public.squads (user_id, slot, unit_ids, leader_index) values
+  ('00000000-0000-0000-0000-00000000a503', 0, array['00000000-0000-0000-0000-00000000a5c2',
+   '00000000-0000-0000-0000-00000000a5c4']::uuid[], 0);
 select is(public.fold_untouched_unit_stacks(), 1,
   'only the one untouched, unsquadded copy folds (a split copy never rejoins)');
 select is((select count from public.owned_unit_stacks
@@ -172,7 +172,7 @@ select set_eq($$select id from public.owned_units where user_id = '00000000-0000
   $$values ('00000000-0000-0000-0000-00000000a5c2'::uuid), ('00000000-0000-0000-0000-00000000a5c3'::uuid),
     ('00000000-0000-0000-0000-00000000a5c4'::uuid), ('00000000-0000-0000-0000-00000000a5c5'::uuid),
     ('00000000-0000-0000-0000-00000000a5c6'::uuid)$$,
-  'squad, ally, touched, levelled, and multi-form copies stay rows');
+  'squad, touched, levelled, and multi-form copies stay rows');
 select results_eq($$select delta::int, reason from public.unit_log
   where owned_unit_id = '00000000-0000-0000-0000-00000000a5c1' order by created_at, delta desc$$,
   $$values (1, 'summon'::text), (-1, 'stack_fold'::text)$$, 'the folded row keeps its history');

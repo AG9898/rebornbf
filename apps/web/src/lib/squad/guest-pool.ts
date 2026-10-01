@@ -5,7 +5,7 @@ import { type OwnedUnitRow, toOwnedUnitView, unitContent } from "../units/owned-
 
 export const GUEST_POOL = [aurelle, vespera].map((json) => GuestSchema.parse(json));
 
-/** Current display estimates. Only the guest id is submitted to save_squad. */
+/** Current display estimates. Only the guest id is submitted to start_battle. */
 export function guestPreviews(
   owned: readonly OwnedUnitRow[],
 ): ReturnType<typeof toOwnedUnitView>[] {

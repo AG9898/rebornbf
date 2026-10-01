@@ -35,6 +35,58 @@ function row(overrides: Partial<BattleSessionRow> = {}): BattleSessionRow {
 }
 
 describe("session battle (M3-04B)", () => {
+  it("uses frozen hob totals once for playback/replay, including duplicate allies", () => {
+    const imps = { hp: 150, atk: 60, def: 60, rec: 60 };
+    const snapshot = { ...snap("brand", "brand-3"), imps };
+    const result = sessionBattle(
+      row({ squad: { leader_index: 0, units: [snapshot], ally: snapshot } }),
+    );
+    if (!result.ok) throw new Error(result.message);
+    const battle = createBattle(result.battle.setup, result.battle.seed);
+    expect(battle.party.map((unit) => unit.stats)).toEqual([
+      { hp: 1634, atk: 690, def: 577, rec: 464 },
+      { hp: 1634, atk: 690, def: 577, rec: 464 },
+    ]);
+    expect(createBattle(result.battle.setup, result.battle.seed)).toEqual(battle);
+    expect(
+      sessionBattle(
+        row({
+          squad: {
+            leader_index: 0,
+            units: [{ ...snapshot, imps: { ...imps, hp: 501 } }],
+            ally: null,
+          },
+        }),
+      ).ok,
+    ).toBe(false);
+  });
+  it("resolves the frozen loadout and rejects invalid or non-battle items", () => {
+    const result = sessionBattle(row({ items: [{ item: "dew-tonic", count: 2 }] }));
+    if (!result.ok) throw new Error(result.message);
+    expect(createBattle(result.battle.setup, result.battle.seed).items).toMatchObject([
+      { item: { id: "dew-tonic", effects: [{ kind: "heal", amount: 100 }] }, count: 2 },
+    ]);
+    for (const items of [
+      [{ item: "crown-shard", count: 1 }],
+      [{ item: "missing", count: 1 }],
+      [{ item: "dew-tonic", count: 0 }],
+      [{ item: "dew-tonic", count: 11 }],
+      [{ item: "dew-tonic", count: 1.5 }],
+      [
+        { item: "dew-tonic", count: 1 },
+        { item: "dew-tonic", count: 2 },
+      ],
+      [
+        "dew-tonic",
+        "bright-tonic",
+        "grand-tonic",
+        "rekindle-ash",
+        "valor-draught",
+        "bitterleaf",
+      ].map((item) => ({ item, count: 1 })),
+    ])
+      expect(sessionBattle(row({ items })).ok).toBe(false);
+  });
   it("resolves frozen sphere IDs identically for playback and replay", () => {
     const result = sessionBattle(
       row({

@@ -28,6 +28,12 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/onboarding/name")).toBe(true);
   });
 
+  it("protects Reinforcement and Begin Quest without matching unrelated prefixes", () => {
+    expect(isProtectedPath("/start/story-01")).toBe(true);
+    expect(isProtectedPath("/start/story-01/begin")).toBe(true);
+    expect(isProtectedPath("/starter")).toBe(false);
+  });
+
   it("protects the owner tools", () => {
     expect(isProtectedPath("/owner/faces")).toBe(true);
     expect(isProtectedPath("/owners")).toBe(false);

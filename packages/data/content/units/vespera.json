@@ -6,6 +6,7 @@
   "forms": [
     {
       "id": "vespera-3",
+      "impCaps": { "hp": 300, "atk": 120, "def": 120, "rec": 120 },
       "name": "Thread Dancer",
       "rarity": 3,
       "maxLevel": 40,
@@ -74,6 +75,7 @@
     },
     {
       "id": "vespera-4",
+      "impCaps": { "hp": 400, "atk": 160, "def": 160, "rec": 160 },
       "name": "Pin Dancer",
       "rarity": 4,
       "maxLevel": 60,
@@ -142,6 +144,7 @@
     },
     {
       "id": "vespera-5",
+      "impCaps": { "hp": 500, "atk": 200, "def": 200, "rec": 200 },
       "name": "Scarlet Pin Idol",
       "rarity": 5,
       "maxLevel": 80,
@@ -231,6 +234,7 @@
     },
     {
       "id": "vespera-6",
+      "impCaps": { "hp": 750, "atk": 300, "def": 300, "rec": 300 },
       "name": "Gravebloom",
       "rarity": 6,
       "maxLevel": 100,
@@ -358,6 +362,7 @@
     },
     {
       "id": "vespera-7",
+      "impCaps": { "hp": 1100, "atk": 440, "def": 440, "rec": 440 },
       "name": "Scarlet Threadwing",
       "rarity": 7,
       "maxLevel": 120,
@@ -624,6 +629,7 @@
     },
     {
       "id": "vespera-omni",
+      "impCaps": { "hp": 1500, "atk": 600, "def": 600, "rec": 600 },
       "name": "Nightbloom Sovereign",
       "rarity": "omni",
       "maxLevel": 150,

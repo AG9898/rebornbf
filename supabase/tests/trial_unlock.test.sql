@@ -44,7 +44,7 @@ select is((select (public.start_battle('test-trial')).stage_id), 'test-trial',
 reset role;
 
 -- Privileges (1) ---------------------------------------------------------------------------------
-select ok(not has_function_privilege('anon', 'public.start_battle(text, smallint)', 'execute'),
+select ok(not has_function_privilege('anon', 'public.start_battle(text, smallint, text, jsonb)', 'execute'),
   'anon cannot start battles');
 
 select * from finish();

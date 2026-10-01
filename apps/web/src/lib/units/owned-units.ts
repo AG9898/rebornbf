@@ -40,9 +40,12 @@ import glintGrail from "@bfr/data/content/units/glint-grail.json";
 import glintMote from "@bfr/data/content/units/glint-mote.json";
 import glintSprite from "@bfr/data/content/units/glint-sprite.json";
 import glintUrn from "@bfr/data/content/units/glint-urn.json";
+import grandHob from "@bfr/data/content/units/grand-hob.json";
 import lanternToad from "@bfr/data/content/units/lantern-toad.json";
 import maren from "@bfr/data/content/units/maren.json";
 import matriarchToad from "@bfr/data/content/units/matriarch-toad.json";
+import mendHob from "@bfr/data/content/units/mend-hob.json";
+import mightHob from "@bfr/data/content/units/might-hob.json";
 import morrick from "@bfr/data/content/units/morrick.json";
 import mossAlembic from "@bfr/data/content/units/moss-alembic.json";
 import mossAthanor from "@bfr/data/content/units/moss-athanor.json";
@@ -71,6 +74,7 @@ import satchelToad from "@bfr/data/content/units/satchel-toad.json";
 import silverCrucible from "@bfr/data/content/units/silver-crucible.json";
 import solen from "@bfr/data/content/units/solen.json";
 import vespera from "@bfr/data/content/units/vespera.json";
+import vitalHob from "@bfr/data/content/units/vital-hob.json";
 import voltAlembic from "@bfr/data/content/units/volt-alembic.json";
 import voltAthanor from "@bfr/data/content/units/volt-athanor.json";
 import voltCairn from "@bfr/data/content/units/volt-cairn.json";
@@ -80,9 +84,11 @@ import voltFlask from "@bfr/data/content/units/volt-flask.json";
 import voltGrail from "@bfr/data/content/units/volt-grail.json";
 import voltMote from "@bfr/data/content/units/volt-mote.json";
 import voltSprite from "@bfr/data/content/units/volt-sprite.json";
+import wardHob from "@bfr/data/content/units/ward-hob.json";
 import wyrmCoffer from "@bfr/data/content/units/wyrm-coffer.json";
 import {
   formStatsAtLevel,
+  impStatsProblem,
   LORD_ROLL,
   typeRollProblem,
   type UnitType,
@@ -96,7 +102,7 @@ import {
 
 /** The `owned_units` columns the collection pages select. */
 export const OWNED_UNIT_COLUMNS =
-  "id, unit_id, form_id, level, exp, unit_type, bb_level, sbb_level";
+  "id, unit_id, form_id, level, exp, unit_type, bb_level, sbb_level, imps";
 
 export type OwnedUnitRow = {
   id: string;
@@ -106,6 +112,7 @@ export type OwnedUnitRow = {
   exp: number;
   bb_level?: number;
   sbb_level?: number;
+  imps?: Stats;
   /**
    * The persisted type roll (GAME_DESIGN §6 → Stat growth and unit types), rolled at acquisition
    * (M3-01D). Null for a unit that never rolls (Omni grants, single-form units): it is Lord.
@@ -188,6 +195,11 @@ const UNIT_CONTENT: ReadonlyMap<string, Unit> = new Map(
     lanternToad,
     regentToad,
     matriarchToad,
+    vitalHob,
+    mightHob,
+    wardHob,
+    mendHob,
+    grandHob,
     silverCrucible,
     solen,
     vespera,
@@ -318,19 +330,22 @@ export function statsAtLevel(
   form: Form,
   level: number,
   roll: UnitTypeRoll | null | undefined = LORD_ROLL,
+  imps?: Stats,
 ): Stats | null {
   if (!(Number.isInteger(level) && level >= 1 && level <= form.maxLevel)) return null;
   const typeRoll = roll ?? LORD_ROLL;
   if (typeRollProblem(typeRoll)) return null;
-  return formStatsAtLevel(form, level, typeRoll);
+  if (imps && impStatsProblem(form, imps)) return null;
+  return formStatsAtLevel(form, level, typeRoll, imps);
 }
 
 function rangeStats(
   form: Form,
   roll: UnitTypeRoll | null | undefined,
+  imps?: Stats,
 ): { base: Stats; max: Stats } | null {
-  const base = statsAtLevel(form, 1, roll);
-  const max = statsAtLevel(form, form.maxLevel, roll);
+  const base = statsAtLevel(form, 1, roll, imps);
+  const max = statsAtLevel(form, form.maxLevel, roll, imps);
   return base && max ? { base, max } : null;
 }
 
@@ -351,8 +366,8 @@ export function toOwnedUnitView(row: OwnedUnitRow): OwnedUnitView {
     level,
     maxLevel: form?.maxLevel ?? null,
     exp: Number(row.exp),
-    stats: form ? rangeStats(form, row.unit_type) : null,
-    currentStats: form ? statsAtLevel(form, level, row.unit_type) : null,
+    stats: form ? rangeStats(form, row.unit_type, row.imps) : null,
+    currentStats: form ? statsAtLevel(form, level, row.unit_type, row.imps) : null,
     illustration: art ? `/assets/units/${row.unit_id}/illustration-${art}.png` : null,
     sprite: art ? `/assets/units/${row.unit_id}/battle-idle-${art}.png` : null,
     thumb: art ? `/assets/ui/cards/thumb/${row.unit_id}-${art}.webp` : null,

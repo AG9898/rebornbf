@@ -8,7 +8,7 @@ export type SaveSquadResult = { ok: true } | { ok: false; message: string };
 
 /**
  * Saves a squad through the `save_squad` RPC (M3-03B) as the signed-in player. The RPC derives the
- * player from `auth.uid()` and re-checks size, ownership, leader, and ally; this only pre-checks
+ * player from `auth.uid()` and re-checks size, ownership, and leader; this only pre-checks
  * shape so obviously bad drafts never reach the database.
  */
 export async function saveSquad(slot: number, draft: SquadDraft): Promise<SaveSquadResult> {
@@ -25,8 +25,6 @@ export async function saveSquad(slot: number, draft: SquadDraft): Promise<SaveSq
     p_slot: slot,
     p_unit_ids: draft.unitIds,
     p_leader_index: draft.leaderIndex,
-    p_ally_unit_id: draft.allyUnitId,
-    p_guest_id: draft.guestId ?? null,
   });
   if (error) {
     // 22023 is save_squad's validation error; its message is written for players.

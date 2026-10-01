@@ -75,7 +75,7 @@ export function fodderPickerEntries<T extends CollectionEntry>(
 }
 
 /**
- * Tiles the fodder picker dims: squad or ally members (`blocked`), units without content, and
+ * Tiles the fodder picker dims: saved squad members (`blocked`), units without content, and
  * forms that give no fusion EXP (the `fuse` RPC rejects them).
  */
 export function fodderIneligible(

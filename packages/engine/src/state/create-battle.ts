@@ -33,7 +33,7 @@ import {
   type PlayerSlotId,
   type SquadMemberSetup,
 } from "./types.ts";
-import { formStatsAtLevel, typeRollProblem } from "./unit-stats.ts";
+import { formStatsAtLevel, impStatsProblem, typeRollProblem } from "./unit-stats.ts";
 
 /** Thrown when a battle setup breaks a rule; the message names the offending setup path. */
 export class BattleSetupError extends Error {
@@ -46,7 +46,7 @@ export class BattleSetupError extends Error {
  */
 function memberStats(member: SquadMemberSetup, form: Form, path: string): Stats {
   if (member.stats !== undefined) {
-    if (member.level !== undefined || member.unitType !== undefined) {
+    if (member.level !== undefined || member.unitType !== undefined || member.imps !== undefined) {
       throw new BattleSetupError(`${path}: give either stats or level and unitType, not both`);
     }
     if (!StatsSchema.safeParse(member.stats).success) {
@@ -62,7 +62,11 @@ function memberStats(member: SquadMemberSetup, form: Form, path: string): Stats 
     const problem = typeRollProblem(unitType);
     if (problem) throw new BattleSetupError(`${path}.unitType.${problem}`);
   }
-  return formStatsAtLevel(form, level, unitType);
+  if (member.imps !== undefined) {
+    const problem = impStatsProblem(form, member.imps);
+    if (problem) throw new BattleSetupError(`${path}.imps: ${problem}`);
+  }
+  return formStatsAtLevel(form, level, unitType, member.imps);
 }
 
 function toBattleUnit(

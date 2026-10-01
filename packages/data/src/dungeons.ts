@@ -473,3 +473,80 @@ export function itemStage(entry: ItemDungeon): Stage {
     waves: [wave(), wave(), wave()],
   };
 }
+
+/** Hob series (M4-03I); elements follow the existing stackable units. */
+export const HOB_DUNGEONS = [
+  { unit: "vital-hob", title: "Vital Hob", element: "light" },
+  { unit: "might-hob", title: "Might Hob", element: "light" },
+  { unit: "ward-hob", title: "Ward Hob", element: "light" },
+  { unit: "mend-hob", title: "Mend Hob", element: "light" },
+] as const;
+
+export function hobEnemy(entry: { unit: string; title: string; element: Element }): Enemy {
+  const result = materialEnemy(
+    {
+      family: entry.unit,
+      title: entry.title,
+      single: entry.element,
+      place: "Warren",
+      gate: TRIAL_1,
+      ramp: 0,
+      stats: { hp: 8000, atk: 1700, def: 1500, rec: 100 },
+      zel: { rate: 50, amount: 100 },
+    },
+    entry.element,
+  );
+  if (entry.unit === "grand-hob") result.drops.capture = { unit: entry.unit, rate: 100 };
+  return result;
+}
+
+export const GRAND_HOB = { unit: "grand-hob", title: "Grand Hob", element: "light" } as const;
+
+export function hobStage(entry: (typeof HOB_DUNGEONS)[number]): Stage {
+  const stage = dungeonStage(
+    {
+      family: entry.unit,
+      title: entry.title,
+      single: entry.element,
+      place: "Warren",
+      gate: TRIAL_1,
+      ramp: 0,
+      stats: { hp: 8000, atk: 1700, def: 1500, rec: 100 },
+      zel: { rate: 50, amount: 100 },
+    },
+    entry.element,
+  );
+  stage.dungeon = {
+    series: "hobs",
+    gate: TRIAL_1,
+    dailyLimit: 5,
+    rareSpawn: { enemy: "dg-grand-hob", replaces: `dg-${entry.unit}`, rateBp: 1500 },
+  };
+  return stage;
+}
+
+/**
+ * Resolve one rare encounter from a server-issued unsigned 32-bit seed, separately from combat
+ * RNG. Low base-10000 digit selects the per-entry rate; the next digit selects the wave. The
+ * modulo bias from 2^32 is negligible (< 0.000003 per bucket). Matches SQL dungeon_waves exactly.
+ * The first matching regular enemy in the selected wave is replaced; its capture marker remains.
+ * A Grand Hob's enemy capture rate is 100%, including in waves 1–2.
+ */
+export function dungeonWaves(stage: Stage, seed: number): Stage["waves"] {
+  if (!Number.isSafeInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    throw new RangeError("dungeon seed must be an unsigned 32-bit integer");
+  }
+  const rare = stage.dungeon?.rareSpawn;
+  if (!rare || seed % 10000 >= rare.rateBp) return stage.waves;
+  const index = Math.floor(seed / 10000) % stage.waves.length;
+  return stage.waves.map((wave, w) => {
+    if (w !== index) return wave;
+    const slot = wave.enemies.findIndex((enemy) => enemy.enemy === rare.replaces);
+    if (slot < 0) throw new Error("rare-spawn replacement candidate is missing");
+    return {
+      enemies: wave.enemies.map((enemy, e) =>
+        e === slot ? { ...enemy, enemy: rare.enemy } : enemy,
+      ),
+    };
+  });
+}

@@ -88,6 +88,14 @@ export const DungeonPlacementSchema = z.strictObject({
   keyItem: KeyItemRuleSchema.optional(),
   ramp: z.number().int().min(1).max(100).optional(),
   dailyLimit: PositiveIntSchema.optional(),
+  /** One rare replacement per entry, selected from the server seed; never an extra enemy. */
+  rareSpawn: z
+    .strictObject({
+      enemy: ContentIdSchema,
+      replaces: ContentIdSchema,
+      rateBp: z.number().int().min(0).max(10000),
+    })
+    .optional(),
 });
 export type DungeonPlacement = z.infer<typeof DungeonPlacementSchema>;
 
@@ -219,6 +227,16 @@ export const StageSchema = z
       });
     }
     stage.waves.forEach((wave, w) => {
+      if (
+        stage.dungeon?.rareSpawn &&
+        !wave.enemies.some((slot) => slot.enemy === stage.dungeon?.rareSpawn?.replaces)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["waves", w],
+          message: "every wave needs a rare-spawn replacement candidate",
+        });
+      }
       wave.enemies.forEach((slot, e) => {
         if (slot.capture === undefined) return;
         const path = ["waves", w, "enemies", e, "capture"];

@@ -43,10 +43,10 @@ insert into public.owned_units (id, user_id, unit_id, form_id, level) values
   ('00000000-0000-0000-0000-000000000eb5', '00000000-0000-0000-0000-0000000000eb', 'cinder-cairn', 'cinder-cairn-4', 1),
   ('00000000-0000-0000-0000-000000000eb6', '00000000-0000-0000-0000-0000000000eb', 'cinder-effigy', 'cinder-effigy-3', 1);
 
--- e61 sits in a squad and e62 in its ally slot. A's Zel covers exactly the two successful
+-- e61 and e62 sit in a squad. A's Zel covers exactly the two successful
 -- evolutions (100,000 + 1,500,000) and A holds one Crown Shard; B has the Zel but no shard.
-insert into public.squads (user_id, slot, unit_ids, leader_index, ally_unit_id) values
-  ('00000000-0000-0000-0000-0000000000ea', 0, array['00000000-0000-0000-0000-000000000e61']::uuid[], 0, '00000000-0000-0000-0000-000000000e62');
+insert into public.squads (user_id, slot, unit_ids, leader_index) values
+  ('00000000-0000-0000-0000-0000000000ea', 0, array['00000000-0000-0000-0000-000000000e61', '00000000-0000-0000-0000-000000000e62']::uuid[], 0);
 insert into public.wallets (user_id, zel) values ('00000000-0000-0000-0000-0000000000ea', 1600000), ('00000000-0000-0000-0000-0000000000eb', 1500000);
 select public.grant_item('00000000-0000-0000-0000-0000000000ea', 'crown-shard', 1, 'test');
 
@@ -74,7 +74,7 @@ select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', 
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', array['00000000-0000-0000-0000-000000000e61', '00000000-0000-0000-0000-000000000e32']::uuid[])$$,
   '22023', null, 'a material in a squad is rejected');
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', array['00000000-0000-0000-0000-000000000e31', '00000000-0000-0000-0000-000000000e62']::uuid[])$$,
-  '22023', null, 'a material in an ally slot is rejected');
+  '22023', null, 'a second material in a squad is rejected');
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', array['00000000-0000-0000-0000-000000000e31', '00000000-0000-0000-0000-000000000eb1']::uuid[])$$,
   '22023', null, 'another players material is rejected');
 select throws_ok($$select public.evolve('00000000-0000-0000-0000-000000000e06', array['00000000-0000-0000-0000-000000000e31', '00000000-0000-0000-0000-000000000e31']::uuid[])$$,

@@ -4,6 +4,7 @@ import {
   EnemySchema,
   type Sphere,
   type Stage,
+  type Stats,
   sphereContent,
 } from "@bfr/data";
 import ashboundSentry from "@bfr/data/content/enemies/ch1-ashbound-sentry.json";
@@ -21,6 +22,7 @@ import tidewright from "@bfr/data/content/enemies/ch2-tidewright.json";
 import locke from "@bfr/data/content/enemies/trial1-locke.json";
 import lockeP2 from "@bfr/data/content/enemies/trial1-locke-p2.json";
 import type { BattleSetup, EnemySetup, SquadMemberSetup, UnitTypeRoll } from "@bfr/engine";
+import { BATTLE_ITEMS } from "../quests/item-loadout.ts";
 import { STORY_STAGES } from "../quests/quest-map.ts";
 import { trialStage } from "../quests/trials.ts";
 import { formArtFile, statsAtLevel, unitContent } from "../units/owned-units.ts";
@@ -34,7 +36,7 @@ import { formArtFile, statsAtLevel, unitContent } from "../units/owned-units.ts"
 
 /** The `battle_sessions` columns the battle page selects. */
 export const BATTLE_SESSION_COLUMNS =
-  "id, stage_id, seed, squad, content_version, expires_at, finished_at";
+  "id, stage_id, seed, squad, items, content_version, expires_at, finished_at";
 
 export type SnapshotUnit = {
   owned_unit_id: string | null;
@@ -44,6 +46,7 @@ export type SnapshotUnit = {
   level: number;
   bb_level?: number;
   sbb_level?: number;
+  imps?: Stats;
   spheres?: string[];
   second_sphere_slot?: boolean;
   /** The owned unit's persisted type roll (snapshotted since M3-01D); null or absent means Lord. */
@@ -62,6 +65,7 @@ export type BattleSessionRow = {
   stage_id: string;
   seed: number;
   squad: SquadSnapshot;
+  items?: { item: string; count: number }[];
   content_version: string;
   expires_at: string;
   finished_at: string | null;
@@ -104,6 +108,8 @@ const ENEMIES: ReadonlyMap<string, Enemy> = new Map(
   }),
 );
 
+const ITEMS = new Map(BATTLE_ITEMS.map((item) => [item.id, item]));
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Whether a `?session=` value can be a `battle_sessions.id`; others are rejected without a query. */
@@ -136,7 +142,7 @@ function member(row: SnapshotUnit): Member | string {
   const level = Number(row.level);
   // The engine derives the stats from level + roll (GAME_DESIGN §6), so the gains are applied
   // once, here and in the server replay alike; this check only turns a bad row into a message.
-  if (!statsAtLevel(form, level, row.unit_type)) {
+  if (!statsAtLevel(form, level, row.unit_type, row.imps)) {
     return `${unit.name}'s level or type is not valid in this version of the game.`;
   }
   if (
@@ -167,6 +173,7 @@ function member(row: SnapshotUnit): Member | string {
         ? { burstLevels: { bb: row.bb_level, sbb: row.sbb_level } }
         : {}),
       ...(row.unit_type ? { unitType: row.unit_type } : {}),
+      ...(row.imps ? { imps: row.imps } : {}),
       ...(spheres.length ? { spheres, secondSphereSlot: row.second_sphere_slot === true } : {}),
     },
     art: art ? unit.id : "",
@@ -213,11 +220,27 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
   const squad = members.slice(0, units.length);
   const allyMember = ally ? members[units.length] : undefined;
 
+  const items: NonNullable<BattleSetup["items"]>[number][] = [];
+  for (const entry of row.items ?? []) {
+    const item = ITEMS.get(entry.item);
+    if (
+      !item ||
+      !Number.isInteger(entry.count) ||
+      entry.count < 1 ||
+      entry.count > 10 ||
+      items.some((stack) => stack.item.id === entry.item)
+    )
+      return { ok: false, message: "This battle's item loadout is invalid." };
+    items.push({ item, count: entry.count });
+  }
+  if (items.length > 5) return { ok: false, message: "This battle's item loadout is invalid." };
+
   const setup: BattleSetup = {
     squad: squad.map((m) => m.setup),
     leaderIndex,
     ...(allyMember ? { ally: { ...allyMember.setup, kind: ally?.kind ?? "duplicate" } } : {}),
     waves,
+    items,
     ...(stage.trial ? { trial: true } : {}),
   };
   return {

@@ -5,6 +5,7 @@
   "forms": [
     {
       "id": "morrick-2",
+      "impCaps": { "hp": 200, "atk": 160, "def": 160, "rec": 80 },
       "name": "Oar Apprentice",
       "rarity": 2,
       "maxLevel": 30,
@@ -67,6 +68,7 @@
     },
     {
       "id": "morrick-3",
+      "impCaps": { "hp": 300, "atk": 200, "def": 200, "rec": 120 },
       "name": "Driftwood Wisp",
       "rarity": 3,
       "maxLevel": 40,
@@ -143,6 +145,7 @@
     },
     {
       "id": "morrick-4",
+      "impCaps": { "hp": 350, "atk": 260, "def": 260, "rec": 140 },
       "name": "Shade Oarsman",
       "rarity": 4,
       "maxLevel": 60,
@@ -227,6 +230,7 @@
     },
     {
       "id": "morrick-5",
+      "impCaps": { "hp": 500, "atk": 400, "def": 400, "rec": 200 },
       "name": "Shade Boatman",
       "rarity": 5,
       "maxLevel": 80,
@@ -315,6 +319,7 @@
     },
     {
       "id": "morrick-6",
+      "impCaps": { "hp": 700, "atk": 580, "def": 580, "rec": 280 },
       "name": "Dusk Ferryman",
       "rarity": 6,
       "maxLevel": 100,
@@ -439,6 +444,7 @@
     },
     {
       "id": "morrick-7",
+      "impCaps": { "hp": 1000, "atk": 840, "def": 840, "rec": 400 },
       "name": "Duskwater Legend",
       "rarity": 7,
       "maxLevel": 120,
@@ -654,6 +660,7 @@
     },
     {
       "id": "morrick-omni",
+      "impCaps": { "hp": 1300, "atk": 1100, "def": 1100, "rec": 520 },
       "name": "Nightshore Sovereign",
       "rarity": "omni",
       "maxLevel": 150,

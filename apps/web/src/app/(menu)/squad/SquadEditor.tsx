@@ -8,23 +8,25 @@ import menu from "../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { THUMB_ART_SIZE } from "../../../components/menu/ui-assets.ts";
+import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
 import {
   draftProblem,
   draftsEqual,
+  fillSquadSlots,
   pedestalOrder,
+  SQUAD_SIZE,
   SQUAD_SLOTS,
   type SquadDraft,
   setLeader,
   stepSquadSlot,
-  toggleAlly,
-  toggleGuest,
   toggleSquadUnit,
 } from "../../../lib/squad/squad-editor.ts";
+import type { CollectionEntry } from "../../../lib/units/unit-stacks.ts";
 import units from "../units/units.module.css";
 import { saveSquad } from "./actions.ts";
 import squad from "./squad.module.css";
 
-/** The slice of an owned unit (or a guest preview) the editor draws. */
+/** The slice of an owned unit the editor draws. */
 export type EditorUnit = {
   id: string;
   name: string;
@@ -42,8 +44,6 @@ export type EditorUnit = {
   thumb: string | null;
 };
 
-type PickTarget = "squad" | "ally";
-
 /** Where each entry of `pedestalOrder` sits: the leader in the centre, then the four corners. */
 const PEDESTAL_SPOTS = ["centre", "tl", "tr", "bl", "br"] as const;
 
@@ -53,23 +53,23 @@ const SLOT_NUMBERS: readonly number[] = Array.from({ length: SQUAD_SLOTS }, (_, 
  * The squad editor (M3-03B) as the original's Manage Squad (M3-03F, ART_GUIDE → UI → Units,
  * Squad, and Unit detail screens): five pedestals over `bg-olive` with the leader in the centre
  * under the leader ribbon, squad arrows and page dots for the ten squads, the Leader Skill bar,
- * and below them the ally slot and the unit picker. Tapping a squad member removes it; with
+ * and below them the unit picker. Tapping a squad member removes it; with
  * Leader lit, tapping one makes it the leader. Saving goes through the `save_squad` RPC.
  */
 export function SquadEditor({
   slot,
   units: owned,
-  guests,
+  pickerUnits,
   saved,
 }: {
   slot: number;
   units: readonly EditorUnit[];
-  guests: readonly EditorUnit[];
+  pickerUnits: readonly CollectionEntry[];
   saved: SquadDraft;
 }): ReactNode {
   const [draft, setDraft] = useState<SquadDraft>(saved);
-  const [target, setTarget] = useState<PickTarget>("squad");
   const [choosingLeader, setChoosingLeader] = useState(false);
+  const [filling, setFilling] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -84,7 +84,7 @@ export function SquadEditor({
   }
 
   function pick(unitId: string): void {
-    update(target === "ally" ? toggleAlly(draft, unitId) : toggleSquadUnit(draft, unitId));
+    update(toggleSquadUnit(draft, unitId));
   }
 
   function tapMember(position: number, unit: EditorUnit): void {
@@ -106,17 +106,30 @@ export function SquadEditor({
     });
   }
 
-  const ally = draft.guestId
-    ? guests.find((unit) => unit.id === draft.guestId)
-    : draft.allyUnitId
-      ? byId.get(draft.allyUnitId)
-      : undefined;
-
   const strip = status
     ? status.text
     : dirty
       ? (problem ?? "Unsaved changes.")
-      : "Tap a unit below to add it to the squad.";
+      : "Tap an empty pedestal to add units to the squad.";
+
+  if (filling) {
+    return (
+      <UnitPicker
+        title="Select Units"
+        units={pickerUnits}
+        limit={SQUAD_SIZE - draft.unitIds.length}
+        ineligible={draft.unitIds}
+        party={draft.unitIds}
+        backHref={`/squad?slot=${slot}`}
+        onBack={() => setFilling(false)}
+        ticker="Select units to fill the empty squad slots."
+        onConfirm={({ unitIds }) => {
+          update(fillSquadSlots(draft, unitIds, new Set(owned.map((unit) => unit.id))));
+          setFilling(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div className={squad.page}>
@@ -171,9 +184,17 @@ export function SquadEditor({
                     ? choosingLeader
                       ? `Make ${unit.name} the leader`
                       : `Remove ${unit.name} from the squad`
-                    : undefined
+                    : choosingLeader
+                      ? undefined
+                      : "Add units to the squad"
                 }
-                onTap={unit ? () => tapMember(position, unit) : undefined}
+                onTap={
+                  unit
+                    ? () => tapMember(position, unit)
+                    : choosingLeader
+                      ? undefined
+                      : () => setFilling(true)
+                }
               />
             );
           })}
@@ -233,68 +254,6 @@ export function SquadEditor({
         </p>
 
         <section className={squad.picker} aria-label="Units">
-          <div className={squad.pickerBar}>
-            <fieldset className={squad.targets} aria-label="Tapping a unit adds it to">
-              <span className={`${squad.targetsLabel} ${units.outline}`} aria-hidden>
-                Add to
-              </span>
-              <button
-                type="button"
-                className={`${units.pill} ${squad.targetButton} ${target === "squad" ? squad.barButtonLit : ""}`}
-                onClick={() => setTarget("squad")}
-                aria-pressed={target === "squad"}
-              >
-                <span className={units.outline}>Squad</span>
-              </button>
-              <button
-                type="button"
-                className={`${units.pill} ${squad.targetButton} ${target === "ally" ? squad.barButtonLit : ""}`}
-                onClick={() => setTarget("ally")}
-                aria-pressed={target === "ally"}
-              >
-                <span className={units.outline}>Ally</span>
-              </button>
-            </fieldset>
-            <div className={squad.allySlot}>
-              <span className={`${squad.allyLabel} ${units.outline}`}>
-                {draft.guestId ? "Guest" : "Ally"}
-              </span>
-              {ally ? (
-                <UnitIcon
-                  unit={ally}
-                  onClick={() =>
-                    update(draft.guestId ? toggleGuest(draft, ally.id) : toggleAlly(draft, ally.id))
-                  }
-                  label={`Remove ${ally.name} from the ally slot`}
-                />
-              ) : (
-                <span className={squad.allyEmpty} />
-              )}
-            </div>
-          </div>
-
-          <h2 className={`${squad.pickerTitle} ${units.outline}`}>Guests</h2>
-          <p className={squad.pickerNote}>
-            Try a guest in your ally slot. Their form and level scale to your collection when you
-            start a battle.
-          </p>
-          <ul className={units.grid}>
-            {guests.map((unit) => {
-              const chosen = draft.guestId === unit.id;
-              return (
-                <li key={unit.id}>
-                  <UnitIcon
-                    unit={unit}
-                    tag={chosen ? "ALLY" : "GUEST"}
-                    chosen={chosen}
-                    onClick={() => update(toggleGuest(draft, unit.id))}
-                    label={`${unit.name}, guest, Lv ${unit.level}`}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-
           <h2 className={`${squad.pickerTitle} ${units.outline}`}>Your units</h2>
           {owned.length === 0 ? (
             <p className={squad.pickerNote}>
@@ -304,16 +263,14 @@ export function SquadEditor({
             <ul className={units.grid}>
               {owned.map((unit) => {
                 const inSquad = draft.unitIds.includes(unit.id);
-                const isAlly = draft.allyUnitId === unit.id;
-                const chosen = target === "ally" ? isAlly : inSquad;
                 return (
                   <li key={unit.id}>
                     <UnitIcon
                       unit={unit}
-                      tag={inSquad ? "PARTY" : isAlly ? "ALLY" : null}
-                      chosen={chosen}
+                      tag={inSquad ? "PARTY" : null}
+                      chosen={inSquad}
                       onClick={() => pick(unit.id)}
-                      label={`${unit.name}, ${unit.rarityLabel}, Lv ${unit.level}${inSquad ? ", in squad" : ""}${isAlly ? ", ally" : ""}`}
+                      label={`${unit.name}, ${unit.rarityLabel}, Lv ${unit.level}${inSquad ? ", in squad" : ""}`}
                     />
                   </li>
                 );
@@ -378,10 +335,10 @@ function Pedestal({
       {unit ? <StatPlate unit={unit} /> : null}
     </>
   );
-  return unit && onTap ? (
+  return onTap ? (
     <button
       type="button"
-      className={squad.pedestal}
+      className={`${squad.pedestal} ${unit ? "" : squad.pedestalEmpty}`}
       data-spot={spot}
       onClick={onTap}
       aria-label={action}

@@ -41,6 +41,7 @@ export type QuestStageView = {
   number: number;
   name: string;
   text: string;
+  waves: number;
   boss: boolean;
   firstClearGems: number;
   state: StageState;
@@ -113,6 +114,7 @@ export function buildQuestMap(
       number: story.number,
       name: stage.name,
       text: story.text,
+      waves: stage.waves.length,
       boss: isBossStage(stage),
       firstClearGems: stage.firstClear?.gems ?? 0,
       state,

@@ -179,6 +179,21 @@ export function validateDungeons(
     if (dungeon.keyItem && !itemIds.has(dungeon.keyItem.item)) {
       errors.push(`${file}: dungeon.keyItem.item: unknown item "${dungeon.keyItem.item}"`);
     }
+    if (dungeon.rareSpawn) {
+      const rare = enemies.get(dungeon.rareSpawn.enemy);
+      if (!rare) {
+        errors.push(`${file}: dungeon.rareSpawn.enemy: unknown enemy "${dungeon.rareSpawn.enemy}"`);
+      } else if (
+        stage.waves.some((wave) =>
+          wave.enemies.some(
+            (slot) => slot.enemy === dungeon.rareSpawn?.replaces && slot.capture === "always",
+          ),
+        ) &&
+        !rare.drops.capture
+      ) {
+        errors.push(`${file}: dungeon.rareSpawn.enemy: replacement has no capture drop`);
+      }
+    }
     stage.waves.forEach((wave, w) => {
       wave.enemies.forEach((slot, e) => {
         const enemy = enemies.get(slot.enemy);

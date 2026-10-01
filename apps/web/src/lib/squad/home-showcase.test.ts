@@ -35,7 +35,7 @@ describe("showcaseCards", () => {
   });
 
   it("puts the leader first with the badge, then squad order, then empty frames", () => {
-    const row = { slot: 0, unit_ids: ["u1", "u2", "u4"], leader_index: 1, ally_unit_id: null };
+    const row = { slot: 0, unit_ids: ["u1", "u2", "u4"], leader_index: 1 };
     expect(showcaseCards(row, OWNED)).toEqual([
       {
         kind: "unit",
@@ -67,7 +67,7 @@ describe("showcaseCards", () => {
   });
 
   it("drops units the player no longer owns", () => {
-    const row = { slot: 0, unit_ids: ["gone", "u3"], leader_index: 0, ally_unit_id: null };
+    const row = { slot: 0, unit_ids: ["gone", "u3"], leader_index: 0 };
     const cards = showcaseCards(row, OWNED);
     expect(cards[0]).toMatchObject({ kind: "unit", ownedId: "u3", leader: true, cardArt: null });
     expect(cards.slice(1).every((card) => card.kind === "empty")).toBe(true);

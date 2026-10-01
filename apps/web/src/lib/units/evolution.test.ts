@@ -113,7 +113,7 @@ describe("evolutionPlan (M4-02C)", () => {
     const plan = evolutionPlan(
       { ...brand3, level: 12 },
       [brand3, locked],
-      [{ unit_ids: [locked.id], ally_unit_id: null }],
+      [{ unit_ids: [locked.id] }],
       [],
       40000,
     );
@@ -133,14 +133,14 @@ describe("evolutionPlan (M4-02C)", () => {
     expect(plan?.materialIds).toEqual([]);
   });
 
-  it("never spends the unit itself or the ally, and picks the lowest-level copies first", () => {
+  it("never spends the unit itself or squad members, and picks the lowest-level copies first", () => {
     const motes = [unit("cinder-mote", { level: 5 }), unit("cinder-mote"), unit("cinder-mote")];
-    const ally = unit("cinder-mote");
+    const member = unit("cinder-mote");
     const brand4: OwnedUnitRow = { ...brand3, form_id: "brand-4", level: 60 };
     const plan = evolutionPlan(
       brand4,
-      [brand4, ...motes, ally],
-      [{ unit_ids: [], ally_unit_id: ally.id }],
+      [brand4, ...motes, member],
+      [{ unit_ids: [member.id] }],
       [],
       0,
     );

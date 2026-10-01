@@ -4,20 +4,19 @@ import {
   draftProblem,
   draftsEqual,
   EMPTY_DRAFT,
+  fillSquadSlots,
   parseSquadSlot,
   pedestalOrder,
   type SquadDraft,
   setLeader,
   stepSquadSlot,
-  toggleAlly,
-  toggleGuest,
   toggleSquadUnit,
 } from "./squad-editor.ts";
 
 const OWNED = new Set(["a", "b", "c", "d", "e", "f"]);
 
-function draft(unitIds: string[], leaderIndex = 0, allyUnitId: string | null = null): SquadDraft {
-  return { unitIds, leaderIndex, allyUnitId };
+function draft(unitIds: string[], leaderIndex = 0): SquadDraft {
+  return { unitIds, leaderIndex };
 }
 
 describe("draftFromRow", () => {
@@ -25,18 +24,18 @@ describe("draftFromRow", () => {
     expect(draftFromRow(null, OWNED)).toEqual(EMPTY_DRAFT);
   });
 
-  it("reloads a saved squad in order with its leader and ally", () => {
-    const row = { slot: 0, unit_ids: ["c", "a", "b"], leader_index: 1, ally_unit_id: "a" };
-    expect(draftFromRow(row, OWNED)).toEqual(draft(["c", "a", "b"], 1, "a"));
+  it("reloads a saved squad in order with its leader", () => {
+    const row = { slot: 0, unit_ids: ["c", "a", "b"], leader_index: 1 };
+    expect(draftFromRow(row, OWNED)).toEqual(draft(["c", "a", "b"], 1));
   });
 
   it("drops units the player no longer owns and keeps the leader unit", () => {
-    const row = { slot: 0, unit_ids: ["x", "a", "b"], leader_index: 2, ally_unit_id: "y" };
-    expect(draftFromRow(row, OWNED)).toEqual(draft(["a", "b"], 1, null));
+    const row = { slot: 0, unit_ids: ["x", "a", "b"], leader_index: 2 };
+    expect(draftFromRow(row, OWNED)).toEqual(draft(["a", "b"], 1));
   });
 
   it("falls back to the first unit when the leader is gone", () => {
-    const row = { slot: 0, unit_ids: ["a", "x"], leader_index: 1, ally_unit_id: null };
+    const row = { slot: 0, unit_ids: ["a", "x"], leader_index: 1 };
     expect(draftFromRow(row, OWNED).leaderIndex).toBe(0);
   });
 });
@@ -63,38 +62,64 @@ describe("toggleSquadUnit", () => {
   });
 });
 
-describe("setLeader and toggleAlly", () => {
+describe("setLeader", () => {
   it("sets a leader only inside the squad", () => {
     expect(setLeader(draft(["a", "b"]), 1).leaderIndex).toBe(1);
     expect(setLeader(draft(["a", "b"]), 2).leaderIndex).toBe(0);
   });
+});
 
-  it("sets, swaps, and clears the ally, which may duplicate a squad unit", () => {
-    const withAlly = toggleAlly(draft(["a"]), "a");
-    expect(withAlly.allyUnitId).toBe("a");
-    expect(toggleAlly(withAlly, "b").allyUnitId).toBe("b");
-    expect(toggleAlly(withAlly, "a").allyUnitId).toBeNull();
+describe("fillSquadSlots (M4-06F)", () => {
+  it("confirms three picks into empty pedestals in pick order, keeping the leader", () => {
+    const before = draft(["a", "b"], 1);
+    const filled = fillSquadSlots(before, ["e", "c", "d"], OWNED);
+    expect(filled).toEqual({ ...before, unitIds: ["a", "b", "e", "c", "d"] });
+    expect(pedestalOrder(filled).map((position) => filled.unitIds[position])).toEqual([
+      "b",
+      "a",
+      "e",
+      "c",
+      "d",
+    ]);
+    expect(draftProblem(filled)).toBeNull();
+    expect(
+      draftFromRow(
+        {
+          slot: 0,
+          unit_ids: [...filled.unitIds],
+          leader_index: filled.leaderIndex,
+        },
+        OWNED,
+      ),
+    ).toEqual(draft(["a", "b", "e", "c", "d"], 1));
+    expect(before.unitIds).toEqual(["a", "b"]);
+  });
+
+  it("rejects party members, repeated picks, unknown ids, and overflow", () => {
+    expect(fillSquadSlots(draft(["a", "b", "c"]), ["a", "x", "d", "d", "e", "f"], OWNED)).toEqual(
+      draft(["a", "b", "c", "d", "e"]),
+    );
+  });
+
+  it("fills an empty squad from the centre", () => {
+    const before = EMPTY_DRAFT;
+    expect(fillSquadSlots(before, ["c", "a", "b"], OWNED)).toEqual({
+      ...before,
+      unitIds: ["c", "a", "b"],
+    });
+  });
+
+  it("leaves a full squad or a cancelled selection unchanged", () => {
+    const before = draft(["a", "b", "c", "d", "e"], 3);
+    expect(fillSquadSlots(before, ["f"], OWNED)).toEqual(before);
+    expect(fillSquadSlots(before, [], OWNED)).toEqual(before);
   });
 });
 
 describe("draftProblem", () => {
-  it("swaps between guests and duplicates, restores guests, and detects guest changes", () => {
-    const guest = toggleGuest(draft(["a"], 0, "a"), "aurelle");
-    expect(guest).toMatchObject({ allyUnitId: null, guestId: "aurelle" });
-    expect(toggleAlly(guest, "a")).toMatchObject({ allyUnitId: "a", guestId: null });
-    expect(toggleGuest(guest, "aurelle").guestId).toBeNull();
-    expect(
-      draftFromRow(
-        { slot: 0, unit_ids: ["a"], leader_index: 0, ally_unit_id: null, guest_id: "aurelle" },
-        OWNED,
-      ),
-    ).toEqual(guest);
-    expect(draftsEqual(guest, draft(["a"]))).toBe(false);
-    expect(draftProblem({ ...guest, allyUnitId: "a" })).toBe("Choose one ally.");
-  });
   it("accepts 1-5 distinct units with a leader among them", () => {
     expect(draftProblem(draft(["a"]))).toBeNull();
-    expect(draftProblem(draft(["a", "b", "c", "d", "e"], 4, "a"))).toBeNull();
+    expect(draftProblem(draft(["a", "b", "c", "d", "e"], 4))).toBeNull();
   });
 
   it("rejects empty, oversized, repeated, and bad-leader squads", () => {
@@ -112,10 +137,10 @@ describe("parseSquadSlot and draftsEqual", () => {
     for (const bad of [undefined, "", "10", "-1", "x", "1.5"]) expect(parseSquadSlot(bad)).toBe(0);
   });
 
-  it("compares order, leader, and ally", () => {
-    expect(draftsEqual(draft(["a", "b"], 1, "c"), draft(["a", "b"], 1, "c"))).toBe(true);
+  it("compares order and leader", () => {
+    expect(draftsEqual(draft(["a", "b"], 1), draft(["a", "b"], 1))).toBe(true);
     expect(draftsEqual(draft(["a", "b"]), draft(["b", "a"]))).toBe(false);
-    expect(draftsEqual(draft(["a"], 0, null), draft(["a"], 0, "a"))).toBe(false);
+    expect(draftsEqual(draft(["a", "b"], 0), draft(["a", "b"], 1))).toBe(false);
   });
 });
 

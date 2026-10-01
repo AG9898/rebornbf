@@ -2,13 +2,13 @@
 begin;
 select plan(19);
 
-select ok(has_function_privilege('service_role', 'public.grant_battle_rewards(uuid)', 'execute'),
+select ok(has_function_privilege('service_role', 'public.grant_battle_rewards(uuid, jsonb)', 'execute'),
   'the service role may grant rewards');
-select ok(not has_function_privilege('anon', 'public.grant_battle_rewards(uuid)', 'execute'),
+select ok(not has_function_privilege('anon', 'public.grant_battle_rewards(uuid, jsonb)', 'execute'),
   'anon cannot execute the reward function');
-select ok(not has_function_privilege('authenticated', 'public.grant_battle_rewards(uuid)', 'execute'),
+select ok(not has_function_privilege('authenticated', 'public.grant_battle_rewards(uuid, jsonb)', 'execute'),
   'authenticated cannot execute the reward function');
-select ok((select prosecdef from pg_proc where oid = 'public.grant_battle_rewards(uuid)'::regprocedure),
+select ok((select prosecdef from pg_proc where oid = 'public.grant_battle_rewards(uuid, jsonb)'::regprocedure),
   'the reward function runs as its definer');
 
 insert into auth.users (id, email) values

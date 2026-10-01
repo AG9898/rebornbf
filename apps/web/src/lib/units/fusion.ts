@@ -85,7 +85,7 @@ export function fusionPreview(
     const duplicate = row.unit_id === target.unit_id;
     if (duplicate) burstGain += 10;
     const effect = fodderForm.fusionEffect;
-    if (typeof effect === "object") {
+    if (typeof effect === "object" && "burstLevels" in effect) {
       // Burst toads share the duplicate pool (M4-04E).
       burstGain += effect.burstLevels;
       toads += 1;

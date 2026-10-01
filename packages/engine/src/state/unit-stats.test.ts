@@ -33,6 +33,54 @@ const brand3 = form("brand-3");
 const brandOmni = form("brand-omni");
 const ANIMA: UnitTypeRoll = { type: "anima", gains: { hp: 7, atk: 0, def: 0, rec: -2 } };
 
+describe("persistent hob gains (M4-04B)", () => {
+  const imps = { hp: 150, atk: 60, def: 60, rec: 60 };
+  it("adds flat gains after the level/type curve, including at level 1 and Omni", () => {
+    expect(formStatsAtLevel(brand3, 1, ANIMA, imps)).toEqual({
+      hp: 1634,
+      atk: 690,
+      def: 577,
+      rec: 464,
+    });
+    expect(formStatsAtLevel(brand3, 20, ANIMA, imps)).toEqual({
+      hp: 2270,
+      atk: 829,
+      def: 717,
+      rec: 571,
+    });
+    expect(formStatsAtLevel(brandOmni, 150, ANIMA, imps)).toEqual({
+      hp: 7604,
+      atk: 2902,
+      def: 2530,
+      rec: 2304,
+    });
+  });
+  it("createBattle applies totals exactly once and replay is identical", () => {
+    const setup: BattleSetup = {
+      squad: [{ unit: brand, formId: "brand-3", level: 20, unitType: ANIMA, imps }],
+      leaderIndex: 0,
+      waves: [[makeEnemy("hob-test")]],
+    };
+    const battle = createBattle(setup, 42);
+    expect(battle.party[0]?.stats).toEqual({ hp: 2270, atk: 829, def: 717, rec: 571 });
+    expect(createBattle(setup, 42)).toEqual(battle);
+  });
+  it("refuses out-of-cap or malformed totals, and totals on already-resolved stats", () => {
+    for (const invalid of [
+      { ...imps, hp: 501 },
+      { ...imps, atk: -1 },
+      { ...imps, rec: 1.5 },
+    ])
+      expect(() => formStatsAtLevel(brand3, 1, LORD_ROLL, invalid)).toThrow(RangeError);
+    const setup = {
+      squad: [{ unit: brand, formId: "brand-3", stats: brand3.stats.base, imps }],
+      leaderIndex: 0,
+      waves: [[makeEnemy("hob-test")]],
+    };
+    expect(() => createBattle(setup as unknown as BattleSetup, 42)).toThrow(BattleSetupError);
+  });
+});
+
 describe("lordStatsAtLevel", () => {
   it("matches the Brand 3★ worked examples", () => {
     expect(lordStatsAtLevel(brand3, 1)).toEqual({ hp: 1484, atk: 630, def: 517, rec: 404 });

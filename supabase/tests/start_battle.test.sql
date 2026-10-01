@@ -1,7 +1,7 @@
 -- M3-04B: start_battle issues caller-owned, expiring sessions with a server-rolled seed.
 begin;
 
-select plan(28);
+select plan(36);
 
 -- Fixture content: two story stages and one non-story stage, replacing whatever is seeded (all
 -- rolled back), so the test does not depend on the live chapter content.
@@ -28,20 +28,19 @@ insert into public.owned_units (id, user_id, unit_id, form_id, level, unit_type)
 insert into public.owned_units (id, user_id, unit_id, form_id, level) values
   ('00000000-0000-0000-0000-0000000006b1', '00000000-0000-0000-0000-00000000006b', 'brand', 'brand-3', 1);
 
-insert into public.squads (user_id, slot, unit_ids, leader_index, ally_unit_id) values
+insert into public.squads (user_id, slot, unit_ids, leader_index) values
   ('00000000-0000-0000-0000-00000000006a', 0,
-    array['00000000-0000-0000-0000-0000000006a2', '00000000-0000-0000-0000-0000000006a1']::uuid[], 1,
-    '00000000-0000-0000-0000-0000000006a3'),
-  ('00000000-0000-0000-0000-00000000006a', 1, '{}'::uuid[], 0, null),
+    array['00000000-0000-0000-0000-0000000006a2', '00000000-0000-0000-0000-0000000006a1']::uuid[], 1),
+  ('00000000-0000-0000-0000-00000000006a', 1, '{}'::uuid[], 0),
   ('00000000-0000-0000-0000-00000000006b', 0,
-    array['00000000-0000-0000-0000-0000000006b1']::uuid[], 0, null);
+    array['00000000-0000-0000-0000-0000000006b1']::uuid[], 0);
 
 -- Privileges (6) ---------------------------------------------------------------------------------
-select ok(has_function_privilege('authenticated', 'public.start_battle(text, smallint)', 'execute'),
+select ok(has_function_privilege('authenticated', 'public.start_battle(text, smallint, text, jsonb)', 'execute'),
   'authenticated may call start_battle');
-select ok(not has_function_privilege('anon', 'public.start_battle(text, smallint)', 'execute'),
+select ok(not has_function_privilege('anon', 'public.start_battle(text, smallint, text, jsonb)', 'execute'),
   'anon may not call start_battle');
-select ok((select prosecdef from pg_proc where oid = 'public.start_battle(text, smallint)'::regprocedure),
+select ok((select prosecdef from pg_proc where oid = 'public.start_battle(text, smallint, text, jsonb)'::regprocedure),
   'start_battle is security definer');
 select ok(not has_table_privilege('authenticated', 'public.battle_sessions', 'insert'),
   'authenticated may not insert sessions');
@@ -68,7 +67,7 @@ select throws_ok($$select public.start_battle('test-story-one', 5::smallint)$$,
   '22023', null, 'a squad slot with no saved squad is rejected');
 
 -- A session for the first stage (10)
-select lives_ok($$select public.start_battle('test-story-one')$$, 'the first story stage starts');
+select lives_ok($$select public.start_battle('test-story-one', 0::smallint, '00000000-0000-0000-0000-0000000006a3')$$, 'the first story stage starts with a per-run ally');
 select is((select count(*)::int from public.battle_sessions), 1, 'one session was recorded');
 select is((select user_id from public.battle_sessions), '00000000-0000-0000-0000-00000000006a'::uuid,
   'the session belongs to the caller');
@@ -90,6 +89,24 @@ select is((select squad from public.battle_sessions),
   'the squad snapshot keeps squad order, leader, levels, type rolls, and the ally');
 select is((select (public.start_battle('test-story-one')).stage_id), 'test-story-one',
   'start_battle returns the new session row');
+
+-- Per-quest allies: none, any owned unit (including a squad member), or a pool guest.
+select is((public.start_battle('test-story-one', 0::smallint, null)).squad -> 'ally',
+  'null'::jsonb, 'explicit null starts without an ally');
+select is((public.start_battle('test-story-one')).squad -> 'ally',
+  'null'::jsonb, 'an omitted ally does not reuse the previous run choice');
+select is((public.start_battle('test-story-one', 0::smallint, '00000000-0000-0000-0000-0000000006a1')).squad -> 'ally' ->> 'owned_unit_id',
+  '00000000-0000-0000-0000-0000000006a1', 'a squad member can also be the duplicate ally');
+select throws_ok($$select public.start_battle('test-story-one', 0::smallint, '00000000-0000-0000-0000-0000000006b1')$$,
+  '22023', null, 'a foreign ally is refused');
+select throws_ok($$select public.start_battle('test-story-one', 0::smallint, '00000000-0000-0000-0000-000000000fff')$$,
+  '22023', null, 'an unknown owned ally is refused');
+select throws_ok($$select public.start_battle('test-story-one', 0::smallint, 'brand')$$,
+  '22023', null, 'a content unit outside the guest pool is refused');
+select throws_ok($$select public.start_battle('test-story-one', 0::smallint, '')$$,
+  '22023', null, 'empty text is not a no-ally choice');
+select throws_ok($$select public.start_battle('test-story-one', 0::smallint, 'not-a-uuid')$$,
+  '22023', null, 'malformed ally input is refused with a player validation error');
 
 -- The client cannot write or re-seed a session (2)
 select throws_ok($$insert into public.battle_sessions (user_id, stage_id, seed, squad, content_version, expires_at)

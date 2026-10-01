@@ -6,6 +6,7 @@
   "forms": [
     {
       "id": "aurelle-3",
+      "impCaps": { "hp": 300, "atk": 100, "def": 100, "rec": 160 },
       "name": "Temple Dancer",
       "rarity": 3,
       "maxLevel": 40,
@@ -74,6 +75,7 @@
     },
     {
       "id": "aurelle-4",
+      "impCaps": { "hp": 400, "atk": 140, "def": 140, "rec": 200 },
       "name": "Blade Dancer",
       "rarity": 4,
       "maxLevel": 60,
@@ -142,6 +144,7 @@
     },
     {
       "id": "aurelle-5",
+      "impCaps": { "hp": 500, "atk": 160, "def": 160, "rec": 280 },
       "name": "Eightfold Dancer",
       "rarity": 5,
       "maxLevel": 80,
@@ -231,6 +234,7 @@
     },
     {
       "id": "aurelle-6",
+      "impCaps": { "hp": 750, "atk": 240, "def": 240, "rec": 420 },
       "name": "Haloblade",
       "rarity": 6,
       "maxLevel": 100,
@@ -358,6 +362,7 @@
     },
     {
       "id": "aurelle-7",
+      "impCaps": { "hp": 1000, "atk": 340, "def": 340, "rec": 620 },
       "name": "Bladewing Legend",
       "rarity": 7,
       "maxLevel": 120,
@@ -594,6 +599,7 @@
     },
     {
       "id": "aurelle-omni",
+      "impCaps": { "hp": 1250, "atk": 460, "def": 460, "rec": 820 },
       "name": "Aurora Sovereign",
       "rarity": "omni",
       "maxLevel": 150,

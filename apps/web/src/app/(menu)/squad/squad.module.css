@@ -17,9 +17,8 @@
   width: calc(var(--u) * 290);
 }
 
-/* Title-bar and picker pills are buttons: reset the button look over units.pill. */
-.barButton,
-.targetButton {
+/* Title-bar pills are buttons: reset the button look over units.pill. */
+.barButton {
   padding: 0;
   border: 0;
   background-color: transparent;
@@ -33,17 +32,9 @@
   width: calc(var(--u) * 104);
 }
 
-.targetButton {
-  width: calc(var(--u) * 96);
-  height: calc(var(--u) * 44);
-  font-size: calc(var(--u) * 20);
-}
-
 .barButtonLit,
 .barButton:not(:disabled):hover,
-.barButton:focus-visible,
-.targetButton:hover,
-.targetButton:focus-visible {
+.barButton:focus-visible {
   background-image: url("/assets/ui/btn-pill-lit.webp");
 }
 
@@ -324,49 +315,10 @@ button.pedestal:focus-visible {
   color: #ffb49a;
 }
 
-/* ---------- Ally slot and unit picker ---------- */
+/* ---------- Unit picker ---------- */
 
 .picker {
   padding: calc(var(--u) * 14) calc(var(--u) * 14) calc(var(--u) * 20);
-}
-
-.pickerBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: calc(var(--u) * 12);
-}
-
-.targets {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 6);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.targetsLabel,
-.allyLabel {
-  --stroke: 3;
-  font-size: calc(var(--u) * 20);
-  color: #f6d88a;
-}
-
-.allySlot {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 10);
-}
-
-.allyEmpty {
-  display: block;
-  width: calc(var(--u) * 84);
-  aspect-ratio: 1;
-  border: calc(var(--u) * 3) dashed rgb(42 22 6 / 0.55);
-  border-radius: calc(var(--u) * 12);
-  background: rgb(20 14 4 / 0.25);
 }
 
 .pickerTitle {
@@ -394,8 +346,4 @@ button.pedestal:focus-visible {
 
 .pickChosen {
   filter: drop-shadow(0 0 calc(var(--u) * 6) #fbe39a);
-}
-
-.allySlot > .pickIcon {
-  width: calc(var(--u) * 84);
 }

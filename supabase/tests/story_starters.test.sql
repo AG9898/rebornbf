@@ -2,9 +2,9 @@
 -- privilege boundaries, and transactional rollback. Local pgTAP skipped for this owner run.
 begin;
 select plan(54);
-select ok(has_function_privilege('service_role', 'public.grant_battle_rewards(uuid)', 'execute'),
+select ok(has_function_privilege('service_role', 'public.grant_battle_rewards(uuid, jsonb)', 'execute'),
   'service role can settle verified wins');
-select ok(not has_function_privilege('authenticated', 'public.grant_battle_rewards(uuid)', 'execute'),
+select ok(not has_function_privilege('authenticated', 'public.grant_battle_rewards(uuid, jsonb)', 'execute'),
   'players cannot grant starters for any user');
 select ok(not has_function_privilege('service_role', 'public.grant_battle_base_rewards(uuid)', 'execute'),
   'API roles cannot bypass starter settlement');

@@ -59,8 +59,8 @@ select results_eq(
     from public.owned_units o$$,
   'the grant wrote one unit_log row');
 select results_eq(
-  $$select s.unit_ids, s.leader_index, s.ally_unit_id from public.squads s where s.slot = 0$$,
-  $$select array[o.id], 0::smallint, null::uuid from public.owned_units o$$,
+  $$select s.unit_ids, s.leader_index from public.squads s where s.slot = 0$$,
+  $$select array[o.id], 0::smallint from public.owned_units o$$,
   'squad slot 0 holds only the picked unit, as leader');
 select results_eq(
   $$select onboarding_step::text from public.profiles where id = '00000000-0000-0000-0000-0000000005a1'$$,

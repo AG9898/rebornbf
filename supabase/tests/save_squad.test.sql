@@ -1,4 +1,4 @@
--- M3-03B: save_squad validates size, ownership, leader, and ally, and a saved squad reloads.
+-- M3-04H: save_squad validates size, ownership and leader; no saved ally columns.
 begin;
 
 select plan(21);
@@ -17,11 +17,11 @@ insert into public.owned_units (id, user_id, unit_id, form_id) values
   ('00000000-0000-0000-0000-0000000005b1', '00000000-0000-0000-0000-00000000005b', 'brand', 'brand-1');
 
 -- Privileges -------------------------------------------------------------------------------------
-select ok(has_function_privilege('authenticated', 'public.save_squad(smallint, uuid[], smallint, uuid)', 'execute'),
+select ok(has_function_privilege('authenticated', 'public.save_squad(smallint, uuid[], smallint)', 'execute'),
   'authenticated may call save_squad');
-select ok(not has_function_privilege('anon', 'public.save_squad(smallint, uuid[], smallint, uuid)', 'execute'),
+select ok(not has_function_privilege('anon', 'public.save_squad(smallint, uuid[], smallint)', 'execute'),
   'anon may not call save_squad');
-select ok((select prosecdef from pg_proc where oid = 'public.save_squad(smallint, uuid[], smallint, uuid)'::regprocedure),
+select ok((select prosecdef from pg_proc where oid = 'public.save_squad(smallint, uuid[], smallint)'::regprocedure),
   'save_squad is security definer');
 
 -- Player A ---------------------------------------------------------------------------------------
@@ -57,27 +57,26 @@ select throws_ok($$select public.save_squad(0::smallint, array['00000000-0000-00
   '22023', null, 'a negative leader index is rejected');
 select throws_ok($$select public.save_squad(10::smallint, array['00000000-0000-0000-0000-0000000005a1']::uuid[], 0::smallint)$$,
   '22023', null, 'a slot past 9 is rejected');
-select throws_ok($$select public.save_squad(0::smallint, array['00000000-0000-0000-0000-0000000005a1']::uuid[], 0::smallint,
-    '00000000-0000-0000-0000-0000000005b1'::uuid)$$,
-  '22023', null, 'another player''s unit as ally is rejected');
+select is((select count(*)::integer from information_schema.columns
+  where table_schema = 'public' and table_name = 'squads'
+    and column_name in ('ally_unit_id', 'guest_id')), 0, 'squads have no ally columns');
 select is((select count(*)::int from public.squads), 0, 'no squad was written by rejected calls');
 
 -- A valid squad saves and reloads (5)
 select lives_ok($$select public.save_squad(0::smallint, array[
     '00000000-0000-0000-0000-0000000005a3', '00000000-0000-0000-0000-0000000005a1',
-    '00000000-0000-0000-0000-0000000005a2']::uuid[], 1::smallint,
-    '00000000-0000-0000-0000-0000000005a1'::uuid)$$,
-  'a valid squad with a duplicate ally saves');
-select results_eq($$select unit_ids, leader_index::int, ally_unit_id from public.squads where slot = 0$$,
+    '00000000-0000-0000-0000-0000000005a2']::uuid[], 1::smallint)$$,
+  'a valid squad saves');
+select results_eq($$select unit_ids, leader_index::int from public.squads where slot = 0$$,
   $$values (array['00000000-0000-0000-0000-0000000005a3', '00000000-0000-0000-0000-0000000005a1',
-    '00000000-0000-0000-0000-0000000005a2']::uuid[], 1, '00000000-0000-0000-0000-0000000005a1'::uuid)$$,
-  'the saved squad reloads in order with its leader and ally');
+    '00000000-0000-0000-0000-0000000005a2']::uuid[], 1)$$,
+  'the saved squad reloads in order with its leader');
 
 select lives_ok($$select public.save_squad(0::smallint, array[
     '00000000-0000-0000-0000-0000000005a6']::uuid[], 0::smallint)$$,
   'saving the same slot again replaces it');
-select results_eq($$select count(*)::int, max(cardinality(unit_ids)), bool_and(ally_unit_id is null) from public.squads$$,
-  $$values (1, 1, true)$$, 'the slot holds only the latest squad, without an ally');
+select results_eq($$select count(*)::int, max(cardinality(unit_ids)) from public.squads$$,
+  $$values (1, 1)$$, 'the slot holds only the latest squad');
 
 select is((select user_id from public.squads where slot = 0), '00000000-0000-0000-0000-00000000005a'::uuid,
   'the squad belongs to the caller');

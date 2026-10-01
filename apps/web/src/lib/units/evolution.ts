@@ -33,8 +33,8 @@ export function materialItemName(itemId: string): string {
   return MATERIAL_ITEM_NAMES.get(itemId) ?? itemId;
 }
 
-/** The squad columns the plan needs: units in any squad or ally slot cannot be spent. */
-export type SquadUseRow = { unit_ids: string[]; ally_unit_id: string | null };
+/** The squad columns the plan needs: units in any saved squad cannot be spent. */
+export type SquadUseRow = { unit_ids: string[] };
 export type OwnedItemRow = { item_id: string; count: number };
 
 export type EvolutionFormView = {
@@ -54,11 +54,11 @@ export type MaterialUnitNeed = {
   element: Element | null;
   thumb: string | null;
   count: number;
-  /** Spendable copies owned: not the unit itself and not in a squad or ally slot, stacks included. */
+  /** Spendable copies owned: not the unit itself and not in a squad, stacks included. */
   owned: number;
   /** How many of `owned` are stacked copies (M4-05C); these are spent first. */
   stacked: number;
-  /** Copies of this unit sitting in a squad or ally slot, which must be removed first. */
+  /** Copies of this unit sitting in a squad, which must be removed first. */
   inSquad: number;
 };
 
@@ -146,7 +146,6 @@ export function evolutionPlan(
   const locked = new Set<string>();
   for (const squad of squads) {
     for (const id of squad.unit_ids) locked.add(id);
-    if (squad.ally_unit_id) locked.add(squad.ally_unit_id);
   }
 
   const problems: string[] = [];

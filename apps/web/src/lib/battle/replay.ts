@@ -68,6 +68,11 @@ function parseInput(value: unknown): BattleInput | string {
     case "guard":
     case "overdrive":
       return { type, tick, actor: slot };
+    case "item":
+      if (typeof value.item !== "string" || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(value.item)) {
+        return "an item id is invalid";
+      }
+      return { type, tick, actor: slot, item: value.item };
     default:
       return "an input type is invalid";
   }
@@ -112,7 +117,7 @@ export function parseInputLog(value: unknown): ParsedLog {
 }
 
 export type ReplayResult =
-  | { ok: true; result: BattleResult; turns: number }
+  | { ok: true; result: BattleResult; turns: number; remainingItems: Record<string, number> }
   | { ok: false; message: string };
 
 /**
@@ -142,6 +147,11 @@ export function replayBattle(setup: BattleSetup, seed: number, log: BattleInputL
     }
     try {
       const player = step(state, inputs, { untilTick: endTick });
+      if (
+        player.events.some((event) => event.type === "ActionRejected" && event.reason === "no_item")
+      ) {
+        return { ok: false, message: `turn ${index + 1}: item use exceeds the loadout` };
+      }
       if (!playerPhaseDone(player.state)) {
         return { ok: false, message: `turn ${index + 1} ends before every unit has acted` };
       }
@@ -161,5 +171,10 @@ export function replayBattle(setup: BattleSetup, seed: number, log: BattleInputL
     }
   }
   if (state.result === undefined) return { ok: false, message: "the battle did not end" };
-  return { ok: true, result: state.result, turns: log.length };
+  return {
+    ok: true,
+    result: state.result,
+    turns: log.length,
+    remainingItems: Object.fromEntries(state.items.map(({ item, count }) => [item.id, count])),
+  };
 }

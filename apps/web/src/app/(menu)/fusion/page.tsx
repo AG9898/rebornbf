@@ -32,19 +32,12 @@ export default async function FusionPage({
       .overrideTypes<UnitStackRow[], { merge: false }>(),
     supabase
       .from("squads")
-      .select("unit_ids, ally_unit_id")
+      .select("unit_ids")
       .eq("user_id", userId)
-      .overrideTypes<{ unit_ids: string[]; ally_unit_id: string | null }[], { merge: false }>(),
+      .overrideTypes<{ unit_ids: string[] }[], { merge: false }>(),
     supabase.from("wallets").select("zel").eq("user_id", userId).maybeSingle<{ zel: number }>(),
   ]);
-  const blocked = [
-    ...new Set(
-      (squads.data ?? []).flatMap((s) => [
-        ...s.unit_ids,
-        ...(s.ally_unit_id ? [s.ally_unit_id] : []),
-      ]),
-    ),
-  ];
+  const blocked = [...new Set((squads.data ?? []).flatMap((s) => s.unit_ids))];
   const { target } = await searchParams;
   if (units.error || stacks.error || squads.error || wallet.error) {
     return (

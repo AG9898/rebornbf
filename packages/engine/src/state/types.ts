@@ -45,6 +45,7 @@ export interface ResolvedStatsMember extends SquadMemberBase {
   readonly stats: Stats;
   readonly level?: never;
   readonly unitType?: never;
+  readonly imps?: never;
 }
 
 /**
@@ -58,6 +59,8 @@ export interface LeveledMember extends SquadMemberBase {
   readonly level: number;
   /** Omitted means Lord (no gains). */
   readonly unitType?: UnitTypeRoll;
+  /** Frozen persisted hob gains; applied after the level/type curve exactly once. */
+  readonly imps?: Stats;
 }
 
 /**

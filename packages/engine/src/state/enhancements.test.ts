@@ -427,6 +427,7 @@ describe("selected SP passives", () => {
               ...input,
               level: undefined,
               unitType: undefined,
+              imps: undefined,
               stats: { hp: 1000, atk: 1000, def: 1000, rec: 1000 },
             },
           ],

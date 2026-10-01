@@ -1,0 +1,53 @@
+{
+  "id": "dungeon-vital-hob",
+  "name": "Vital Hob Warren",
+  "dungeon": {
+    "series": "hobs",
+    "gate": "trial-01-captain-locke",
+    "dailyLimit": 5,
+    "rareSpawn": {
+      "enemy": "dg-grand-hob",
+      "replaces": "dg-vital-hob",
+      "rateBp": 1500
+    }
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-vital-hob"
+        },
+        {
+          "enemy": "dg-vital-hob"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-vital-hob"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-vital-hob",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

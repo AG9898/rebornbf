@@ -1,30 +1,38 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import type { LoadoutEntry } from "../lib/quests/item-loadout.ts";
 import { SIGN_IN_PATH } from "../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../lib/supabase/server.ts";
-
-/** The squad slot battles use until squad selection per battle exists. */
-const BATTLE_SQUAD_SLOT = 0;
 
 /**
  * Starts a stage through `start_battle` (M3-04B) and redirects to the battle page, or back to
  * `returnPath` with a player-facing `?error=`. The RPC derives the player from `auth.uid()` and
  * re-checks the stage, its unlock, and the squad; it records a session with a server-rolled seed
- * and a snapshot of the player's first squad slot. Shared by the quest map and the Trials page.
+ * and a snapshot of the chosen squad and per-run ally. Trials default to slot 0 without an ally.
  */
-export async function startBattleSession(stageId: string, returnPath: string): Promise<never> {
+export async function startBattleSession(
+  stageId: string,
+  returnPath: string,
+  squadSlot = 0,
+  ally: string | null = null,
+  items?: readonly LoadoutEntry[],
+): Promise<never> {
   function back(message: string): never {
-    redirect(`${returnPath}?${new URLSearchParams({ error: message }).toString()}`);
+    const url = new URL(returnPath, "https://bfr.invalid");
+    url.searchParams.set("error", message);
+    redirect(`${url.pathname}${url.search}`);
   }
   const supabase = await createSupabaseServerClient();
   if (!supabase) back("Battles are unavailable right now.");
 
   const { data, error } = await supabase.rpc("start_battle", {
     p_stage_id: stageId,
-    p_squad_slot: BATTLE_SQUAD_SLOT,
+    p_squad_slot: squadSlot,
+    p_ally: ally,
+    ...(items ? { p_items: items } : {}),
   });
   if (error) {
-    if (error.code === "42501") redirect(`${SIGN_IN_PATH}?next=${returnPath}`);
+    if (error.code === "42501") redirect(`${SIGN_IN_PATH}?next=${encodeURIComponent(returnPath)}`);
     // 22023 is start_battle's validation error; its message is written for players.
     const message =
       error.code === "22023"

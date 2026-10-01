@@ -521,6 +521,24 @@ describe("farming dungeons (M4-03B)", () => {
     ]);
   });
 
+  it("checks rare replacement enemy references and final-wave capture compatibility", () => {
+    const stage = (enemy: string): Stage => ({
+      ...dungeon,
+      dungeon: {
+        series: "test",
+        gate: story.id,
+        rareSpawn: { enemy, replaces: mote.id, rateBp: 1500 },
+      },
+    });
+    expect(validateDungeons([story, stage(mote.id)], enemies, itemIds)).toEqual([]);
+    expect(validateDungeons([story, stage("missing")], enemies, itemIds)).toEqual([
+      'stages/test-dungeon.json: dungeon.rareSpawn.enemy: unknown enemy "missing"',
+    ]);
+    expect(validateDungeons([story, stage(grunt.id)], enemies, itemIds)).toEqual([
+      "stages/test-dungeon.json: dungeon.rareSpawn.enemy: replacement has no capture drop",
+    ]);
+  });
+
   it("reports drops that name unknown units or items", () => {
     expect(validateDropRefs("enemies/test-mote.json", mote, new Set(), new Set())).toEqual([
       'enemies/test-mote.json: drops.capture.unit: unknown unit "moss-mote"',

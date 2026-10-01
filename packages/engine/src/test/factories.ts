@@ -1,5 +1,5 @@
 import type { Attack, Effect, Stats, Unit } from "@bfr/data";
-import type { BattleSetup, EnemySetup, SquadMemberSetup } from "../state/types.ts";
+import type { BattleSetup, EnemySetup, ResolvedStatsMember } from "../state/types.ts";
 
 const STATS: Stats = { hp: 4000, atk: 1400, def: 1100, rec: 900 };
 
@@ -52,7 +52,7 @@ export function makeUnit(id: string, overrides: Partial<Unit> = {}): Unit {
   };
 }
 
-export function makeMember(id: string): SquadMemberSetup {
+export function makeMember(id: string): ResolvedStatsMember {
   return { unit: makeUnit(id), formId: `${id}-5`, stats: STATS };
 }
 

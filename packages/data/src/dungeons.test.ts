@@ -9,7 +9,12 @@ import {
   DUNGEON_FAMILIES,
   type DungeonFamily,
   dungeonStage,
+  dungeonWaves,
   familyElements,
+  GRAND_HOB,
+  HOB_DUNGEONS,
+  hobEnemy,
+  hobStage,
   ITEM_DUNGEONS,
   ITEM_SERIES,
   itemCarrier,
@@ -37,6 +42,63 @@ function load(path: string): unknown {
 
 const families: readonly DungeonFamily[] = Object.values(DUNGEON_FAMILIES);
 
+describe("hob series (M4-03I)", () => {
+  it("has four Trial 1 stages sharing five daily clears and five matching capturable enemies", () => {
+    for (const entry of [...HOB_DUNGEONS, GRAND_HOB]) {
+      const enemy = hobEnemy(entry);
+      expect(EnemySchema.parse(load(`enemies/${enemy.id}.json`))).toEqual(enemy);
+      expect((load(`units/${entry.unit}.json`) as { element: string }).element).toBe(enemy.element);
+      expect(enemy.drops.capture).toEqual({
+        unit: entry.unit,
+        rate: entry === GRAND_HOB ? 100 : 25,
+      });
+    }
+    for (const entry of HOB_DUNGEONS) {
+      const stage = hobStage(entry);
+      expect(StageSchema.parse(load(`stages/${stage.id}.json`))).toEqual(stage);
+      expect(stage.dungeon).toEqual({
+        series: "hobs",
+        gate: TRIAL_1,
+        dailyLimit: 5,
+        rareSpawn: { enemy: "dg-grand-hob", replaces: `dg-${entry.unit}`, rateBp: 1500 },
+      });
+      expect(
+        stage.waves.flatMap((wave) => wave.enemies).filter((slot) => slot.capture),
+      ).toHaveLength(1);
+    }
+  });
+
+  it("resolves exactly one replacement in any wave at the 15% boundary, without mutating content", () => {
+    const stage = hobStage(HOB_DUNGEONS[0]);
+    for (const [seed, wave] of [
+      [0, 0],
+      [10000, 1],
+      [20000, 2],
+      [31499, 0],
+    ] as const) {
+      const waves = dungeonWaves(stage, seed);
+      expect(waves.map((w) => w.enemies.length)).toEqual([2, 3, 3]);
+      expect(
+        waves.flatMap((w, i) =>
+          w.enemies.filter((slot) => slot.enemy === "dg-grand-hob").map(() => i),
+        ),
+      ).toEqual([wave]);
+    }
+    expect(dungeonWaves(stage, 1500)).toBe(stage.waves);
+    expect(dungeonWaves(stage, 4294967295)).toBe(stage.waves);
+    expect(
+      stage.waves.flatMap((w) => w.enemies).some((slot) => slot.enemy === "dg-grand-hob"),
+    ).toBe(false);
+    expect(() => dungeonWaves(stage, -1)).toThrow(RangeError);
+    const malformed = structuredClone(stage);
+    malformed.waves[0] = { enemies: [{ enemy: "dg1-gleam-crab" }] };
+    expect(StageSchema.safeParse(malformed).success).toBe(false);
+    const invalidRate = structuredClone(stage);
+    if (invalidRate.dungeon?.rareSpawn) invalidRate.dungeon.rareSpawn.rateBp = 10001;
+    expect(StageSchema.safeParse(invalidRate).success).toBe(false);
+  });
+});
+
 describe("dungeon templates (M4-03C–F)", () => {
   it.each(families)("the $title series has one templated stage per element", (family) => {
     expect(familyElements(family)).toEqual(family.single ? [family.single] : ELEMENTS);
@@ -60,6 +122,7 @@ describe("dungeon templates (M4-03C–F)", () => {
       crownShardStage().id,
       zenithCoreStage().id,
       ...ITEM_DUNGEONS.map((entry) => itemStage(entry).id),
+      ...HOB_DUNGEONS.map((entry) => hobStage(entry).id),
     ]);
     const dungeons = readdirSync(join(content, "stages"))
       .map((name) => StageSchema.parse(load(`stages/${name}`)))

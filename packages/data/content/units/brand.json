@@ -5,6 +5,7 @@
   "forms": [
     {
       "id": "brand-2",
+      "impCaps": { "hp": 400, "atk": 160, "def": 80, "rec": 80 },
       "name": "Forge Squire",
       "rarity": 2,
       "maxLevel": 12,
@@ -67,6 +68,7 @@
     },
     {
       "id": "brand-3",
+      "impCaps": { "hp": 500, "atk": 200, "def": 120, "rec": 120 },
       "name": "Forge Hand",
       "rarity": 3,
       "maxLevel": 40,
@@ -143,6 +145,7 @@
     },
     {
       "id": "brand-4",
+      "impCaps": { "hp": 700, "atk": 240, "def": 140, "rec": 140 },
       "name": "Forge Guard",
       "rarity": 4,
       "maxLevel": 60,
@@ -227,6 +230,7 @@
     },
     {
       "id": "brand-5",
+      "impCaps": { "hp": 900, "atk": 360, "def": 200, "rec": 200 },
       "name": "Flame Guard",
       "rarity": 5,
       "maxLevel": 80,
@@ -315,6 +319,7 @@
     },
     {
       "id": "brand-6",
+      "impCaps": { "hp": 1200, "atk": 480, "def": 260, "rec": 260 },
       "name": "Ember Knight",
       "rarity": 6,
       "maxLevel": 100,
@@ -439,6 +444,7 @@
     },
     {
       "id": "brand-7",
+      "impCaps": { "hp": 1700, "atk": 680, "def": 360, "rec": 360 },
       "name": "Forge Legend",
       "rarity": 7,
       "maxLevel": 120,
@@ -654,6 +660,7 @@
     },
     {
       "id": "brand-omni",
+      "impCaps": { "hp": 2200, "atk": 880, "def": 460, "rec": 460 },
       "name": "Sunforge Sovereign",
       "rarity": "omni",
       "maxLevel": 150,

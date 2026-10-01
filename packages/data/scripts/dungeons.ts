@@ -8,6 +8,10 @@ import {
   DUNGEON_FAMILIES,
   dungeonStage,
   familyElements,
+  GRAND_HOB,
+  HOB_DUNGEONS,
+  hobEnemy,
+  hobStage,
   ITEM_DUNGEONS,
   itemCarrier,
   itemStage,
@@ -17,6 +21,19 @@ import {
 
 const content = join(import.meta.dirname, "..", "content");
 let written = 0;
+for (const entry of [...HOB_DUNGEONS, GRAND_HOB]) {
+  const enemy = hobEnemy(entry);
+  writeFileSync(
+    join(content, "enemies", `${enemy.id}.json`),
+    `${JSON.stringify(enemy, null, 2)}\n`,
+  );
+  written++;
+}
+for (const entry of HOB_DUNGEONS) {
+  const stage = hobStage(entry);
+  writeFileSync(join(content, "stages", `${stage.id}.json`), `${JSON.stringify(stage, null, 2)}\n`);
+  written++;
+}
 for (const family of Object.values(DUNGEON_FAMILIES)) {
   for (const element of familyElements(family)) {
     for (const [dir, json] of [

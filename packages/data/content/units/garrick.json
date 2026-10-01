@@ -5,6 +5,7 @@
   "forms": [
     {
       "id": "garrick-2",
+      "impCaps": { "hp": 300, "atk": 120, "def": 120, "rec": 120 },
       "name": "Quarry Apprentice",
       "rarity": 2,
       "maxLevel": 12,
@@ -67,6 +68,7 @@
     },
     {
       "id": "garrick-3",
+      "impCaps": { "hp": 400, "atk": 160, "def": 160, "rec": 160 },
       "name": "Quarry Hand",
       "rarity": 3,
       "maxLevel": 40,
@@ -143,6 +145,7 @@
     },
     {
       "id": "garrick-4",
+      "impCaps": { "hp": 500, "atk": 200, "def": 200, "rec": 200 },
       "name": "Stone Guard",
       "rarity": 4,
       "maxLevel": 60,
@@ -227,6 +230,7 @@
     },
     {
       "id": "garrick-5",
+      "impCaps": { "hp": 750, "atk": 300, "def": 300, "rec": 300 },
       "name": "Bulwark Guard",
       "rarity": 5,
       "maxLevel": 80,
@@ -315,6 +319,7 @@
     },
     {
       "id": "garrick-6",
+      "impCaps": { "hp": 1000, "atk": 400, "def": 400, "rec": 400 },
       "name": "Stonewall",
       "rarity": 6,
       "maxLevel": 100,
@@ -439,6 +444,7 @@
     },
     {
       "id": "garrick-7",
+      "impCaps": { "hp": 1500, "atk": 600, "def": 600, "rec": 600 },
       "name": "Bastion Legend",
       "rarity": 7,
       "maxLevel": 120,
@@ -648,6 +654,7 @@
     },
     {
       "id": "garrick-omni",
+      "impCaps": { "hp": 2000, "atk": 800, "def": 800, "rec": 800 },
       "name": "Heartstone Sovereign",
       "rarity": "omni",
       "maxLevel": 150,

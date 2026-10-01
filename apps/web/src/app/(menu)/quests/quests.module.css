@@ -1,5 +1,3 @@
-/* Quest map (M3-04A). Sizes use the menu frame's logical pixel, --u. */
-
 .page {
   flex: 1;
   min-height: 0;
@@ -38,127 +36,29 @@
   color: #f6d88a;
 }
 
-.chapter {
-  margin-top: calc(var(--u) * 18);
-}
-
-.chapterTitle {
-  display: flex;
-  align-items: baseline;
-  gap: calc(var(--u) * 10);
-  margin: 0 0 calc(var(--u) * 12);
-  font-size: calc(var(--u) * 30);
-  font-weight: normal;
-  color: #fff;
-}
-
-.chapterCount {
-  margin-left: auto;
-  font-size: calc(var(--u) * 22);
-  color: #f6d88a;
-}
-
-.stages {
+.chapters {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--u) * 10);
+  gap: calc(var(--u) * 18);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.stage {
+.chapter {
   display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 14);
-  padding: calc(var(--u) * 12) calc(var(--u) * 16);
+  flex-direction: column;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 20);
   border: calc(var(--u) * 3) solid #c99a3a;
   border-radius: calc(var(--u) * 14);
   background: rgb(10 14 26 / 0.75);
-  color: #fff;
-}
-
-.stage[data-state="cleared"] {
-  border-color: #6fae5a;
-}
-
-.stage[data-state="locked"] {
-  border-color: #4a4538;
-  color: #8a8474;
-}
-
-.stageNumber {
-  flex: none;
-  width: calc(var(--u) * 44);
-  height: calc(var(--u) * 44);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #10131d;
   font-size: calc(var(--u) * 24);
-}
-
-.stageBody {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 4);
-}
-
-.stageName {
-  font-size: calc(var(--u) * 26);
-}
-
-.boss {
-  margin-left: calc(var(--u) * 10);
-  padding: 0 calc(var(--u) * 8);
-  border-radius: calc(var(--u) * 6);
-  background: #9a2a1a;
-  font-size: calc(var(--u) * 18);
   color: #fff;
-  vertical-align: middle;
+  text-decoration: none;
 }
 
-.stageText {
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 18);
-  line-height: 1.4;
-  color: #d8d0bc;
-}
-
-.stageState {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  font-size: calc(var(--u) * 20);
-  color: #f6d88a;
-}
-
-.stage[data-state="cleared"] .stageState {
-  color: #9fdc88;
-}
-
-.stage[data-state="locked"] .stageState {
-  color: #8a8474;
-}
-
-.gems {
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 16);
-  color: #9fd4ff;
-}
-
-.start {
-  margin-top: calc(var(--u) * 6);
-  padding: calc(var(--u) * 4) calc(var(--u) * 14);
-  border: calc(var(--u) * 2) solid #c99a3a;
-  border-radius: calc(var(--u) * 8);
-  background: #3a2a10;
-  font: inherit;
-  font-size: calc(var(--u) * 20);
-  color: #f6d88a;
-  cursor: pointer;
+.chapter strong {
+  font-size: calc(var(--u) * 32);
+  font-weight: normal;
 }

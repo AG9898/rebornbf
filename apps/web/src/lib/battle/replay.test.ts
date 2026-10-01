@@ -69,8 +69,12 @@ function turnInputs(state: BattleState): BattleInput[] {
  * start, and the last one a frame later stamped at tick 0 (a late frame). Returns the battle and,
  * per turn, the tick each late input should run at: the one after the last stepped tick.
  */
-function playLive(start: BattleState): { live: LiveBattle; lateInputs: BattleInput[] } {
+function playLive(
+  start: BattleState,
+  initialInputs: BattleInput[] = [],
+): { live: LiveBattle; lateInputs: BattleInput[] } {
   let live = startLive(start);
+  for (const input of initialInputs) live = queueInput(live, input);
   let queuedTurn = -1;
   let late: BattleInput | undefined;
   const lateInputs: BattleInput[] = [];
@@ -111,6 +115,7 @@ describe("battle replay (M3-04C)", () => {
       ok: true,
       result: "win",
       turns: live.log.length,
+      remainingItems: {},
     });
   });
 
@@ -223,6 +228,7 @@ describe("finish verification (M3-04C)", () => {
       ok: true,
       result: "win",
       turns: log.length,
+      remainingItems: {},
     });
   });
 
@@ -264,6 +270,74 @@ describe("finish verification (M3-04C)", () => {
   });
 });
 
+describe("session item replay (M3-04J)", () => {
+  const session = row({
+    items: [
+      { item: "valor-draught", count: 1 },
+      { item: "dew-tonic", count: 3 },
+    ],
+  });
+  const built = sessionBattle(session);
+  if (!built.ok) throw new Error(built.message);
+  const { setup, seed } = built.battle;
+  const use: BattleInput = { type: "item", tick: 0, actor: "p0", item: "valor-draught" };
+  const log = playLive(createBattle(setup, seed), [use]).live.log;
+
+  it("verifies a used item and returns only replay-derived leftovers", () => {
+    expect(verifyFinish(session, USER, JSON.parse(JSON.stringify(log)), NOW)).toEqual({
+      ok: true,
+      result: "win",
+      turns: log.length,
+      remainingItems: { "valor-draught": 0, "dew-tonic": 3 },
+    });
+  });
+
+  it("refuses a forged loadout and a log that consumes more than reserved", () => {
+    expect(verifyFinish(row(), USER, log, NOW)).toMatchObject({ ok: false, status: 422 });
+    const first = log[0];
+    if (!first) throw new Error("empty log");
+    const over = [
+      { ...first, inputs: [use, { ...use, actor: "p1" }, ...first.inputs.slice(1)] },
+      ...log.slice(1),
+    ];
+    expect(verifyFinish(session, USER, over, NOW)).toMatchObject({ ok: false, status: 422 });
+  });
+
+  it("keeps only the item id, target unit, and tick from untrusted JSON", () => {
+    expect(
+      parseInputLog([{ inputs: [{ ...use, count: 99, effects: [{ heal: 999 }] }], endTick: 0 }]),
+    ).toEqual({
+      ok: true,
+      log: [{ inputs: [use], endTick: 0 }],
+    });
+    for (const item of [null, 1, "", "Bad ID"]) {
+      expect(parseInputLog([{ inputs: [{ ...use, item }], endTick: 0 }]).ok).toBe(false);
+    }
+  });
+
+  it("returns unused stock on a replayed loss without treating it as a win", () => {
+    let live = startLive(createBattle(setup, seed));
+    live = queueInput(live, use);
+    let queuedTurn = -1;
+    for (let ms = 0; ms < 3_600_000 && !isOver(live); ms += 50) {
+      if (acceptsInput(live) && queuedTurn !== live.state.turn) {
+        queuedTurn = live.state.turn;
+        for (const unit of live.state.party.filter((unit) => unit.hp > 0)) {
+          live = queueInput(live, { type: "guard", tick: live.state.tick, actor: unit.slot });
+        }
+      }
+      live = advanceLive(live, ms).live;
+    }
+    expect(verifyFinish(session, USER, live.log, NOW, "either")).toEqual({
+      ok: true,
+      result: "lose",
+      turns: live.log.length,
+      remainingItems: { "valor-draught": 0, "dew-tonic": 3 },
+    });
+    expect(verifyFinish(session, USER, live.log, NOW)).toMatchObject({ ok: false, status: 422 });
+  });
+});
+
 describe("paid continue replay (M3-04E)", () => {
   const { setup, seed } = battle();
   let live = startLive(createBattle(setup, seed));
@@ -293,6 +367,12 @@ describe("paid continue replay (M3-04E)", () => {
   it("proves a loss before payment and resumes the same seed to a verified win", () => {
     expect(lost.state.result).toBe("lose");
     expect(verifyFinish(row(), USER, lost.log, NOW, "lose").ok).toBe(true);
+    expect(verifyFinish(row(), USER, lost.log, NOW, "either")).toEqual({
+      ok: true,
+      result: "lose",
+      turns: paidTurn,
+      remainingItems: {},
+    });
     expect(live.state.result).toBe("win");
     const parsed = parseInputLog(JSON.parse(JSON.stringify(live.log)));
     if (!parsed.ok) throw new Error(parsed.message);

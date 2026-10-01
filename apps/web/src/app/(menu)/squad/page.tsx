@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "../../../components/menu/menu.module.css";
-import { guestPreviews } from "../../../lib/squad/guest-pool.ts";
 import {
   draftFromRow,
   parseSquadSlot,
@@ -63,7 +62,8 @@ export default async function SquadPage({
     );
   }
 
-  const owned = sortOwnedUnits((unitsResult.data ?? []).map(toOwnedUnitView)).map(toEditorUnit);
+  const views = sortOwnedUnits((unitsResult.data ?? []).map(toOwnedUnitView));
+  const owned = views.map(toEditorUnit);
   const saved = draftFromRow(squadResult.data, new Set(owned.map((unit) => unit.id)));
 
   return (
@@ -71,7 +71,7 @@ export default async function SquadPage({
       key={slot}
       slot={slot}
       units={owned}
-      guests={guestPreviews(unitsResult.data ?? []).map(toEditorUnit)}
+      pickerUnits={views.map((view) => ({ ...view, stackCount: null }))}
       saved={saved}
     />
   );

@@ -22,6 +22,14 @@ export const StatsSchema = z.strictObject({
 });
 export type Stats = z.infer<typeof StatsSchema>;
 
+/** Persisted imp totals, per-form caps and hob gains (GAME_DESIGN §6, RESOLVED-59). */
+export const ImpStatsSchema = z.strictObject({
+  hp: NonNegativeIntSchema,
+  atk: NonNegativeIntSchema,
+  def: NonNegativeIntSchema,
+  rec: NonNegativeIntSchema,
+});
+
 /**
  * The cost of evolving a form into the next form of its unit (GAME_DESIGN §6 → Evolution
  * materials, RESOLVED-66): material units consumed (by unit ID), material items consumed (by item
@@ -63,6 +71,8 @@ export const FormSchema = z
     rarity: RaritySchema,
     maxLevel: PositiveIntSchema,
     stats: z.strictObject({ base: StatsSchema, max: StatsSchema }),
+    /** Omitted means zero caps (fodder and summon filler). */
+    impCaps: ImpStatsSchema.optional(),
     normalAttack: AttackSchema,
     bursts: BurstTiersSchema,
     leaderSkill: LeaderSkillSchema.optional(),
@@ -82,12 +92,16 @@ export const FormSchema = z
      * (RESOLVED-85). `{ burstLevels }` (the Lantern, Regent, and Matriarch Toads, M4-04E) adds that
      * many burst levels per copy by the duplicate overflow rule (BB to 10, then SBB to 10, excess
      * lost); `fuse` rejects it on a target with no burst level left to gain, since its SP branch is
-     * post-launch too.
+     * post-launch too. `{ imps }` (stat hobs, M4-04B) grants flat persistent stat totals up to the
+     * target form's `impCaps`; a copy with no gain is rejected atomically.
      */
     fusionEffect: z
       .union([
         z.literal("sphereSlot"),
         z.object({ burstLevels: z.number().int().min(1).max(20) }).strict(),
+        z.strictObject({
+          imps: ImpStatsSchema.refine((stats) => Object.values(stats).some((n) => n > 0)),
+        }),
       ])
       .optional(),
     /**
