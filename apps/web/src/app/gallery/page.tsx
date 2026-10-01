@@ -197,7 +197,7 @@ const VESSEL_TIERS = [
   ["grail", "Grail", 5],
 ] as const;
 
-/** Growth fodder (RESOLVED-55) with a locked splash and sprite; the other toads and hobs follow. */
+/** Growth fodder (RESOLVED-55) with a locked splash and sprite. */
 const GROWTH_FODDER: SingleFormUnit[] = [
   ...VESSEL_TIERS.flatMap(([tier, tierName, stars]) =>
     VESSEL_ELEMENTS.map(([prefix, prefixName, element]) => ({
@@ -209,7 +209,15 @@ const GROWTH_FODDER: SingleFormUnit[] = [
     })),
   ),
   { id: "lantern-toad", name: "Lantern Toad", element: "Fire", file: "3star", label: "3★" },
+  { id: "regent-toad", name: "Regent Toad", element: "Fire", file: "4star", label: "4★" },
+  { id: "matriarch-toad", name: "Matriarch Toad", element: "Light", file: "4star", label: "4★" },
+  { id: "star-toad", name: "Star Toad", element: "Light", file: "4star", label: "4★" },
+  { id: "satchel-toad", name: "Satchel Toad", element: "Water", file: "3star", label: "3★" },
   { id: "vital-hob", name: "Vital Hob", element: "Fire", file: "3star", label: "3★" },
+  { id: "might-hob", name: "Might Hob", element: "Thunder", file: "3star", label: "3★" },
+  { id: "ward-hob", name: "Ward Hob", element: "Water", file: "3star", label: "3★" },
+  { id: "mend-hob", name: "Mend Hob", element: "Earth", file: "3star", label: "3★" },
+  { id: "grand-hob", name: "Grand Hob", element: "Light", file: "3star", label: "3★" },
 ];
 
 function SingleFormSection({
@@ -369,7 +377,7 @@ export default function GalleryPage(): ReactNode {
       <SingleFormSection
         eyebrow="Growth fodder"
         title="Vessels, toads, and hobs"
-        intro="EXP vessels in four tiers per element, plus the first lantern toad and stat hob."
+        intro="EXP vessels in four tiers per element, the lantern toads, and the stat hobs."
         units={GROWTH_FODDER}
       />
 
