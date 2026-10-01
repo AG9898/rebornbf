@@ -18,6 +18,10 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/units/3f1c2b1e-9a4d-4c55-8e7a-1b2c3d4e5f60")).toBe(true);
   });
 
+  it("protects the summon screen", () => {
+    expect(isProtectedPath("/summon")).toBe(true);
+  });
+
   it("protects the squad editor", () => {
     expect(isProtectedPath("/squad")).toBe(true);
     expect(isProtectedPath("/onboarding/name")).toBe(true);

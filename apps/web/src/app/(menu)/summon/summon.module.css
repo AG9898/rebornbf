@@ -1,0 +1,664 @@
+/*
+ * Summon screen and sequence (ART_GUIDE → Summon screen, gate, and reveal). Sizes are logical px
+ * (--u); pieces are exported at 2x. `.page` stays unpositioned so `.stage`, `.connecting`, and
+ * `.modal` (position: absolute) cover the whole menu column, status bar and nav included.
+ */
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  background: #2b2412 url("/assets/ui/bg-summon.webp") center top / cover no-repeat;
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* App text over UI art: menu font, outlined; --stroke scales the outline with the text. */
+.outline {
+  --stroke: 4;
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * var(--stroke)) #2a1606;
+  text-shadow: 0 calc(var(--u) * 2) 0 #2a1606;
+  line-height: 1;
+}
+
+/* ---------- Title bar ---------- */
+
+.titleBar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  height: calc(var(--u) * 74);
+  padding-inline: calc(var(--u) * 8);
+  background: linear-gradient(rgb(20 14 4 / 0.55), rgb(20 14 4 / 0.2));
+  box-shadow: 0 calc(var(--u) * 2) 0 rgb(0 0 0 / 0.35);
+}
+
+.pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--u) * 48);
+  border: 0;
+  background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
+  font: inherit;
+  font-size: calc(var(--u) * 24);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
+}
+
+.backButton {
+  width: calc(var(--u) * 86);
+}
+
+.titlePlate {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 334);
+  aspect-ratio: 640 / 111;
+}
+
+.titleText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  padding-left: calc(var(--u) * 8);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.titleText h1 {
+  font-size: calc(var(--u) * 26);
+  font-weight: 400;
+}
+
+/* ---------- Banner and info panel ---------- */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: calc(var(--u) * 16);
+}
+
+.banner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1280 / 853;
+  box-shadow: 0 calc(var(--u) * 4) calc(var(--u) * 12) rgb(0 0 0 / 0.6);
+}
+
+.bannerArt {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.bannerTitle {
+  position: absolute;
+  top: calc(var(--u) * 18);
+  inset-inline: 0;
+  text-align: center;
+  font-size: calc(var(--u) * 52);
+  font-weight: 400;
+  background: linear-gradient(#fff6c8 10%, #f6c342 45%, #c9811c 75%, #fbe39a 100%);
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 calc(var(--u) * 3) 0 #3a1c05) drop-shadow(0 0 calc(var(--u) * 3) #3a1c05);
+}
+
+.arrowLeft,
+.arrowRight {
+  position: absolute;
+  top: 45%;
+  width: calc(var(--u) * 52);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.arrowLeft {
+  left: calc(var(--u) * 8);
+}
+
+.arrowRight {
+  right: calc(var(--u) * 8);
+  transform: scaleX(-1);
+}
+
+.arrowLeft img,
+.arrowRight img {
+  width: 100%;
+  height: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  margin: calc(var(--u) * -28) calc(var(--u) * 20) 0;
+  padding: calc(var(--u) * 30) calc(var(--u) * 34) calc(var(--u) * 26);
+  position: relative;
+  background: url("/assets/ui/summon-panel.webp") center / 100% 100% no-repeat;
+  font-size: calc(var(--u) * 20);
+  line-height: 1.3;
+  text-align: center;
+  color: #f4ead2;
+}
+
+.panelTitle {
+  font-size: calc(var(--u) * 30);
+  font-weight: 400;
+  color: #fff;
+}
+
+.featured {
+  color: #fbe39a;
+}
+
+.small {
+  font-size: calc(var(--u) * 16);
+  color: #cfc3a4;
+}
+
+.gemLine strong {
+  color: #8fe3ff;
+  font-weight: 400;
+}
+
+.buttons {
+  display: flex;
+  gap: calc(var(--u) * 14);
+}
+
+.summonButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 4);
+  width: calc(var(--u) * 230);
+  height: calc(var(--u) * 92);
+  border: 0;
+  background: url("/assets/ui/btn-hub.webp") center / 100% 100% no-repeat;
+  font: inherit;
+  font-size: calc(var(--u) * 26);
+  cursor: pointer;
+}
+
+.summonButton:hover:not(:disabled),
+.summonButton:focus-visible {
+  filter: brightness(1.15);
+}
+
+.summonButton:disabled {
+  filter: grayscale(0.7) brightness(0.7);
+  cursor: default;
+}
+
+.cost {
+  --stroke: 3;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  font-size: calc(var(--u) * 20);
+}
+
+.gemIcon {
+  width: calc(var(--u) * 24);
+  height: auto;
+}
+
+.alert {
+  color: #ff9a8a;
+}
+
+.ratesLink {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: calc(var(--u) * 18);
+  color: #8fd0ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Overlays (cover the whole column) ---------- */
+
+.connecting,
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.55);
+}
+
+.connecting span {
+  width: 100%;
+  padding-block: calc(var(--u) * 26);
+  background: rgb(10 8 4 / 0.8);
+  text-align: center;
+  font-size: calc(var(--u) * 28);
+}
+
+.ratesPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 12);
+  width: calc(var(--u) * 560);
+  max-height: 80%;
+  overflow-y: auto;
+  padding: calc(var(--u) * 30);
+  background: url("/assets/ui/summon-panel.webp") center / 100% 100% no-repeat;
+  color: #f4ead2;
+  font-size: calc(var(--u) * 19);
+}
+
+.rates {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rates th,
+.rates td {
+  padding: calc(var(--u) * 4) calc(var(--u) * 8);
+  border-bottom: 1px solid rgb(251 227 154 / 0.2);
+  text-align: left;
+  font-weight: 400;
+}
+
+.rates td:last-child,
+.rates th:last-child {
+  text-align: right;
+}
+
+.closeButton {
+  width: calc(var(--u) * 120);
+}
+
+/* ---------- Summon sequence ---------- */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #000;
+}
+
+.gate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  animation: gateIn 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.gateArt {
+  display: block;
+  width: auto;
+  height: calc(var(--u) * 430);
+}
+
+/* The floor reflection: a flipped, faded copy (ART_GUIDE: drawn in code). */
+.gateReflection {
+  display: block;
+  width: auto;
+  height: calc(var(--u) * 430);
+  margin-top: calc(var(--u) * -2);
+  transform: scaleY(-1);
+  opacity: 0.28;
+  mask-image: linear-gradient(to top, #000, transparent 45%);
+  pointer-events: none;
+}
+
+.touch {
+  position: absolute;
+  top: calc(var(--u) * -118);
+  left: 50%;
+  width: calc(var(--u) * 110);
+  aspect-ratio: 220 / 245;
+  translate: -50% 0;
+  animation: bob 900ms ease-in-out infinite alternate;
+}
+
+.phase_open .touch {
+  display: none;
+}
+
+.touchWord {
+  position: absolute;
+  top: 9%;
+  inset-inline: 12%;
+  height: 26%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 20);
+  color: #e8f4f2;
+}
+
+.gateGlow {
+  position: absolute;
+  top: calc(var(--u) * 40);
+  left: 50%;
+  width: calc(var(--u) * 400);
+  height: auto;
+  translate: -50% 0;
+  animation: glowIn 650ms ease-out both;
+  pointer-events: none;
+}
+
+.burst {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: burstIn 900ms ease-out both;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  animation: flashOut 260ms ease-in both;
+}
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  width: 100%;
+  height: 100%;
+  padding: calc(var(--u) * 90) 0 calc(var(--u) * 120);
+  border: 0;
+  background: radial-gradient(circle at 50% 55%, rgb(70 50 90 / 0.6), #000 70%);
+  font: inherit;
+  cursor: pointer;
+}
+
+.word {
+  display: flex;
+  justify-content: center;
+  min-height: calc(var(--u) * 70);
+  font-size: calc(var(--u) * 60);
+  letter-spacing: calc(var(--u) * 1);
+}
+
+.letter {
+  display: inline-block;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: calc(var(--u) * 2) #fff;
+  filter: drop-shadow(0 calc(var(--u) * 3) 0 #1a0d02);
+  animation: letterDrop 380ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+.word_gold .letter {
+  background-image: linear-gradient(#fff6c8 10%, #f6c342 50%, #c9811c 85%);
+}
+
+.word_red .letter {
+  background-image: linear-gradient(#ffe8a0 5%, #ff7a2a 45%, #d01810 90%);
+}
+
+.word_rainbow .letter {
+  background-image: linear-gradient(
+    #ff4a4a,
+    #ffb400 20%,
+    #f4f03a 35%,
+    #40de62 52%,
+    #2cc6ff 68%,
+    #7062ff 84%,
+    #e44cfb
+  );
+}
+
+.haloWrap {
+  position: relative;
+  width: calc(var(--u) * 560);
+  height: calc(var(--u) * 360);
+  margin-top: calc(var(--u) * 20);
+}
+
+.halo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  animation: haloIn 500ms ease-out both;
+}
+
+.sprite {
+  position: absolute;
+  bottom: calc(var(--u) * 70);
+  left: 50%;
+  width: calc(var(--u) * 300);
+  height: auto;
+  translate: -50% 0;
+  image-rendering: pixelated;
+  animation: spriteIn 420ms 180ms ease-out both;
+}
+
+.revealName {
+  font-size: calc(var(--u) * 36);
+}
+
+.featuredTag {
+  --stroke: 3;
+  font-size: calc(var(--u) * 20);
+  color: #fbe39a;
+}
+
+.revealForm {
+  --stroke: 3;
+  font-size: calc(var(--u) * 22);
+  color: #f6d88a;
+}
+
+.tapHint {
+  margin-top: auto;
+  font-size: calc(var(--u) * 18);
+  color: rgb(255 255 255 / 0.7);
+  animation: pulse 900ms ease-in-out infinite alternate;
+}
+
+.skipBar {
+  position: absolute;
+  bottom: calc(var(--u) * 24);
+  inset-inline: calc(var(--u) * 20);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+}
+
+.counter {
+  margin-right: auto;
+  font-size: calc(var(--u) * 24);
+}
+
+.skipButton {
+  width: calc(var(--u) * 112);
+}
+
+/* ---------- Results ---------- */
+
+.results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 18);
+  width: calc(var(--u) * 600);
+  max-height: 90%;
+  overflow-y: auto;
+  padding: calc(var(--u) * 30) calc(var(--u) * 24);
+  background: url("/assets/ui/summon-panel.webp") center / 100% 100% no-repeat;
+  color: #f4ead2;
+}
+
+.resultGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: calc(var(--u) * 12);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resultLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.resultThumb {
+  display: block;
+  width: calc(var(--u) * 116);
+  height: calc(var(--u) * 116);
+  border: calc(var(--u) * 3) solid #b08a3a;
+  border-radius: calc(var(--u) * 10);
+  background: #1a140a;
+}
+
+.result_red .resultThumb {
+  border-color: #ff6a2a;
+}
+
+.result_rainbow .resultThumb {
+  border-color: #fff;
+  box-shadow:
+    0 0 calc(var(--u) * 12) #e44cfb,
+    0 0 calc(var(--u) * 4) #2cc6ff;
+}
+
+.resultName {
+  --stroke: 3;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: calc(var(--u) * 16);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultRarity {
+  --stroke: 3;
+  font-size: calc(var(--u) * 15);
+  color: #f6d88a;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes gateIn {
+  from {
+    opacity: 0;
+    scale: 1.7;
+  }
+}
+
+@keyframes bob {
+  to {
+    translate: -50% calc(var(--u) * -10);
+  }
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.35;
+  }
+}
+
+@keyframes glowIn {
+  from {
+    opacity: 0;
+    scale: 0.2 1;
+  }
+}
+
+@keyframes burstIn {
+  from {
+    opacity: 0;
+    scale: 0.4;
+    rotate: -20deg;
+  }
+  to {
+    scale: 1.15;
+  }
+}
+
+@keyframes flashOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes letterDrop {
+  from {
+    opacity: 0;
+    translate: 0 calc(var(--u) * -80);
+    scale: 2.2;
+  }
+}
+
+@keyframes haloIn {
+  from {
+    opacity: 0;
+    scale: 0.4 0.2;
+  }
+}
+
+@keyframes spriteIn {
+  from {
+    opacity: 0;
+    translate: -50% calc(var(--u) * 30);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate,
+  .touch,
+  .gateGlow,
+  .burst,
+  .flash,
+  .letter,
+  .halo,
+  .sprite,
+  .tapHint {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+}
