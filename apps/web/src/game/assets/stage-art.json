@@ -11,8 +11,7 @@
     },
     "saltglass-coast": {
       "chapters": [2],
-      "stages": [],
-      "fallback": "plains"
+      "stages": []
     }
   },
   "enemies": {

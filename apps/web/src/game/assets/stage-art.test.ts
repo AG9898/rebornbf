@@ -42,15 +42,16 @@ describe.skipIf(!existsSync(backgroundsPath) || !existsSync(enemiesPath))(
   },
 );
 
-describe("chapter 2 pending art", () => {
-  it("reserves its own theme and resolves temporary art for every coast wave", () => {
-    expect(stageArt.backgrounds["saltglass-coast"]).toEqual({
-      chapters: [2],
-      stages: [],
-      fallback: "plains",
-    });
+describe("chapter 2 art", () => {
+  it("fights on the coast and resolves temporary sprites for every coast wave", () => {
+    expect(stageArt.backgrounds["saltglass-coast"]).toEqual({ chapters: [2], stages: [] });
+    expect(
+      existsSync(
+        join(import.meta.dirname, "../../../public/assets/backgrounds/saltglass-coast.webp"),
+      ),
+    ).toBe(true);
     for (const stage of STORY_STAGES.filter((s) => s.story?.chapter === 2)) {
-      expect(stageBackground(stage)).toBe("plains");
+      expect(stageBackground(stage)).toBe("saltglass-coast");
       const waves = stageEnemyArt(stage);
       expect(waves.map((w) => w.length)).toEqual(stage.waves.map((w) => w.enemies.length));
       for (const sprite of waves.flat()) {

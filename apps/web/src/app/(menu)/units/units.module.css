@@ -782,6 +782,13 @@ button.actionButton:disabled {
   aspect-ratio: 232 / 248;
 }
 
+/* The sphere icon fills 70% of the socket, as in ART_GUIDE → UI → Sphere icons. */
+.sphereIcon {
+  position: relative;
+  width: 70%;
+  height: auto;
+}
+
 .sphereInitial {
   --stroke: 4;
   position: relative;

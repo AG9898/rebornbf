@@ -31,8 +31,13 @@ describe("demo battle (M2-05B)", () => {
     for (const file of readdirSync(dir).filter((name) => name.endsWith(".json"))) {
       const stage = StageSchema.parse(JSON.parse(readFileSync(join(dir, file), "utf8")));
       if (stage.dungeon) continue;
-      // Every trial is fought in the shared trial hall; everything else is on the plains for now.
-      expect(stageBackground(stage), file).toBe(stage.trial ? "trial-hall" : "plains");
+      // Trials share the trial hall and chapter 2 is on the coast; everything else is on the plains.
+      const expected = stage.trial
+        ? "trial-hall"
+        : stage.story?.chapter === 2
+          ? "saltglass-coast"
+          : "plains";
+      expect(stageBackground(stage), file).toBe(expected);
     }
   });
   it("fields the six B0 starters at Omni, Brand leading and Morrick as the guest ally", () => {
