@@ -15,6 +15,8 @@ const PhaserBattle = dynamic(() => import("./PhaserBattle.tsx"), {
   loading: () => <p className="m-auto text-sm">Loading battle scene…</p>,
 });
 
+const TRIALS_BACK = { href: "/trials", label: "Back to Trials" };
+
 /** A session battle (M3-04B): the session's stage and squad, one run on the server-issued seed. */
 function sessionSpec(battle: SessionBattle): BattleSpec {
   return {
@@ -39,5 +41,6 @@ export default function BattleClient({
   sessionId?: string;
 }): ReactNode {
   const spec = useMemo(() => (battle ? sessionSpec(battle) : DEMO_BATTLE_SPEC), [battle]);
-  return <PhaserBattle spec={spec} sessionId={sessionId} />;
+  const back = battle?.stage.trial ? TRIALS_BACK : undefined;
+  return <PhaserBattle spec={spec} sessionId={sessionId} back={back} />;
 }

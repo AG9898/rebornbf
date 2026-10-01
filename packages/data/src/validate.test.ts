@@ -12,6 +12,8 @@ import {
   validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
+  validateFirstClearItems,
+  validateFirstClearUnits,
   validateGemBudget,
   validateItemFile,
   validateStageFile,
@@ -204,6 +206,62 @@ describe("story stages (M3-04A)", () => {
     expect(validateStory([moved])).toContain(
       "stages/story-01-brightmere-outskirts.json: story.number: stage 9 is outside chapter 1 (1-8)",
     );
+  });
+});
+
+describe("story Lantern Toads (M4-04G)", () => {
+  const stages = (): Stage[] =>
+    stageFiles.map((name) => StageSchema.parse(loadContent(`stages/${name}`)));
+
+  it("grants the RESOLVED-71 schedule, 108 in all: 18 burst levels for each of six starters", () => {
+    const schedule = new Map<number, number>();
+    let total = 0;
+    for (const stage of stages()) {
+      for (const entry of stage.firstClear?.units ?? []) {
+        expect(stage.story, `${stage.id} grants units outside the story`).toBeDefined();
+        expect(entry.unit).toBe("lantern-toad");
+        schedule.set(stage.story?.number ?? 0, entry.count);
+        total += entry.count;
+      }
+    }
+    expect(Object.fromEntries(schedule)).toEqual({
+      2: 18,
+      4: 9,
+      6: 9,
+      8: 9,
+      10: 18,
+      12: 15,
+      14: 15,
+      16: 15,
+    });
+    // Each Lantern Toad is +1 burst level; BB and SBB each go 1 -> 10 (§6 → Burst levels).
+    expect(total).toBe(108);
+    expect(total).toBe(6 * 2 * (10 - 1));
+  });
+
+  it("checks first-clear units exist and are stackable", () => {
+    const units = new Map(
+      ["lantern-toad.json", "placeholder-ember.json"].map((name) => {
+        const unit = UnitSchema.parse(loadUnit(name));
+        return [unit.id, unit] as const;
+      }),
+    );
+    expect(validateFirstClearUnits(stages(), units)).toEqual([]);
+    const story = stages().find((stage) => stage.story?.number === 2) as Stage;
+    const bad: Stage = {
+      ...story,
+      firstClear: {
+        gems: 0,
+        units: [
+          { unit: "placeholder-ember", count: 1 },
+          { unit: "missing-toad", count: 1 },
+        ],
+      },
+    };
+    expect(validateFirstClearUnits([bad], units)).toEqual([
+      `stages/${story.id}.json: firstClear.units[0].unit: unit "placeholder-ember" is not stackable`,
+      `stages/${story.id}.json: firstClear.units[1].unit: unknown unit "missing-toad"`,
+    ]);
   });
 });
 
@@ -450,6 +508,19 @@ describe("farming dungeons (M4-03B)", () => {
     ]);
   });
 
+  it("reports a series whose stages disagree on the daily clear limit", () => {
+    const limited: Stage = {
+      ...dungeon,
+      dungeon: { series: "test", gate: story.id, dailyLimit: 5 },
+    };
+    const twin: Stage = { ...limited, id: "test-dungeon-2" };
+    expect(validateDungeons([story, limited, twin], enemies, itemIds)).toEqual([]);
+    const unlimited: Stage = { ...dungeon, id: "test-dungeon-3" };
+    expect(validateDungeons([story, limited, unlimited], enemies, itemIds)).toEqual([
+      'stages/test-dungeon-3.json: dungeon.dailyLimit: series "test" has 5 on "test-dungeon"',
+    ]);
+  });
+
   it("reports drops that name unknown units or items", () => {
     expect(validateDropRefs("enemies/test-mote.json", mote, new Set(), new Set())).toEqual([
       'enemies/test-mote.json: drops.capture.unit: unknown unit "moss-mote"',
@@ -478,6 +549,17 @@ describe("trials (M6-01A)", () => {
       'stages/test-trial-2.json: trial.number: trial 1 is also "test-trial"',
       'stages/test-trial-2.json: trial.gate: unknown stage "nowhere"',
       'stages/test-trial-3.json: trial.gate: "test-trial" is not a story stage',
+    ]);
+  });
+
+  it("checks first-clear reward items against the item files (M4-02N)", () => {
+    const rewarded: Stage = {
+      ...trial,
+      firstClear: { gems: 0, items: [{ item: "zenith-core", count: 1 }] },
+    };
+    expect(validateFirstClearItems([rewarded], new Set(["zenith-core"]))).toEqual([]);
+    expect(validateFirstClearItems([rewarded], new Set(["crown-shard"]))).toEqual([
+      'stages/test-trial.json: firstClear.items[0].item: unknown item "zenith-core"',
     ]);
   });
 

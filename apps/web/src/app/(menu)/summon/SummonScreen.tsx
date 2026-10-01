@@ -5,29 +5,39 @@ import { type ReactNode, useState, useTransition } from "react";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { useSetWalletGems } from "../../../components/menu/WalletGems.tsx";
-import { SUMMON_COSTS, type SummonCount, summonProblem } from "../../../lib/summon/constants.ts";
+import {
+  SUMMON_COSTS,
+  type SummonCount,
+  summonProblem,
+  TICKET_PULLS,
+  ticketOffered,
+} from "../../../lib/summon/constants.ts";
 import type { SummonBannerView, SummonPullView } from "../../../lib/summon/summon.ts";
-import { summonUnits } from "./actions.ts";
+import { type SummonActionResult, summonUnits, summonWithTicket } from "./actions.ts";
 import { SummonSequence } from "./SummonSequence.tsx";
 import styles from "./summon.module.css";
 
 /**
  * The summon screen (ART_GUIDE → Summon screen, gate, and reveal): the banner carousel, its info
- * panel with costs, pity, and rates, and the two Summon buttons. A summon calls the server action,
- * then plays `SummonSequence` over the whole column.
+ * panel with costs, pity, and rates, and the two Summon buttons, plus a free 10-pull ticket button
+ * while one is held (M5-01D). A summon calls the server action, then plays `SummonSequence` over
+ * the whole column.
  */
 export function SummonScreen({
   banners,
   gems: initialGems,
   pityPulls,
+  tickets: initialTickets,
 }: {
   banners: SummonBannerView[];
   gems: number | null;
   pityPulls: Readonly<Record<string, number>> | null;
+  tickets: number | null;
 }): ReactNode {
   const [index, setIndex] = useState(0);
   const [gems, setGemsLocal] = useState(initialGems);
   const [pity, setPity] = useState(pityPulls);
+  const [tickets, setTickets] = useState(initialTickets);
   const [message, setMessage] = useState<string | null>(null);
   const [showRates, setShowRates] = useState(false);
   const [pulls, setPulls] = useState<SummonPullView[] | null>(null);
@@ -36,25 +46,31 @@ export function SummonScreen({
   const banner = banners[index];
   if (!banner) return <p role="alert">No summon is open right now.</p>;
 
-  function summon(count: SummonCount): void {
+  function play(run: (bannerId: string) => Promise<SummonActionResult>): void {
     if (!banner) return;
+    setMessage(null);
+    startTransition(async () => {
+      const result = await run(banner.id);
+      if (!result.ok) {
+        setMessage(result.message);
+        return;
+      }
+      const { gems: gemsAfter, pityAfter, ticketsAfter, pulls: pulled } = result.outcome;
+      setGemsLocal(gemsAfter);
+      setWalletGems(gemsAfter);
+      if (ticketsAfter !== null) setTickets(ticketsAfter);
+      setPity((p) => ({ ...(p ?? {}), [banner.id]: pityAfter }));
+      setPulls(pulled);
+    });
+  }
+
+  function summon(count: SummonCount): void {
     const problem = summonProblem(gems, count);
     if (problem) {
       setMessage(problem);
       return;
     }
-    setMessage(null);
-    startTransition(async () => {
-      const result = await summonUnits(banner.id, count);
-      if (!result.ok) {
-        setMessage(result.message);
-        return;
-      }
-      setGemsLocal(result.outcome.gems);
-      setWalletGems(result.outcome.gems);
-      setPity((p) => ({ ...(p ?? {}), [banner.id]: result.outcome.pityAfter }));
-      setPulls(result.outcome.pulls);
-    });
+    play((bannerId) => summonUnits(bannerId, count));
   }
 
   const step = (delta: number) => setIndex((i) => (i + delta + banners.length) % banners.length);
@@ -130,6 +146,17 @@ export function SummonScreen({
               </button>
             ))}
           </div>
+          {ticketOffered(banner.id, tickets) ? (
+            <button
+              type="button"
+              className={`${styles.summonButton} ${styles.ticketButton}`}
+              disabled={pending}
+              onClick={() => play(summonWithTicket)}
+            >
+              <span className={styles.outline}>Free {TICKET_PULLS}-pull</span>
+              <span className={`${styles.cost} ${styles.outline}`}>Ticket ×{tickets}</span>
+            </button>
+          ) : null}
           {message ? (
             <p role="alert" className={styles.alert}>
               {message}

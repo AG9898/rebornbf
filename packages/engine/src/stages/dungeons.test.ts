@@ -8,14 +8,20 @@ import {
   type Enemy,
   EnemySchema,
   familyElements,
+  ITEM_DUNGEONS,
+  itemCarrierId,
+  itemStage,
   materialEnemyId,
   materialUnitId,
   rampedStats,
   type Stage,
   StageSchema,
   type Stats,
+  TRIAL_1,
   type Unit,
   UnitSchema,
+  ZENITH_CORE_STAGE_ID,
+  zenithCoreStage,
 } from "@bfr/data";
 import { describe, expect, it } from "vitest";
 import { autoInputs } from "../auto.ts";
@@ -28,7 +34,8 @@ import { playTurn } from "../turn.ts";
 // series (M4-03D, story stage 6 gate, +10% ramp), and the chapter 1 clear series (M4-03E, story
 // stage 8 gate: Prism Cairn and Wyrm Coffer +25%; Colossus, the Urns, and the Crown Shard stage
 // +45%), and the EXP vessel series (M4-03F: Flask at stage 4; Alembic at stage 6, +10%; Athanor
-// and Grail at the chapter 1 clear, +25%). Each stage's baseline is cleared by the squad held at its gate on naive auto-play; a
+// and Grail at the chapter 1 clear, +25%), and the Zenith Core stage (M4-02N: Trial 1 first
+// clear gate, +65%), and the battle item series (M4-03G: story stages 4, 6, and 8, no ramp). Each stage's baseline is cleared by the squad held at its gate on naive auto-play; a
 // ramped stage is cleared by that squad plus an ally and the spheres held at the gate
 // (RESOLVED-71). Every stage settles captures per RESOLVED-70.
 
@@ -70,17 +77,19 @@ function maxed(id: string, rarity: number): ResolvedStatsMember {
 }
 
 /**
- * `stats` with a +10% all-stat sphere (GAME_DESIGN §6 → Spheres): ATK, DEF, REC, and max HP
- * +10%, rounded. The engine has no sphere support yet (M4-04A), so the test applies it here.
+ * `stats` with a `percent`% all-stat sphere (GAME_DESIGN §6 → Spheres): ATK, DEF, REC, and max HP
+ * raised by it, rounded, applied here as a flat stat change.
  */
-function withSphere(stats: Stats): Stats {
-  const up = (value: number) => Math.round(value * 1.1);
+function withSphere(stats: Stats, percent: number): Stats {
+  const up = (value: number) => Math.round((value * (100 + percent)) / 100);
   return { hp: up(stats.hp), atk: up(stats.atk), def: up(stats.def), rec: up(stats.rec) };
 }
 
 /**
  * The starters held at each gate, at their forms' max stats: story stage 4 (Brand picked, Maren
- * 3★, Rook 4★), story stage 6 (plus Garrick 5★), and the chapter 1 clear (plus Solen 6★).
+ * 3★, Rook 4★), story stage 6 (plus Garrick 5★), the chapter 1 clear (plus Solen 6★), and the
+ * Trial 1 first clear (GAME_DESIGN §5's Trial 1 reference squad: Brand 7★, Maren and Solen 6★,
+ * Garrick and Rook 5★; its B1 unit, Vespera 6★, is the ally).
  */
 const GATE_SQUADS: Readonly<Record<string, readonly ResolvedStatsMember[]>> = {
   "story-04-rustwood-hollow": [maxed("brand", 3), maxed("maren", 3), maxed("rook", 4)],
@@ -97,13 +106,21 @@ const GATE_SQUADS: Readonly<Record<string, readonly ResolvedStatsMember[]>> = {
     maxed("garrick", 5),
     maxed("solen", 6),
   ],
+  [TRIAL_1]: [
+    maxed("brand", 7),
+    maxed("maren", 6),
+    maxed("solen", 6),
+    maxed("garrick", 5),
+    maxed("rook", 5),
+  ],
 };
 
 /**
- * Spheres held at each gate (RESOLVED-71): the chapter 1 clear grants six +10% all-stat spheres,
- * one per squad unit on a ramped run. No earlier gate has any.
+ * The all-stat sphere each squad unit wears on a ramped run, in percent, by gate (RESOLVED-71):
+ * the chapter 1 clear grants six +10% spheres and the Trial 1 first clear six +20% ones. No
+ * earlier gate has any.
  */
-const GATE_SPHERES: ReadonlySet<string> = new Set([CHAPTER_1_CLEAR]);
+const GATE_SPHERES: Readonly<Record<string, number>> = { [CHAPTER_1_CLEAR]: 10, [TRIAL_1]: 20 };
 
 /**
  * The ally a ramped series is tested with: a friend's copy of the gate's newest starter at max
@@ -112,6 +129,7 @@ const GATE_SPHERES: ReadonlySet<string> = new Set([CHAPTER_1_CLEAR]);
 const ALLIES: Readonly<Record<string, AllySetup>> = {
   "story-06-sunken-waystation": { ...maxed("garrick", 5), kind: "duplicate" },
   [CHAPTER_1_CLEAR]: { ...maxed("solen", 6), kind: "duplicate" },
+  [TRIAL_1]: { ...maxed("vespera", 6), kind: "duplicate" },
 };
 
 function ally(stage: Stage): AllySetup {
@@ -131,9 +149,9 @@ function playOut(
   seed: number,
   options: { ramp: number | undefined; ally: boolean },
 ): BattleState {
-  const spheres = options.ally && GATE_SPHERES.has(stage.dungeon?.gate ?? "");
+  const sphere = options.ally ? GATE_SPHERES[stage.dungeon?.gate ?? ""] : undefined;
   const squad = gateSquad(stage).map((member) =>
-    spheres ? { ...member, stats: withSphere(member.stats) } : member,
+    sphere ? { ...member, stats: withSphere(member.stats, sphere) } : member,
   );
   let state = createBattle(
     {
@@ -185,9 +203,20 @@ const stages = Object.values(DUNGEON_FAMILIES).flatMap((family) =>
 );
 
 const crownShard = StageSchema.parse(load(`stages/${CROWN_SHARD_STAGE_ID}.json`));
+const zenithCore = StageSchema.parse(load(`stages/${ZENITH_CORE_STAGE_ID}.json`));
 
-/** Every dungeon stage the battle tests play: the material stages and the Crown Shard stage. */
-const playable = [...stages.map(({ stage }) => stage), crownShard];
+const itemStages = ITEM_DUNGEONS.map((entry) => ({
+  entry,
+  stage: StageSchema.parse(load(`stages/${itemStage(entry).id}.json`)),
+}));
+
+/** Every dungeon stage the battle tests play: the material, key-item, and battle item stages. */
+const playable = [
+  ...stages.map(({ stage }) => stage),
+  crownShard,
+  zenithCore,
+  ...itemStages.map(({ stage }) => stage),
+];
 
 /** Each family's gate and ramp (RESOLVED-67, RESOLVED-71; EXP vessels M4-03F). */
 const EXPECTED: Readonly<Record<string, { gate: string; ramp: number | undefined }>> = {
@@ -233,6 +262,19 @@ describe("farming dungeon series (M4-03C–F)", () => {
     }
   });
 
+  it("the Zenith Core stage opens on Trial 1 with a +65% ramp and a 1-then-20% Zenith Core", () => {
+    expect(zenithCore).toEqual(zenithCoreStage());
+    expect(zenithCore.dungeon).toEqual({
+      series: "zenith-core",
+      gate: TRIAL_1,
+      keyItem: { item: "zenith-core", rate: 20 },
+      ramp: 65,
+    });
+    for (const slot of zenithCore.waves.flatMap((wave) => wave.enemies)) {
+      expect(enemy(slot.enemy).drops.capture).toBeUndefined();
+    }
+  });
+
   it.each(playable.map((stage) => [stage.id, stage] as const))(
     "the gate squad clears %s's baseline on naive auto-play",
     (_id, stage) => {
@@ -260,6 +302,30 @@ describe("farming dungeon series (M4-03C–F)", () => {
     expect(rampedStats(stats, undefined)).toBe(stats);
   });
 
+  it("settlement grants the Zenith Core on first clear, then at about 20% per clear", () => {
+    // Mirrors grant_battle_base_rewards' key-item rule with the engine's seeded PRNG.
+    const keyItem = zenithCore.dungeon?.keyItem;
+    expect(keyItem?.item).toBe("zenith-core");
+    const rate = keyItem?.rate ?? 0;
+    const settle = (firstClear: boolean, rng: RngState): { cores: number; rng: RngState } => {
+      if (firstClear) return { cores: 1, rng };
+      const roll = nextFloat(rng);
+      return { cores: roll.value * 100 < rate ? 1 : 0, rng: roll.rng };
+    };
+    let rng = createRng(2002);
+    const first = settle(true, rng);
+    expect(first.cores).toBe(1);
+    let cores = 0;
+    const clears = 4000;
+    for (let i = 0; i < clears; i++) {
+      const settled = settle(false, rng);
+      rng = settled.rng;
+      cores += settled.cores;
+    }
+    expect(cores / clears).toBeGreaterThan(0.18);
+    expect(cores / clears).toBeLessThan(0.22);
+  });
+
   it("settlement always captures the final-wave material and the rest at about 25%", () => {
     for (const { family, element, stage } of stages) {
       const unit = materialUnitId(family, element);
@@ -284,6 +350,35 @@ describe("farming dungeon series (M4-03C–F)", () => {
       // 3 rolls per clear at 25%: 0.75 extra captures per clear on average.
       expect(captured / clears).toBeGreaterThan(0.7);
       expect(captured / clears).toBeLessThan(0.8);
+    }
+  });
+
+  it("each battle item stage is unramped at its gate and drops its item at about 3 × rate", () => {
+    expect(itemStages).toHaveLength(6);
+    for (const { entry, stage } of itemStages) {
+      expect(stage).toEqual(itemStage(entry));
+      expect(stage.dungeon?.ramp).toBeUndefined();
+      expect(GATE_SQUADS[entry.gate]).toBeDefined();
+      // Mirrors grant_battle_base_rewards: one roll per defeated enemy per item drop entry.
+      let rng = createRng(3003);
+      let dropped = 0;
+      const clears = 4000;
+      for (let i = 0; i < clears; i++) {
+        for (const slot of stage.waves.flatMap((wave) => wave.enemies)) {
+          for (const drop of enemy(slot.enemy).drops.items ?? []) {
+            const roll = nextFloat(rng);
+            rng = roll.rng;
+            if (roll.value * 100 < drop.rate) {
+              expect(drop.item).toBe(entry.item);
+              expect(slot.enemy).toBe(itemCarrierId(entry));
+              dropped++;
+            }
+          }
+        }
+      }
+      const mean = (3 * entry.rate) / 100;
+      expect(dropped / clears).toBeGreaterThan(mean - 0.05);
+      expect(dropped / clears).toBeLessThan(mean + 0.05);
     }
   });
 });

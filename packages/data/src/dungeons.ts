@@ -321,3 +321,155 @@ export function crownShardStage(): Stage {
     ],
   };
 }
+
+/** Trial 1's stage, whose first clear opens the Zenith Core series (RESOLVED-69). */
+export const TRIAL_1 = "trial-01-captain-locke";
+
+/** The Zenith Core stage's ID; it is the one stage of its own series (GAME_DESIGN §7). */
+export const ZENITH_CORE_STAGE_ID = "dungeon-zenith-core";
+
+/** The Zenith Core series' difficulty ramp into Omni (RESOLVED-71). */
+export const ZENITH_CORE_RAMP = 65;
+
+/**
+ * The Zenith Core stage (RESOLVED-69, RESOLVED-70, RESOLVED-71): the one stage of the
+ * `zenith-core` series, gated on the Trial 1 first clear, with a +65% ramp and 1 Zenith Core on
+ * first clear, then {@link KEY_ITEM_RATE}% per clear. Like the Crown Shard stage it has no
+ * material enemies, only the chapter 1 dungeon mobs: wave 1 Fire, Water, Earth; wave 2 Thunder,
+ * Light, Dark; wave 3 Water, Light, Dark.
+ */
+export function zenithCoreStage(): Stage {
+  const mobs = (elements: readonly Element[]) =>
+    elements.map((element) => ({ enemy: CHAPTER_1_DUNGEON_MOBS[element] }));
+  return {
+    id: ZENITH_CORE_STAGE_ID,
+    name: "Zenith Core Spire",
+    dungeon: {
+      series: "zenith-core",
+      gate: TRIAL_1,
+      keyItem: { item: "zenith-core", rate: KEY_ITEM_RATE },
+      ramp: ZENITH_CORE_RAMP,
+    },
+    waves: [
+      { enemies: mobs(["fire", "water", "earth"]) },
+      { enemies: mobs(["thunder", "light", "dark"]) },
+      { enemies: mobs(["water", "light", "dark"]) },
+    ],
+  };
+}
+
+// Battle item series (M4-03G, RESOLVED-70): one stage per battle item, gated on the story ladder by
+// how early the original let a player craft the item (GAME_DESIGN §7 → Farming dungeons → Item
+// series). Each stage's waves are `C H C` three times: H is the item's carrier, the one enemy that
+// drops it, and C is that stage element's chapter 1 dungeon mob. No ramp: the series sits below the
+// 5★ material tier. Numbers are BFR tuning, not source values.
+
+/** The battle item series' ID (one series, one stage per item). */
+export const ITEM_SERIES = "items";
+
+/** One battle item's farming stage. */
+export interface ItemDungeon {
+  /** The `content/items/` battle item the stage's carrier drops. */
+  readonly item: string;
+  /** The item's display name (must match its content file), used for the carrier and stage. */
+  readonly title: string;
+  /** The stage's element: its carrier's and companion mobs'. */
+  readonly element: Element;
+  /** The story stage whose first clear opens the stage. */
+  readonly gate: string;
+  /** Chance in percent that a defeated carrier drops the item (3 carriers per clear). */
+  readonly rate: number;
+}
+
+/** The battle item stages, in the order the series lists them. */
+export const ITEM_DUNGEONS: readonly ItemDungeon[] = [
+  {
+    item: "dew-tonic",
+    title: "Dew Tonic",
+    element: "water",
+    gate: "story-04-rustwood-hollow",
+    rate: 50,
+  },
+  {
+    item: "bitterleaf",
+    title: "Bitterleaf",
+    element: "earth",
+    gate: "story-04-rustwood-hollow",
+    rate: 50,
+  },
+  {
+    item: "rekindle-ash",
+    title: "Rekindle Ash",
+    element: "fire",
+    gate: "story-04-rustwood-hollow",
+    rate: 30,
+  },
+  {
+    item: "bright-tonic",
+    title: "Bright Tonic",
+    element: "light",
+    gate: "story-06-sunken-waystation",
+    rate: 40,
+  },
+  {
+    item: "valor-draught",
+    title: "Valor Draught",
+    element: "thunder",
+    gate: "story-06-sunken-waystation",
+    rate: 30,
+  },
+  { item: "grand-tonic", title: "Grand Tonic", element: "dark", gate: CHAPTER_1_CLEAR, rate: 30 },
+];
+
+/** An item stage's carrier enemy: `dg-item-<item>`, e.g. `dg-item-dew-tonic`. */
+export function itemCarrierId(entry: ItemDungeon): string {
+  return `dg-item-${entry.item}`;
+}
+
+/** An item stage's ID: `dungeon-item-<item>`, e.g. `dungeon-item-dew-tonic`. */
+export function itemStageId(entry: ItemDungeon): string {
+  return `dungeon-item-${entry.item}`;
+}
+
+/**
+ * The carrier of `entry`'s item ("<item> Hoarder"): a soft, single-hit enemy of the stage's
+ * element that drops the item at the entry's `rate`% and Zel, and is never captured.
+ */
+export function itemCarrier(entry: ItemDungeon): Enemy {
+  return {
+    id: itemCarrierId(entry),
+    name: `${entry.title} Hoarder`,
+    element: entry.element,
+    stats: { hp: 3000, atk: 600, def: 400, rec: 100 },
+    normalAttack: {
+      moveType: "melee",
+      startDelayFrames: 16,
+      hitFrames: [0],
+      damageDistribution: [100],
+      dropChecks: 0,
+    },
+    skills: [],
+    ai: [{ when: "default", skill: "normal", target: "random" }],
+    drops: {
+      bcResistance: 0.05,
+      zel: { rate: 50, amount: 30 },
+      items: [{ item: entry.item, rate: entry.rate }],
+    },
+  };
+}
+
+/**
+ * The stage of `entry` ("<item> Cache"): 3 waves of `C H C` (H the carrier, C the element's
+ * chapter 1 dungeon mob), in the `items` series at the entry's gate, no ramp, no key item.
+ */
+export function itemStage(entry: ItemDungeon): Stage {
+  const carrier = itemCarrierId(entry);
+  const mob = CHAPTER_1_DUNGEON_MOBS[entry.element];
+  const wave = () => ({ enemies: [{ enemy: mob }, { enemy: carrier }, { enemy: mob }] });
+  return {
+    id: itemStageId(entry),
+    name: `${entry.title} Cache`,
+    dungeon: { series: ITEM_SERIES, gate: entry.gate },
+    waves: [wave(), wave(), wave()],
+  };
+}

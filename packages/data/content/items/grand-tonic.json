@@ -1,0 +1,7 @@
+{
+  "id": "grand-tonic",
+  "name": "Grand Tonic",
+  "description": "A bitter, numbing tonic of golden root. Greatly restores one ally's HP.",
+  "target": "single",
+  "effects": [{ "kind": "heal", "amount": 2000 }]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "dungeon-item-valor-draught",
+  "name": "Valor Draught Cache",
+  "dungeon": {
+    "series": "items",
+    "gate": "story-06-sunken-waystation"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-item-valor-draught"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-item-valor-draught"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-static-eel"
+        },
+        {
+          "enemy": "dg-item-valor-draught"
+        },
+        {
+          "enemy": "dg1-static-eel"
+        }
+      ]
+    }
+  ]
+}

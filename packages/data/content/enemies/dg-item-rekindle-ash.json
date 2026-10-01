@@ -1,0 +1,39 @@
+{
+  "id": "dg-item-rekindle-ash",
+  "name": "Rekindle Ash Hoarder",
+  "element": "fire",
+  "stats": {
+    "hp": 3000,
+    "atk": 600,
+    "def": 400,
+    "rec": 100
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 16,
+    "hitFrames": [0],
+    "damageDistribution": [100],
+    "dropChecks": 0
+  },
+  "skills": [],
+  "ai": [
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 50,
+      "amount": 30
+    },
+    "items": [
+      {
+        "item": "rekindle-ash",
+        "rate": 30
+      }
+    ]
+  }
+}

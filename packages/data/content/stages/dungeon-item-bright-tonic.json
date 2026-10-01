@@ -1,0 +1,49 @@
+{
+  "id": "dungeon-item-bright-tonic",
+  "name": "Bright Tonic Cache",
+  "dungeon": {
+    "series": "items",
+    "gate": "story-06-sunken-waystation"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-item-bright-tonic"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-item-bright-tonic"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg1-gleam-crab"
+        },
+        {
+          "enemy": "dg-item-bright-tonic"
+        },
+        {
+          "enemy": "dg1-gleam-crab"
+        }
+      ]
+    }
+  ]
+}

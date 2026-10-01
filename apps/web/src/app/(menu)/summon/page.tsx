@@ -12,13 +12,18 @@ export default async function SummonPage(): Promise<ReactNode> {
   const { data: claims } = supabase ? await supabase.auth.getClaims() : { data: null };
   const userId = claims?.claims.sub;
   if (!supabase || !userId) redirect("/sign-in?next=/summon");
-  const [wallet, pity] = await Promise.all([
+  const [wallet, pity, tickets] = await Promise.all([
     supabase.from("wallets").select("gems").eq("user_id", userId).maybeSingle<{ gems: number }>(),
     supabase
       .from("summon_pity")
       .select("banner_id, pulls")
       .eq("user_id", userId)
       .overrideTypes<{ banner_id: string; pulls: number }[], { merge: false }>(),
+    supabase
+      .from("summon_tickets")
+      .select("count")
+      .eq("user_id", userId)
+      .maybeSingle<{ count: number }>(),
   ]);
   const pulls = Object.fromEntries((pity.data ?? []).map((r) => [r.banner_id, Number(r.pulls)]));
   return (
@@ -26,6 +31,7 @@ export default async function SummonPage(): Promise<ReactNode> {
       banners={SUMMON_BANNERS.map(summonBannerView)}
       gems={wallet.error ? null : Number(wallet.data?.gems ?? 0)}
       pityPulls={pity.error ? null : pulls}
+      tickets={tickets.error ? null : Number(tickets.data?.count ?? 0)}
     />
   );
 }

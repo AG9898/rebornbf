@@ -147,7 +147,8 @@ export function validateDropRefs(
 /**
  * Cross-file dungeon checks over every parsed stage (GAME_DESIGN §7 → Farming dungeons): a
  * dungeon's gate is an existing non-dungeon stage, its key item is one of `itemIds`, and every
- * `capture: "always"` slot names an enemy (in `enemies`, by ID) that has a capture drop.
+ * `capture: "always"` slot names an enemy (in `enemies`, by ID) that has a capture drop. Every
+ * stage of a series carries the same `dailyLimit` (or none), since the limit is per series.
  */
 export function validateDungeons(
   stages: readonly Stage[],
@@ -156,10 +157,19 @@ export function validateDungeons(
 ): string[] {
   const errors: string[] = [];
   const byId = new Map(stages.map((stage) => [stage.id, stage]));
+  const seriesLimits = new Map<string, { stage: string; limit: number | undefined }>();
   for (const stage of stages) {
     const dungeon = stage.dungeon;
     if (!dungeon) continue;
     const file = `stages/${stage.id}.json`;
+    const first = seriesLimits.get(dungeon.series);
+    if (!first) {
+      seriesLimits.set(dungeon.series, { stage: stage.id, limit: dungeon.dailyLimit });
+    } else if (first.limit !== dungeon.dailyLimit) {
+      errors.push(
+        `${file}: dungeon.dailyLimit: series "${dungeon.series}" has ${first.limit ?? "no limit"} on "${first.stage}"`,
+      );
+    }
     const gate = byId.get(dungeon.gate);
     if (!gate) {
       errors.push(`${file}: dungeon.gate: unknown stage "${dungeon.gate}"`);
@@ -177,6 +187,45 @@ export function validateDungeons(
           errors.push(`${file}: ${path}: enemy "${slot.enemy}" has no capture drop`);
         }
       });
+    });
+  }
+  return errors;
+}
+
+/** Cross-file first-clear checks: every first-clear reward item is one of `itemIds`. */
+export function validateFirstClearItems(
+  stages: readonly Stage[],
+  itemIds: ReadonlySet<string>,
+): string[] {
+  const errors: string[] = [];
+  for (const stage of stages) {
+    stage.firstClear?.items?.forEach((entry, i) => {
+      if (!itemIds.has(entry.item)) {
+        const path = formatPath(["firstClear", "items", i, "item"]);
+        errors.push(`stages/${stage.id}.json: ${path}: unknown item "${entry.item}"`);
+      }
+    });
+  }
+  return errors;
+}
+
+/**
+ * Cross-file first-clear unit checks: every first-clear reward unit is one of `units` and
+ * stackable, since the grant adds to the player's stack (GAME_DESIGN §6 → Stacking).
+ */
+export function validateFirstClearUnits(
+  stages: readonly Stage[],
+  units: ReadonlyMap<string, Pick<Unit, "stackable">>,
+): string[] {
+  const errors: string[] = [];
+  for (const stage of stages) {
+    stage.firstClear?.units?.forEach((entry, i) => {
+      const path = formatPath(["firstClear", "units", i, "unit"]);
+      const unit = units.get(entry.unit);
+      if (!unit) errors.push(`stages/${stage.id}.json: ${path}: unknown unit "${entry.unit}"`);
+      else if (!unit.stackable) {
+        errors.push(`stages/${stage.id}.json: ${path}: unit "${entry.unit}" is not stackable`);
+      }
     });
   }
   return errors;

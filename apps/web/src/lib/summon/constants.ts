@@ -18,3 +18,13 @@ export function summonProblem(gems: number | null, count: SummonCount): string |
   if (gems === null) return "Your gems could not be loaded.";
   return gems < SUMMON_COSTS[count] ? "Not enough gems." : null;
 }
+
+/** The banner the free 10-pull ticket pulls on (GAME_DESIGN §8 Login rewards; `summon_ticket`). */
+export const TICKET_BANNER_ID = "launch-summon";
+/** Pulls one free ticket buys (10, no bonus pull). */
+export const TICKET_PULLS = 10;
+
+/** Whether the ticket option shows on `bannerId`: only while a ticket is held. */
+export function ticketOffered(bannerId: string, tickets: number | null): boolean {
+  return bannerId === TICKET_BANNER_ID && tickets !== null && tickets > 0;
+}

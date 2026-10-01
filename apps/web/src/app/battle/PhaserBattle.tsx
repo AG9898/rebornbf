@@ -23,6 +23,7 @@ import styles from "./battle.module.css";
 export default function PhaserBattle({
   spec,
   sessionId,
+  back = { href: "/quests", label: "Back to quest map" },
   onEvents,
   onResult,
   fullScreen = false,
@@ -30,6 +31,8 @@ export default function PhaserBattle({
 }: {
   spec: BattleSpec;
   sessionId?: string;
+  /** Where the end-of-battle panel links back to (the Trials page for a trial). */
+  back?: { href: string; label: string };
   onEvents?: (events: readonly BattleEvent[]) => void;
   onResult?: (result: "win" | "lose") => void;
   fullScreen?: boolean;
@@ -204,6 +207,15 @@ export default function PhaserBattle({
                 </Link>
               </section>
             )}
+            {typeof ending === "object" && ending.ok && ending.rewards.units && (
+              <ul aria-label="First-clear units" className="text-amber-200">
+                {ending.rewards.units.map((unit) => (
+                  <li key={unit.name}>
+                    {unit.name} ×{unit.count}
+                  </li>
+                ))}
+              </ul>
+            )}
             {ending === "lost" && continueAction && (
               <button
                 type="button"
@@ -215,8 +227,8 @@ export default function PhaserBattle({
               </button>
             )}
             {continueError && <p role="alert">{continueError}</p>}
-            <Link href="/quests" className="font-semibold text-amber-200 underline">
-              Back to quest map
+            <Link href={back.href} className="font-semibold text-amber-200 underline">
+              {back.label}
             </Link>
           </div>
         )}

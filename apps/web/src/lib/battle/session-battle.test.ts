@@ -166,6 +166,22 @@ describe("session battle (M3-04B)", () => {
     }
   });
 
+  it("builds a trial session with trial: true and story sessions without it (M6-01A_1)", () => {
+    const trial = sessionBattle(row({ stage_id: "trial-01-captain-locke" }));
+    if (!trial.ok) throw new Error(trial.message);
+    expect(trial.battle.setup.trial).toBe(true);
+    expect(trial.battle.setup.waves.map((wave) => wave.map((enemy) => enemy.id))).toEqual([
+      ["trial1-locke"],
+      ["trial1-locke-p2"],
+    ]);
+    expect(createBattle(trial.battle.setup, trial.battle.seed).trial).toBe(true);
+
+    const story = sessionBattle(row());
+    if (!story.ok) throw new Error(story.message);
+    expect(story.battle.setup.trial).toBeUndefined();
+    expect(createBattle(story.battle.setup, story.battle.seed).trial).toBe(false);
+  });
+
   it("omits the ally when the squad has none", () => {
     const result = sessionBattle(
       row({ squad: { leader_index: 0, units: [snap("brand", "brand-3")], ally: null } }),

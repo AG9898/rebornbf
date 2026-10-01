@@ -70,16 +70,19 @@ export default async function BattlePage({
       : "battle" in loaded
         ? loaded.battle.stage.name
         : "Story battle";
+  const isTrial = loaded !== undefined && "battle" in loaded && !!loaded.battle.stage.trial;
+  const back = !sessionId
+    ? { href: "/home", label: "Home" }
+    : isTrial
+      ? { href: "/trials", label: "Trials" }
+      : { href: "/quests", label: "Quest" };
 
   return (
     <main className="flex min-h-dvh flex-col bg-[#0b0d17] text-[#e8e6f0]">
       <header className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between px-4">
         <h1 className="text-sm font-semibold tracking-[0.18em] uppercase">{title}</h1>
-        <Link
-          href={sessionId ? "/quests" : "/home"}
-          className="text-xs font-semibold text-amber-200 hover:underline"
-        >
-          {sessionId ? "Quest" : "Home"}
+        <Link href={back.href} className="text-xs font-semibold text-amber-200 hover:underline">
+          {back.label}
         </Link>
       </header>
       {loaded === undefined ? (

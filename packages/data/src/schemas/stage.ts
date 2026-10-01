@@ -30,9 +30,29 @@ export const StoryPlacementSchema = z.strictObject({
 });
 export type StoryPlacement = z.infer<typeof StoryPlacementSchema>;
 
-/** Rewards for a stage's first clear (granted server-side after replay; GAME_DESIGN §8). */
+/** One stack of a `content/items/` item granted by a first clear. */
+export const FirstClearItemSchema = z.strictObject({
+  item: ContentIdSchema,
+  count: PositiveIntSchema,
+});
+export type FirstClearItem = z.infer<typeof FirstClearItemSchema>;
+
+/** Copies of a stackable `content/units/` unit granted by a first clear (the Lantern Toads). */
+export const FirstClearUnitSchema = z.strictObject({
+  unit: ContentIdSchema,
+  count: PositiveIntSchema,
+});
+export type FirstClearUnit = z.infer<typeof FirstClearUnitSchema>;
+
+/**
+ * Rewards for a stage's first clear (granted server-side after replay; GAME_DESIGN §8). `items`
+ * are granted through `grant_item` (e.g. Trial 1's Zenith Core, RESOLVED-69); `units` add copies
+ * of stackable units to the player's stacks (story Lantern Toads, RESOLVED-71).
+ */
 export const FirstClearRewardSchema = z.strictObject({
   gems: NonNegativeIntSchema,
+  items: z.array(FirstClearItemSchema).min(1).optional(),
+  units: z.array(FirstClearUnitSchema).min(1).optional(),
   /** One-based position in the starter order after excluding the onboarding pick. */
   starter: z
     .strictObject({
@@ -58,13 +78,16 @@ export type KeyItemRule = z.infer<typeof KeyItemRuleSchema>;
  * `series` and the `gate` stage whose first clear opens it (a story stage, or Trial 1 for the
  * Zenith Core and growth series). `keyItem` is set on the Crown Shard and Zenith Core stages.
  * `ramp` is the series' difficulty ramp in percent (RESOLVED-71): every enemy's HP and ATK are
- * raised by it when the battle is built (`rampedStats`); absent means 0.
+ * raised by it when the battle is built (`rampedStats`); absent means 0. `dailyLimit` is the
+ * series' daily clear limit (RESOLVED-71: wins per player per UTC day; start_battle refuses the
+ * series once it is reached); absent means no limit. Every stage of a series carries the same one.
  */
 export const DungeonPlacementSchema = z.strictObject({
   series: ContentIdSchema,
   gate: ContentIdSchema,
   keyItem: KeyItemRuleSchema.optional(),
   ramp: z.number().int().min(1).max(100).optional(),
+  dailyLimit: PositiveIntSchema.optional(),
 });
 export type DungeonPlacement = z.infer<typeof DungeonPlacementSchema>;
 

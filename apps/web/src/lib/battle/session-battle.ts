@@ -18,8 +18,11 @@ import reedStalker from "@bfr/data/content/enemies/ch2-reed-stalker.json";
 import saltfin from "@bfr/data/content/enemies/ch2-saltfin.json";
 import stormRay from "@bfr/data/content/enemies/ch2-storm-ray.json";
 import tidewright from "@bfr/data/content/enemies/ch2-tidewright.json";
+import locke from "@bfr/data/content/enemies/trial1-locke.json";
+import lockeP2 from "@bfr/data/content/enemies/trial1-locke-p2.json";
 import type { BattleSetup, EnemySetup, SquadMemberSetup, UnitTypeRoll } from "@bfr/engine";
 import { STORY_STAGES } from "../quests/quest-map.ts";
+import { trialStage } from "../quests/trials.ts";
 import { formArtFile, statsAtLevel, unitContent } from "../units/owned-units.ts";
 
 /**
@@ -93,6 +96,8 @@ const ENEMIES: ReadonlyMap<string, Enemy> = new Map(
     stormRay,
     glassward,
     tidewright,
+    locke,
+    lockeP2,
   ].map((json) => {
     const enemy = EnemySchema.parse(json);
     return [enemy.id, enemy];
@@ -108,6 +113,11 @@ export function isBattleSessionId(value: string): boolean {
 
 export function storyStage(stageId: string): Stage | undefined {
   return STORY_STAGES.find((stage) => stage.id === stageId);
+}
+
+/** The story or trial stage a session can play (M6-01A_1); dungeons are not playable yet. */
+export function sessionStage(stageId: string): Stage | undefined {
+  return storyStage(stageId) ?? trialStage(stageId);
 }
 
 function enemySetup(id: string): EnemySetup | null {
@@ -174,9 +184,12 @@ export function sessionProblem(row: BattleSessionRow, now: Date): string | null 
   return null;
 }
 
-/** The engine setup and art for a session: its story stage fought by the snapshotted squad. */
+/**
+ * The engine setup and art for a session: its story or trial stage fought by the snapshotted
+ * squad. A trial's setup carries `trial: true`, so the engine refuses continues (RESOLVED-17).
+ */
 export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
-  const stage = storyStage(row.stage_id);
+  const stage = sessionStage(row.stage_id);
   if (!stage) return { ok: false, message: "This stage is not in this version of the game." };
 
   const waves: EnemySetup[][] = [];
@@ -205,6 +218,7 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
     leaderIndex,
     ...(allyMember ? { ally: { ...allyMember.setup, kind: ally?.kind ?? "duplicate" } } : {}),
     waves,
+    ...(stage.trial ? { trial: true } : {}),
   };
   return {
     ok: true,

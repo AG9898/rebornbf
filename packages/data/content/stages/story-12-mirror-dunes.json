@@ -7,7 +7,13 @@
     "text": "The dunes reflect a tower that is no longer there. Its wardens still patrol the buried road."
   },
   "firstClear": {
-    "gems": 30
+    "gems": 30,
+    "units": [
+      {
+        "unit": "lantern-toad",
+        "count": 15
+      }
+    ]
   },
   "waves": [
     {

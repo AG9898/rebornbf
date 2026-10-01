@@ -7,7 +7,13 @@
     "text": "The Tidewright crowns its drowned spire with glass. Shatter its lens and give the shore back to the sea."
   },
   "firstClear": {
-    "gems": 200
+    "gems": 200,
+    "units": [
+      {
+        "unit": "lantern-toad",
+        "count": 15
+      }
+    ]
   },
   "waves": [
     {

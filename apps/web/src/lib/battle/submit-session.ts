@@ -29,6 +29,20 @@ function starterReward(value: unknown): StarterReward | undefined {
   return { ownedUnitId: value.owned_unit_id, name: unit.name, rarity: form.rarity };
 }
 
+export type UnitReward = { readonly name: string; readonly count: number };
+
+/** First-clear unit grants (`{unit id: count}`, e.g. Lantern Toads) named from content. */
+function unitRewards(value: unknown): UnitReward[] {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return [];
+  const rewards: UnitReward[] = [];
+  for (const [unitId, count] of Object.entries(value)) {
+    const unit = unitContent(unitId);
+    if (!unit || typeof count !== "number" || !Number.isInteger(count) || count < 1) continue;
+    rewards.push({ name: unit.name, count });
+  }
+  return rewards;
+}
+
 export type Submission =
   | {
       readonly ok: true;
@@ -38,6 +52,7 @@ export type Submission =
         readonly gems: number;
         readonly zel: number;
         readonly starter?: StarterReward;
+        readonly units?: readonly UnitReward[];
       };
     }
   | { readonly ok: false; readonly error: string };
@@ -83,6 +98,10 @@ export async function submitSession(
         body.rewards.first_clear && "starter" in body.rewards
           ? starterReward(body.rewards.starter)
           : undefined;
+      const units =
+        body.rewards.first_clear && "first_clear_units" in body.rewards
+          ? unitRewards(body.rewards.first_clear_units)
+          : [];
       return {
         ok: true,
         turns: body.turns,
@@ -91,6 +110,7 @@ export async function submitSession(
           gems: body.rewards.gems,
           zel: body.rewards.zel,
           ...(starter ? { starter } : {}),
+          ...(units.length > 0 ? { units } : {}),
         },
       };
     }

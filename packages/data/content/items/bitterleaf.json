@@ -1,0 +1,7 @@
+{
+  "id": "bitterleaf",
+  "name": "Bitterleaf",
+  "description": "A chewed leaf that draws venom from the blood. Removes Poison from one ally.",
+  "target": "single",
+  "effects": [{ "kind": "cure", "ailments": ["poison"] }]
+}

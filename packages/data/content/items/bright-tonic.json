@@ -1,0 +1,7 @@
+{
+  "id": "bright-tonic",
+  "name": "Bright Tonic",
+  "description": "A sharp tonic steeped from blue reeds. Restores one ally's HP.",
+  "target": "single",
+  "effects": [{ "kind": "heal", "amount": 1000 }]
+}

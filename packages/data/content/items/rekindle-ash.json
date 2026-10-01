@@ -1,0 +1,7 @@
+{
+  "id": "rekindle-ash",
+  "name": "Rekindle Ash",
+  "description": "Ash from a beacon that never went out. Revives one fallen ally with a spark of HP.",
+  "target": "single",
+  "effects": [{ "kind": "revive", "hpPercent": 1 }]
+}

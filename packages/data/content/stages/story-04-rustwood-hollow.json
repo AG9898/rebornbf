@@ -11,7 +11,13 @@
     "starter": {
       "ordinal": 2,
       "rarity": 4
-    }
+    },
+    "units": [
+      {
+        "unit": "lantern-toad",
+        "count": 9
+      }
+    ]
   },
   "waves": [
     {

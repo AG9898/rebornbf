@@ -10,6 +10,8 @@ import {
   validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
+  validateFirstClearItems,
+  validateFirstClearUnits,
   validateGemBudget,
   validateGuestFile,
   validateItemFile,
@@ -89,6 +91,10 @@ errors.push(...validateStory(stages));
 errors.push(...validateGemBudget(stages));
 // Dungeon gates, key items, and always-captured slots span stages, enemies, and items.
 errors.push(...validateDungeons(stages, enemies, itemIds));
+// First-clear reward items name item files.
+errors.push(...validateFirstClearItems(stages, itemIds));
+// First-clear reward units name stackable unit files.
+errors.push(...validateFirstClearUnits(stages, new Map(units.map((unit) => [unit.id, unit]))));
 // Trial numbers are unique and each trial opens on a story stage's first clear.
 errors.push(...validateTrials(stages));
 // The tutorial's preset squad names unit forms, and its enemies may drop nothing granted.

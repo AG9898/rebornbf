@@ -5,6 +5,15 @@
     "number": 1,
     "gate": "story-08-beacon-hollow"
   },
+  "firstClear": {
+    "gems": 0,
+    "items": [
+      {
+        "item": "zenith-core",
+        "count": 1
+      }
+    ]
+  },
   "waves": [
     {
       "enemies": [

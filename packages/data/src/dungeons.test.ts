@@ -10,11 +10,19 @@ import {
   type DungeonFamily,
   dungeonStage,
   familyElements,
+  ITEM_DUNGEONS,
+  ITEM_SERIES,
+  itemCarrier,
+  itemStage,
   materialEnemy,
   materialUnitId,
+  TRIAL_1,
+  ZENITH_CORE_STAGE_ID,
+  zenithCoreStage,
 } from "./dungeons.ts";
 import { ELEMENTS } from "./schemas/common.ts";
 import { EnemySchema } from "./schemas/enemy.ts";
+import { ItemSchema } from "./schemas/item.ts";
 import { StageSchema } from "./schemas/stage.ts";
 
 // Farming-dungeon templates (M4-03C–F): every templated stage and material enemy file in content/
@@ -50,6 +58,8 @@ describe("dungeon templates (M4-03C–F)", () => {
         familyElements(family).map((element) => dungeonStage(family, element).id),
       ),
       crownShardStage().id,
+      zenithCoreStage().id,
+      ...ITEM_DUNGEONS.map((entry) => itemStage(entry).id),
     ]);
     const dungeons = readdirSync(join(content, "stages"))
       .map((name) => StageSchema.parse(load(`stages/${name}`)))
@@ -141,6 +151,25 @@ describe("dungeon templates (M4-03C–F)", () => {
     }
   });
 
+  it("the Zenith Core stage is its own series, opened by Trial 1 with a +65% ramp (M4-02N)", () => {
+    const stage = zenithCoreStage();
+    expect(stage.id).toBe(ZENITH_CORE_STAGE_ID);
+    expect(StageSchema.parse(load(`stages/${stage.id}.json`))).toEqual(stage);
+    expect(stage.dungeon).toEqual({
+      series: "zenith-core",
+      gate: TRIAL_1,
+      keyItem: { item: "zenith-core", rate: 20 },
+      ramp: 65,
+    });
+    const trial = StageSchema.parse(load(`stages/${TRIAL_1}.json`));
+    expect(trial.trial?.number).toBe(1);
+    expect(trial.firstClear).toEqual({ gems: 0, items: [{ item: "zenith-core", count: 1 }] });
+    expect(stage.waves).toHaveLength(3);
+    for (const slot of stage.waves.flatMap((wave) => wave.enemies)) {
+      expect(Object.values(CHAPTER_1_DUNGEON_MOBS)).toContain(slot.enemy);
+    }
+  });
+
   it("stages capture their material at 25% in waves 1–2 and always in the final wave", () => {
     for (const family of families) {
       for (const element of familyElements(family)) {
@@ -170,6 +199,75 @@ describe("dungeon templates (M4-03C–F)", () => {
       const mob = EnemySchema.parse(load(`enemies/${CHAPTER_1_DUNGEON_MOBS[element]}.json`));
       expect(mob.element).toBe(element);
       expect(mob.drops.capture).toBeUndefined();
+    }
+  });
+});
+
+describe("battle item catalog and item series (M4-03G)", () => {
+  // The original's starter items (BF Wiki item pages, GAME_DESIGN sources.md): Cure 100~120 HP,
+  // High Cure 1,000, Mega Cure 2,000 (each + 10% REC, which BFR item heals drop: GAME_DESIGN §2),
+  // Revive 1% HP, Fujin Potion fills the whole BB and SBB gauge, Antidote removes Poison.
+  const expected = {
+    "dew-tonic": [{ kind: "heal", amount: 100 }],
+    "bright-tonic": [{ kind: "heal", amount: 1000 }],
+    "grand-tonic": [{ kind: "heal", amount: 2000 }],
+    "rekindle-ash": [{ kind: "revive", hpPercent: 1 }],
+    "valor-draught": [{ kind: "bb_fill", bc: 100 }],
+    bitterleaf: [{ kind: "cure", ailments: ["poison"] }],
+  } as const;
+
+  it("each starter item validates with its sourced single-target effect", () => {
+    expect(ITEM_DUNGEONS.map((entry) => entry.item).sort()).toEqual(Object.keys(expected).sort());
+    for (const entry of ITEM_DUNGEONS) {
+      const item = ItemSchema.parse(load(`items/${entry.item}.json`));
+      expect(item.name).toBe(entry.title);
+      expect(item.target).toBe("single");
+      expect(item.effects).toEqual(expected[entry.item as keyof typeof expected]);
+    }
+  });
+
+  it("the BB-fill item fills every unit form's whole BB and SBB gauge", () => {
+    const units = readdirSync(join(content, "units")).map(
+      (name) =>
+        load(`units/${name}`) as {
+          forms: { bursts: { bb: { cost: number }; sbb?: { cost: number } } }[];
+        },
+    );
+    const largest = Math.max(
+      ...units.flatMap((unit) =>
+        unit.forms.map((form) => form.bursts.bb.cost + (form.bursts.sbb?.cost ?? 0)),
+      ),
+    );
+    expect(expected["valor-draught"][0].bc).toBeGreaterThanOrEqual(largest);
+  });
+
+  it("each item has one templated stage in the items series, gated on the story ladder", () => {
+    const gates = {
+      "dew-tonic": 4,
+      bitterleaf: 4,
+      "rekindle-ash": 4,
+      "bright-tonic": 6,
+      "valor-draught": 6,
+      "grand-tonic": 8,
+    } as const;
+    for (const entry of ITEM_DUNGEONS) {
+      const stage = itemStage(entry);
+      expect(StageSchema.parse(load(`stages/${stage.id}.json`))).toEqual(stage);
+      const carrier = itemCarrier(entry);
+      expect(EnemySchema.parse(load(`enemies/${carrier.id}.json`))).toEqual(carrier);
+      expect(stage.dungeon).toEqual({ series: ITEM_SERIES, gate: entry.gate });
+      const gate = StageSchema.parse(load(`stages/${entry.gate}.json`));
+      expect(gate.story?.number).toBe(gates[entry.item as keyof typeof gates]);
+      expect(carrier.drops.items).toEqual([{ item: entry.item, rate: entry.rate }]);
+      expect(carrier.drops.capture).toBeUndefined();
+      expect(stage.waves).toHaveLength(3);
+      for (const wave of stage.waves) {
+        expect(wave.enemies.map((slot) => slot.enemy)).toEqual([
+          CHAPTER_1_DUNGEON_MOBS[entry.element],
+          carrier.id,
+          CHAPTER_1_DUNGEON_MOBS[entry.element],
+        ]);
+      }
     }
   });
 });

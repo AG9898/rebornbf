@@ -1,5 +1,5 @@
-// Writes every templated farming-dungeon stage and material enemy, and the Crown Shard stage
-// (src/dungeons.ts), to content/.
+// Writes every templated farming-dungeon stage and material enemy, the battle item stages and
+// their carriers, and the Crown Shard and Zenith Core stages (src/dungeons.ts), to content/.
 // Run after editing a template, then `pnpm format` and `pnpm --filter @bfr/data seed`.
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -8,7 +8,11 @@ import {
   DUNGEON_FAMILIES,
   dungeonStage,
   familyElements,
+  ITEM_DUNGEONS,
+  itemCarrier,
+  itemStage,
   materialEnemy,
+  zenithCoreStage,
 } from "../src/dungeons.ts";
 
 const content = join(import.meta.dirname, "..", "content");
@@ -24,7 +28,17 @@ for (const family of Object.values(DUNGEON_FAMILIES)) {
     }
   }
 }
-const crown = crownShardStage();
-writeFileSync(join(content, "stages", `${crown.id}.json`), `${JSON.stringify(crown, null, 2)}\n`);
-written++;
+for (const entry of ITEM_DUNGEONS) {
+  for (const [dir, json] of [
+    ["enemies", itemCarrier(entry)],
+    ["stages", itemStage(entry)],
+  ] as const) {
+    writeFileSync(join(content, dir, `${json.id}.json`), `${JSON.stringify(json, null, 2)}\n`);
+    written++;
+  }
+}
+for (const stage of [crownShardStage(), zenithCoreStage()]) {
+  writeFileSync(join(content, "stages", `${stage.id}.json`), `${JSON.stringify(stage, null, 2)}\n`);
+  written++;
+}
 console.log(`dungeons: wrote ${written} file(s)`);

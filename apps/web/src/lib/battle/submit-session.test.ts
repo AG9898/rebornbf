@@ -76,3 +76,39 @@ describe("story starter reward", () => {
     }
   });
 });
+
+describe("first-clear unit rewards (M4-04G)", () => {
+  async function submit(firstClear: boolean, units: unknown) {
+    return submitSession(SESSION, LOG, async () =>
+      Response.json({
+        ok: true,
+        result: "win",
+        turns: 2,
+        rewards: { first_clear: firstClear, gems: 25, zel: 10, first_clear_units: units },
+      }),
+    );
+  }
+
+  it("shows the granted Lantern Toads by name and count", async () => {
+    expect(await submit(true, { "lantern-toad": 18 })).toMatchObject({
+      ok: true,
+      rewards: { units: [{ name: "Lantern Toad", count: 18 }] },
+    });
+  });
+
+  it("shows nothing for replays, unknown units, or malformed counts", async () => {
+    for (const [firstClear, units] of [
+      [false, { "lantern-toad": 9 }],
+      [true, {}],
+      [true, null],
+      [true, ["lantern-toad"]],
+      [true, { "missing-toad": 9 }],
+      [true, { "lantern-toad": 0 }],
+      [true, { "lantern-toad": "9" }],
+    ] as const) {
+      const result = await submit(firstClear, units);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.rewards.units).toBeUndefined();
+    }
+  });
+});

@@ -1,0 +1,7 @@
+{
+  "id": "dew-tonic",
+  "name": "Dew Tonic",
+  "description": "A sweet tonic of boiled meadow dew. Slightly restores one ally's HP.",
+  "target": "single",
+  "effects": [{ "kind": "heal", "amount": 100 }]
+}

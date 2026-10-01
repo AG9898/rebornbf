@@ -1,0 +1,7 @@
+{
+  "id": "valor-draught",
+  "name": "Valor Draught",
+  "description": "A storm-charged draught that steels the mind. Completely fills one ally's BB gauge.",
+  "target": "single",
+  "effects": [{ "kind": "bb_fill", "bc": 100 }]
+}

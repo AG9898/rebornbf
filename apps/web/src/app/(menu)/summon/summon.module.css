@@ -212,6 +212,10 @@
   cursor: default;
 }
 
+.ticketButton {
+  width: calc(var(--u) * 474);
+}
+
 .cost {
   --stroke: 3;
   display: flex;

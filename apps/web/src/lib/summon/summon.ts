@@ -102,7 +102,13 @@ export type SummonPullView = {
   href: string | null;
 };
 
-export type SummonOutcome = { gems: number; pityAfter: number; pulls: SummonPullView[] };
+export type SummonOutcome = {
+  gems: number;
+  pityAfter: number;
+  pulls: SummonPullView[];
+  /** Free 10-pull tickets left; only the ticket path (`summon_ticket`) reports it. */
+  ticketsAfter: number | null;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -139,11 +145,21 @@ function pullView(index: number, raw: unknown): SummonPullView | null {
   };
 }
 
-/** Reads the `summon` RPC's payload (`{ batch_id, gems, pity_after, results[] }`), or null. */
+/**
+ * Reads the `summon` RPC's payload (`{ batch_id, gems, pity_after, results[] }`), or
+ * `summon_ticket`'s (the same plus `tickets_after`), or null.
+ */
 export function parseSummonResult(data: unknown): SummonOutcome | null {
   if (!isRecord(data) || !isCount(data.gems) || !isCount(data.pity_after)) return null;
   if (!Array.isArray(data.results) || data.results.length === 0) return null;
   const pulls = data.results.map((r, i) => pullView(i + 1, r));
   if (pulls.some((p) => p === null)) return null;
-  return { gems: data.gems, pityAfter: data.pity_after, pulls: pulls as SummonPullView[] };
+  const tickets = data.tickets_after;
+  if (tickets !== undefined && !isCount(tickets)) return null;
+  return {
+    gems: data.gems,
+    pityAfter: data.pity_after,
+    pulls: pulls as SummonPullView[],
+    ticketsAfter: isCount(tickets) ? tickets : null,
+  };
 }

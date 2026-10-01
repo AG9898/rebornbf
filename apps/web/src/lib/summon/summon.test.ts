@@ -9,6 +9,8 @@ import {
   SUMMON_BANNERS,
   summonProblem,
   summonTreatment,
+  TICKET_BANNER_ID,
+  ticketOffered,
 } from "./summon.ts";
 
 const ROW = "11111111-1111-4111-8111-111111111111";
@@ -81,6 +83,7 @@ describe("parseSummonResult", () => {
     });
     expect(out?.gems).toBe(45);
     expect(out?.pityAfter).toBe(0);
+    expect(out?.ticketsAfter).toBeNull();
     expect(out?.pulls.map((p) => [p.index, p.treatment, p.href])).toEqual([
       [1, "gold", `/units/stack/${STACK}`],
       [2, "rainbow", `/units/${ROW}`],
@@ -94,6 +97,13 @@ describe("parseSummonResult", () => {
     });
   });
 
+  it("reads the ticket path's tickets left", () => {
+    const pull = result({ unit_id: "cinder-sprite", form_id: "cinder-sprite-2" });
+    const base = { batch_id: "b", gems: 7, pity_after: 3, results: [pull] };
+    expect(parseSummonResult({ ...base, tickets_after: 0 })?.ticketsAfter).toBe(0);
+    expect(parseSummonResult({ ...base, tickets_after: -1 })).toBeNull();
+  });
+
   it("rejects a malformed payload", () => {
     expect(parseSummonResult(null)).toBeNull();
     expect(parseSummonResult({ gems: 1, pity_after: 0, results: [] })).toBeNull();
@@ -105,6 +115,13 @@ describe("parseSummonResult", () => {
 });
 
 describe("summon checks", () => {
+  it("offers the ticket only on the launch banner while one is held", () => {
+    expect(ticketOffered(TICKET_BANNER_ID, 1)).toBe(true);
+    expect(ticketOffered(TICKET_BANNER_ID, 0)).toBe(false);
+    expect(ticketOffered(TICKET_BANNER_ID, null)).toBe(false);
+    expect(ticketOffered("other-banner", 1)).toBe(false);
+  });
+
   it("accepts only the RPC's pull counts", () => {
     expect(isSummonCount(1)).toBe(true);
     expect(isSummonCount(11)).toBe(true);

@@ -6,6 +6,7 @@ import {
   parseSummonResult,
   type SummonOutcome,
   summonBanner,
+  TICKET_BANNER_ID,
 } from "../../../lib/summon/summon.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 
@@ -33,6 +34,38 @@ export async function summonUnits(bannerId: string, count: number): Promise<Summ
         error.message === "summon: insufficient gems"
           ? "Not enough gems."
           : "The summon failed. No gems were spent; try again shortly.",
+    };
+  }
+  const outcome = parseSummonResult(data);
+  if (!outcome)
+    return {
+      ok: false,
+      message: "The summon finished, but its results could not be read. Check your units.",
+    };
+  for (const path of ["/summon", "/units", "/home"]) revalidatePath(path);
+  return { ok: true, outcome };
+}
+
+/**
+ * Spends one free 10-pull ticket on `bannerId` through the `summon_ticket` RPC (M5-01D), which
+ * consumes the ticket, rolls, and grants every unit in one transaction at no gem cost.
+ */
+export async function summonWithTicket(bannerId: string): Promise<SummonActionResult> {
+  if (bannerId !== TICKET_BANNER_ID) {
+    return { ok: false, message: "The ticket cannot be used on this summon." };
+  }
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return { ok: false, message: "Summoning is unavailable right now." };
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims.sub) return { ok: false, message: "Sign in to summon." };
+  const { data, error } = await supabase.rpc("summon_ticket", { p_banner_id: bannerId });
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.message === "summon_ticket: no ticket"
+          ? "You have no summon ticket."
+          : "The summon failed. Your ticket was not used; try again shortly.",
     };
   }
   const outcome = parseSummonResult(data);
