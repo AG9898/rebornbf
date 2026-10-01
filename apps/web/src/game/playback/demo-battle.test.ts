@@ -31,7 +31,8 @@ describe("demo battle (M2-05B)", () => {
     for (const file of readdirSync(dir).filter((name) => name.endsWith(".json"))) {
       const stage = StageSchema.parse(JSON.parse(readFileSync(join(dir, file), "utf8")));
       if (stage.dungeon) continue;
-      expect(stageBackground(stage), file).toBe("plains");
+      // Every trial is fought in the shared trial hall; everything else is on the plains for now.
+      expect(stageBackground(stage), file).toBe(stage.trial ? "trial-hall" : "plains");
     }
   });
   it("fields the six B0 starters at Omni, Brand leading and Morrick as the guest ally", () => {

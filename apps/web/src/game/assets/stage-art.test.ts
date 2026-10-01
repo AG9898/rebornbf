@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { STORY_STAGES } from "../../lib/quests/quest-map.ts";
+import { trialStage } from "../../lib/quests/trials.ts";
 import stageArt from "./stage-art.json";
 import { stageBackground, stageEnemyArt } from "./stage-art.ts";
 
@@ -66,5 +67,17 @@ describe("chapter 2 pending art", () => {
         ).toBe(true);
       }
     }
+  });
+});
+
+describe("trial art", () => {
+  it("fights every trial in the trial hall", () => {
+    const stage = trialStage("trial-01-captain-locke");
+    expect(stage).toBeDefined();
+    if (!stage) return;
+    expect(stageBackground(stage)).toBe("trial-hall");
+    expect(
+      existsSync(join(import.meta.dirname, "../../../public/assets/backgrounds/trial-hall.webp")),
+    ).toBe(true);
   });
 });

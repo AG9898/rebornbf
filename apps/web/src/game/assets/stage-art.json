@@ -3,7 +3,11 @@
   "backgrounds": {
     "plains": {
       "chapters": [1],
-      "stages": ["demo-stage", "placeholder-stage", "trial-01-captain-locke", "tutorial"]
+      "stages": ["demo-stage", "placeholder-stage", "tutorial"]
+    },
+    "trial-hall": {
+      "chapters": [],
+      "stages": ["trial-01-captain-locke"]
     },
     "saltglass-coast": {
       "chapters": [2],
@@ -52,6 +56,12 @@
       "canvas": 256
     },
     "trial1-locke-p2": {
+      "canvas": 256
+    },
+    "trial2-ozric": {
+      "canvas": 256
+    },
+    "trial2-ozric-p2": {
       "canvas": 256
     }
   },
