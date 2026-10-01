@@ -183,6 +183,28 @@ export function validateDungeons(
 }
 
 /**
+ * Cross-file trial checks over every parsed stage (GAME_DESIGN §5 → Launch trial difficulty
+ * targets): each trial number is used once and each trial's gate is an existing story stage.
+ */
+export function validateTrials(stages: readonly Stage[]): string[] {
+  const errors: string[] = [];
+  const byId = new Map(stages.map((stage) => [stage.id, stage]));
+  const byNumber = new Map<number, string>();
+  for (const stage of stages) {
+    const trial = stage.trial;
+    if (!trial) continue;
+    const file = `stages/${stage.id}.json`;
+    const other = byNumber.get(trial.number);
+    if (other) errors.push(`${file}: trial.number: trial ${trial.number} is also "${other}"`);
+    else byNumber.set(trial.number, stage.id);
+    const gate = byId.get(trial.gate);
+    if (!gate) errors.push(`${file}: trial.gate: unknown stage "${trial.gate}"`);
+    else if (!gate.story) errors.push(`${file}: trial.gate: "${trial.gate}" is not a story stage`);
+  }
+  return errors;
+}
+
+/**
  * Cross-file tutorial checks over every parsed stage (GAME_DESIGN §8 → New player flow): each
  * preset unit (in `units`, by ID) has a form at the tutorial's rarity whose max level reaches the
  * tutorial's level, and every wave enemy (in `enemies`, by ID) drops nothing that is granted
@@ -290,6 +312,42 @@ export function validateStory(stages: readonly Stage[]): string[] {
     if (boss && !isBossStage(boss)) {
       errors.push(
         `stages/${boss.id}.json: waves: stage ${last} ends chapter ${chapter} and needs a boss`,
+      );
+    }
+  }
+  return errors;
+}
+
+/**
+ * The free-gem budget (GAME_DESIGN §8 → Gem budget): the minimum cumulative first-clear gems each
+ * chapter's story stages must grant. Chapter 1's 350 is pity from the free 10-pull (RESOLVED-28);
+ * chapter 2's 400 is a second pity without the ticket (RESOLVED-72).
+ */
+export const CHAPTER_GEM_BUDGETS: Readonly<Record<number, number>> = { 1: 350, 2: 400 };
+
+/** Cumulative story first-clear gems per chapter. */
+export function chapterFirstClearGems(stages: readonly Stage[]): Map<number, number> {
+  const totals = new Map<number, number>();
+  for (const stage of stages) {
+    if (!stage.story) continue;
+    const chapter = stage.story.chapter;
+    totals.set(chapter, (totals.get(chapter) ?? 0) + (stage.firstClear?.gems ?? 0));
+  }
+  return totals;
+}
+
+/**
+ * Cross-file gem budget check: every budgeted chapter's story first clears must total at least its
+ * `CHAPTER_GEM_BUDGETS` entry. Login gems are outside the budget and not counted.
+ */
+export function validateGemBudget(stages: readonly Stage[]): string[] {
+  const totals = chapterFirstClearGems(stages);
+  const errors: string[] = [];
+  for (const [chapter, budget] of Object.entries(CHAPTER_GEM_BUDGETS)) {
+    const total = totals.get(Number(chapter)) ?? 0;
+    if (total < budget) {
+      errors.push(
+        `stages: chapter ${chapter} first clears grant ${total} gems; the budget is ${budget}`,
       );
     }
   }

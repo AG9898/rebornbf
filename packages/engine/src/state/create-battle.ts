@@ -21,6 +21,8 @@ import { formWithEnhancementBursts } from "./enhancement-bursts.ts";
 import { enhancementPassives, selectedEnhancements } from "./enhancements.ts";
 import {
   type AllySetup,
+  AUTO_UNIT_MODES,
+  type AutoSettings,
   type BattleEnemy,
   type BattleItemStack,
   type BattleSetup,
@@ -296,6 +298,28 @@ function checkItems(items: BattleSetup["items"]): BattleItemStack[] {
   });
 }
 
+/** Validates the auto-battle settings: known modes on existing slots, boolean toggles. */
+function checkAutoSettings(settings: AutoSettings, party: readonly BattleUnit[]): AutoSettings {
+  if (typeof settings !== "object" || settings === null) {
+    throw new BattleSetupError("autoSettings: must be an object");
+  }
+  for (const key of ["sbbPriority", "forcedBbPriority", "odUbbPriority"] as const) {
+    const value = settings[key];
+    if (value !== undefined && typeof value !== "boolean") {
+      throw new BattleSetupError(`autoSettings.${key}: must be a boolean`);
+    }
+  }
+  for (const [slot, mode] of Object.entries(settings.modes ?? {})) {
+    if (!party.some((unit) => unit.slot === slot)) {
+      throw new BattleSetupError(`autoSettings.modes.${slot}: no party unit in that slot`);
+    }
+    if (!(AUTO_UNIT_MODES as readonly unknown[]).includes(mode)) {
+      throw new BattleSetupError(`autoSettings.modes.${slot}: unknown mode ${String(mode)}`);
+    }
+  }
+  return settings;
+}
+
 /**
  * Builds the initial `BattleState` from a squad snapshot and a seed (GAME_DESIGN §2 Battle
  * Structure). Rejects squads outside 1–5 units plus one ally, a missing leader, unknown forms,
@@ -354,6 +378,9 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
     items,
     trial: setup.trial === true,
     continued: false,
+    ...(setup.autoSettings === undefined
+      ? {}
+      : { autoSettings: checkAutoSettings(setup.autoSettings, party) }),
   };
   return withPassiveHp(refreshPassives(state));
 }

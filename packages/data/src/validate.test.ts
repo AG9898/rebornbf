@@ -5,15 +5,18 @@ import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
 import { type Stage, StageSchema } from "./schemas/stage.ts";
 import { type Unit, UnitSchema } from "./schemas/unit.ts";
 import {
+  chapterFirstClearGems,
   formatPath,
   validateBannerFile,
   validateDropRefs,
   validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
+  validateGemBudget,
   validateItemFile,
   validateStageFile,
   validateStory,
+  validateTrials,
   validateTutorials,
   validateUnitFile,
 } from "./validate.ts";
@@ -201,6 +204,34 @@ describe("story stages (M3-04A)", () => {
     expect(validateStory([moved])).toContain(
       "stages/story-01-brightmere-outskirts.json: story.number: stage 9 is outside chapter 1 (1-8)",
     );
+  });
+});
+
+describe("gem budget (M5-02)", () => {
+  const stages = (): Stage[] =>
+    stageFiles.map((name) => StageSchema.parse(loadContent(`stages/${name}`)));
+
+  it("chapter 1 grants 350 first-clear gems and chapter 2 grants 400", () => {
+    const totals = chapterFirstClearGems(stages());
+    expect(totals.get(1)).toBe(350);
+    expect(totals.get(2)).toBe(400);
+    expect(validateGemBudget(stages())).toEqual([]);
+  });
+
+  it("fails when chapter 1 gems total less than 350", () => {
+    const short = stages().map((stage) =>
+      stage.story?.number === 8 ? { ...stage, firstClear: { gems: 149 } } : stage,
+    );
+    expect(validateGemBudget(short)).toEqual([
+      "stages: chapter 1 first clears grant 349 gems; the budget is 350",
+    ]);
+  });
+
+  it("counts only story stages and reports a missing chapter as zero", () => {
+    expect(validateGemBudget([])).toEqual([
+      "stages: chapter 1 first clears grant 0 gems; the budget is 350",
+      "stages: chapter 2 first clears grant 0 gems; the budget is 400",
+    ]);
   });
 });
 
@@ -424,6 +455,44 @@ describe("farming dungeons (M4-03B)", () => {
       'enemies/test-mote.json: drops.capture.unit: unknown unit "moss-mote"',
       'enemies/test-mote.json: drops.items[0].item: unknown item "crown-shard"',
     ]);
+  });
+});
+
+describe("trials (M6-01A)", () => {
+  const story = StageSchema.parse(loadContent("stages/story-01-brightmere-outskirts.json"));
+  const trial = StageSchema.parse({
+    id: "test-trial",
+    name: "Test Trial",
+    trial: { number: 1, gate: story.id },
+    waves: [{ enemies: [{ enemy: "placeholder-brute", boss: true }] }],
+  });
+
+  it("accepts a numbered trial gated on a story stage", () => {
+    expect(validateTrials([story, trial])).toEqual([]);
+  });
+
+  it("reports repeated numbers, unknown gates, and non-story gates", () => {
+    const twin: Stage = { ...trial, id: "test-trial-2", trial: { number: 1, gate: "nowhere" } };
+    const chained: Stage = { ...trial, id: "test-trial-3", trial: { number: 3, gate: trial.id } };
+    expect(validateTrials([story, trial, twin, chained])).toEqual([
+      'stages/test-trial-2.json: trial.number: trial 1 is also "test-trial"',
+      'stages/test-trial-2.json: trial.gate: unknown stage "nowhere"',
+      'stages/test-trial-3.json: trial.gate: "test-trial" is not a story stage',
+    ]);
+  });
+
+  it("rejects a trial with no boss or that is also a story stage", () => {
+    const base = { id: "t", name: "T", trial: { number: 1, gate: "s" } };
+    expect(StageSchema.safeParse({ ...base, waves: [{ enemies: [{ enemy: "x" }] }] }).success).toBe(
+      false,
+    );
+    expect(
+      StageSchema.safeParse({
+        ...base,
+        story: { chapter: 1, number: 1, text: "x" },
+        waves: [{ enemies: [{ enemy: "x", boss: true }] }],
+      }).success,
+    ).toBe(false);
   });
 });
 

@@ -68,6 +68,17 @@ export const DungeonPlacementSchema = z.strictObject({
 });
 export type DungeonPlacement = z.infer<typeof DungeonPlacementSchema>;
 
+/**
+ * Where a trial sits (GAME_DESIGN §5 → Launch trial difficulty targets, §7 → Trials): its trial
+ * `number` (1, 2, …) and the `gate` story stage whose first clear unlocks it (Trial 1 opens on the
+ * chapter 1 clear, stage 8). A trial is a boss stage with no continues (RESOLVED-17).
+ */
+export const TrialPlacementSchema = z.strictObject({
+  number: PositiveIntSchema,
+  gate: ContentIdSchema,
+});
+export type TrialPlacement = z.infer<typeof TrialPlacementSchema>;
+
 /** The mechanics the tutorial teaches, one per script step (GAME_DESIGN §8 → New player flow). */
 export const TUTORIAL_LESSONS = ["tap", "burst", "spark", "guard", "crystals"] as const;
 export const TutorialLessonSchema = z.enum(TUTORIAL_LESSONS);
@@ -122,7 +133,8 @@ export type Tutorial = z.infer<typeof TutorialSchema>;
 /**
  * A quest battle: 1..N waves; the last may contain a boss (GAME_DESIGN §2). Story stages carry a
  * `story` placement and a `firstClear` reward; farming-dungeon stages carry a `dungeon` placement
- * instead (never both); the demo and test stages carry neither. The tutorial stage carries a
+ * and trials a `trial` placement instead (at most one of the three); the demo and test stages carry
+ * none. The tutorial stage carries a
  * `tutorial` block and no story, dungeon, or first-clear reward, since it grants nothing. Only a
  * dungeon stage may mark a final-wave slot `capture: "always"`.
  */
@@ -132,6 +144,7 @@ export const StageSchema = z
     name: z.string().min(1),
     story: StoryPlacementSchema.optional(),
     dungeon: DungeonPlacementSchema.optional(),
+    trial: TrialPlacementSchema.optional(),
     firstClear: FirstClearRewardSchema.optional(),
     tutorial: TutorialSchema.optional(),
     waves: z.array(WaveSchema).min(1),
@@ -151,11 +164,28 @@ export const StageSchema = z
         message: "a stage is a story stage or a dungeon stage, not both",
       });
     }
-    if (stage.tutorial && (stage.story || stage.dungeon || stage.firstClear)) {
+    if (stage.trial && (stage.story || stage.dungeon)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["trial"],
+        message: "a trial is not a story or dungeon stage",
+      });
+    }
+    if (stage.trial && !isBossStage(stage)) {
+      ctx.addIssue({ code: "custom", path: ["trial"], message: "a trial needs a boss" });
+    }
+    if (stage.trial && stage.trial.gate === stage.id) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["trial", "gate"],
+        message: "a stage cannot gate itself",
+      });
+    }
+    if (stage.tutorial && (stage.story || stage.dungeon || stage.trial || stage.firstClear)) {
       ctx.addIssue({
         code: "custom",
         path: ["tutorial"],
-        message: "the tutorial grants nothing: no story, dungeon, or first-clear reward",
+        message: "the tutorial grants nothing: no story, dungeon, trial, or first-clear reward",
       });
     }
     if (stage.dungeon && stage.dungeon.gate === stage.id) {
@@ -180,6 +210,6 @@ export const StageSchema = z
 export type Stage = z.infer<typeof StageSchema>;
 
 /** Whether the stage has a boss (a `boss: true` enemy, which may only be in the last wave). */
-export function isBossStage(stage: Stage): boolean {
+export function isBossStage(stage: Pick<Stage, "waves">): boolean {
   return stage.waves.some((wave) => wave.enemies.some((slot) => slot.boss === true));
 }

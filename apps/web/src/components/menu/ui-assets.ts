@@ -113,6 +113,19 @@ export const UI_ASSETS = {
   "skill-tag-red": { width: 340, height: 70 },
   "skill-tag-violet": { width: 340, height: 59 },
   "skill-tag-blue": { width: 340, height: 59 },
+  "gate-gold": { width: 600, height: 869 },
+  "gate-rainbow": { width: 840, height: 769 },
+  "gate-glow": { width: 800, height: 1200 },
+  "touch-tag": { width: 220, height: 245 },
+  "fx-burst-red": { width: 1280, height: 1920 },
+  "fx-burst-rainbow": { width: 1280, height: 1920 },
+  "fx-halo-gold": { width: 1120, height: 395 },
+  "fx-halo-red": { width: 1120, height: 412 },
+  "fx-halo-rainbow": { width: 1120, height: 365 },
+  "bg-summon": { width: 1280, height: 1920 },
+  "summon-panel": { width: 1200, height: 755 },
+  "banner-arrow": { width: 128, height: 93 },
+  "summon-banner-launch": { width: 1280, height: 853 },
 } as const;
 
 export type UiAsset = keyof typeof UI_ASSETS;

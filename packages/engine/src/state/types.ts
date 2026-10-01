@@ -114,6 +114,27 @@ export interface BattleSetup {
    * not a trial.
    */
   readonly trial?: boolean;
+  /**
+   * Auto Battle Advance Settings (GAME_DESIGN §2 → Auto-battle advanced settings, M1-08E): per-unit
+   * modes and the three global toggles `autoInputs` follows. Omitted means the original default
+   * (every unit Auto, every toggle off). Part of the setup so replays use the same settings.
+   */
+  readonly autoSettings?: AutoSettings;
+}
+
+/** Auto Battle Advance Settings per-unit modes, in the original menu's order. */
+export const AUTO_UNIT_MODES = ["auto", "bb", "sbb", "ubb", "guard", "attack"] as const;
+export type AutoUnitMode = (typeof AUTO_UNIT_MODES)[number];
+
+/** Auto Battle Advance Settings: a mode per party slot (omitted slots are Auto) and three toggles. */
+export interface AutoSettings {
+  readonly modes?: { readonly [slot in PlayerSlotId]?: AutoUnitMode };
+  /** Super Brave Burst Priority: Auto units hold their gauge for the SBB instead of firing BB. */
+  readonly sbbPriority?: boolean;
+  /** Forced Brave Burst Priority: BB/SBB/UBB-mode units use only their chosen tier. */
+  readonly forcedBbPriority?: boolean;
+  /** OD & UBB Priority: the first Auto unit to act with the OD gauge full enters Overdrive and UBBs. */
+  readonly odUbbPriority?: boolean;
 }
 
 /** One item in the battle inventory and how many are left (never negative). */
@@ -239,6 +260,8 @@ export interface BattleState {
   readonly items: readonly BattleItemStack[];
   /** Whether this is a trial battle (no continues). */
   readonly trial: boolean;
+  /** The setup's auto-battle settings; absent means the original default (see `AutoSettings`). */
+  readonly autoSettings?: AutoSettings;
   /** Whether the one continue per battle has been used. */
   readonly continued: boolean;
   /**

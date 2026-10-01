@@ -63,7 +63,7 @@ export function FusionEditor({
       .map((stack) => ({ ...toOwnedUnitView(stackCopyRow(stack)), stack })),
   );
   const copies = fodderIds.length + stackQuantityTotal(stackQty);
-  const canFuse = preview !== null && copies > 0 && zel >= preview.cost;
+  const canFuse = preview !== null && preview.problem === null && copies > 0 && zel >= preview.cost;
 
   function changeStack(stack: UnitStackRow, wanted: number): void {
     setStackQty(setStackQuantity(stackQty, stack, wanted, fodderIds.length));
@@ -228,6 +228,7 @@ export function FusionEditor({
                 </p>
               )}
               {zel < preview.cost && <p>Not enough Zel.</p>}
+              {preview.problem && <p>{preview.problem}</p>}
             </section>
           )}
           {confirming ? (

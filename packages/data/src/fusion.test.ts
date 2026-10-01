@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { fixedFusionExp, fusionZelCost, ordinaryFusionExp } from "./fusion.ts";
-import { type Unit, UnitSchema } from "./schemas/unit.ts";
+import { FormSchema, type Unit, UnitSchema } from "./schemas/unit.ts";
 
 const unitsDir = join(import.meta.dirname, "..", "content", "units");
 
@@ -77,6 +77,72 @@ describe("Crucibles (RESOLVED-57)", () => {
   it("ordinary units carry no fixed EXP", () => {
     expect(loadUnit("brand").forms.every((f) => f.fusionExp === undefined)).toBe(true);
     expect(loadUnit("cinder-sprite").forms[0]?.fusionExp).toBeUndefined();
+  });
+});
+
+describe("Satchel Toad (RESOLVED-55, M4-04D)", () => {
+  it("is a stackable 3★ Water level-1 slot-unlock fodder with ordinary EXP", () => {
+    const toad = loadUnit("satchel-toad");
+    expect(toad.element).toBe("water");
+    expect(toad.stackable).toBe(true);
+    expect(toad.forms).toHaveLength(1);
+    const form = toad.forms[0];
+    expect(form?.id).toBe("satchel-toad-3");
+    expect(form?.rarity).toBe(3);
+    expect(form?.maxLevel).toBe(1);
+    expect(form?.fusionEffect).toBe("sphereSlot");
+    expect(form?.fusionExp).toBeUndefined();
+    // Ordinary 3★ fodder EXP: 100 into a Fire target, 150 into a Water one.
+    expect(ordinaryFusionExp(3, 1, 1, "water", "fire")).toBe(100);
+    expect(ordinaryFusionExp(3, 1, 1, "water", "water")).toBe(150);
+  });
+
+  it("only the toads carry a fusion effect", () => {
+    const withEffect = readdirSync(unitsDir)
+      .filter((name) => name.endsWith(".json"))
+      .flatMap((name) => loadUnit(name.slice(0, -".json".length)).forms)
+      .filter((form) => form.fusionEffect !== undefined)
+      .map((form) => form.id)
+      .sort();
+    expect(withEffect).toEqual([
+      "lantern-toad-3",
+      "matriarch-toad-4",
+      "regent-toad-4",
+      "satchel-toad-3",
+    ]);
+  });
+});
+
+describe("burst toads (RESOLVED-55, M4-04E)", () => {
+  it.each([
+    ["lantern-toad", "fire", 3, 1],
+    ["regent-toad", "fire", 4, 5],
+    ["matriarch-toad", "light", 4, 20],
+  ] as const)(
+    "%s is a stackable %s %i★ level-1 form granting %i burst levels",
+    (id, element, rarity, levels) => {
+      const toad = loadUnit(id);
+      expect(toad.element).toBe(element);
+      expect(toad.stackable).toBe(true);
+      expect(toad.forms).toHaveLength(1);
+      const form = toad.forms[0];
+      expect(form?.id).toBe(`${id}-${rarity}`);
+      expect(form?.rarity).toBe(rarity);
+      expect(form?.maxLevel).toBe(1);
+      expect(form?.fusionExp).toBeUndefined();
+      expect(form?.fusionEffect).toEqual({ burstLevels: levels });
+    },
+  );
+
+  it("rejects a malformed burst-level effect", () => {
+    const form = loadUnit("lantern-toad").forms[0];
+    for (const fusionEffect of [
+      { burstLevels: 0 },
+      { burstLevels: 1.5 },
+      { burstLevels: 1, sp: 1 },
+    ]) {
+      expect(FormSchema.safeParse({ ...form, fusionEffect }).success).toBe(false);
+    }
   });
 });
 

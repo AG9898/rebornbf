@@ -40,7 +40,9 @@ import glintGrail from "@bfr/data/content/units/glint-grail.json";
 import glintMote from "@bfr/data/content/units/glint-mote.json";
 import glintSprite from "@bfr/data/content/units/glint-sprite.json";
 import glintUrn from "@bfr/data/content/units/glint-urn.json";
+import lanternToad from "@bfr/data/content/units/lantern-toad.json";
 import maren from "@bfr/data/content/units/maren.json";
+import matriarchToad from "@bfr/data/content/units/matriarch-toad.json";
 import morrick from "@bfr/data/content/units/morrick.json";
 import mossAlembic from "@bfr/data/content/units/moss-alembic.json";
 import mossAthanor from "@bfr/data/content/units/moss-athanor.json";
@@ -54,6 +56,7 @@ import mossSprite from "@bfr/data/content/units/moss-sprite.json";
 import placeholderEmber from "@bfr/data/content/units/placeholder-ember.json";
 import placeholderTide from "@bfr/data/content/units/placeholder-tide.json";
 import prismCairn from "@bfr/data/content/units/prism-cairn.json";
+import regentToad from "@bfr/data/content/units/regent-toad.json";
 import rillAlembic from "@bfr/data/content/units/rill-alembic.json";
 import rillAthanor from "@bfr/data/content/units/rill-athanor.json";
 import rillCairn from "@bfr/data/content/units/rill-cairn.json";
@@ -64,6 +67,7 @@ import rillGrail from "@bfr/data/content/units/rill-grail.json";
 import rillMote from "@bfr/data/content/units/rill-mote.json";
 import rillSprite from "@bfr/data/content/units/rill-sprite.json";
 import rook from "@bfr/data/content/units/rook.json";
+import satchelToad from "@bfr/data/content/units/satchel-toad.json";
 import silverCrucible from "@bfr/data/content/units/silver-crucible.json";
 import solen from "@bfr/data/content/units/solen.json";
 import vespera from "@bfr/data/content/units/vespera.json";
@@ -178,6 +182,12 @@ const UNIT_CONTENT: ReadonlyMap<string, Unit> = new Map(
     placeholderTide,
     rillSprite,
     rook,
+    // Slot-unlock growth fodder (RESOLVED-55, M4-04D).
+    satchelToad,
+    // Burst-level growth fodder (RESOLVED-55, M4-04E).
+    lanternToad,
+    regentToad,
+    matriarchToad,
     silverCrucible,
     solen,
     vespera,
@@ -255,9 +265,13 @@ const UNITS_WITH_ART: ReadonlySet<string> = new Set([
   "silver-crucible",
   "volt-sprite",
   "garrick",
+  "lantern-toad",
   "maren",
+  "matriarch-toad",
   "morrick",
+  "regent-toad",
   "rook",
+  "satchel-toad",
   "solen",
   "vespera",
 ]);

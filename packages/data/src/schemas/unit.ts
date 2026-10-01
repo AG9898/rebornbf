@@ -76,6 +76,21 @@ export const FormSchema = z
      */
     fusionExp: PositiveIntSchema.optional(),
     /**
+     * A non-EXP effect this form applies when fused (GAME_DESIGN §6 → Growth fodder, RESOLVED-55).
+     * `sphereSlot` (the Satchel Toad) unlocks the target's second sphere slot once; `fuse` rejects
+     * it on a target whose second slot is already open, since its +10 SP branch is post-launch
+     * (RESOLVED-85). `{ burstLevels }` (the Lantern, Regent, and Matriarch Toads, M4-04E) adds that
+     * many burst levels per copy by the duplicate overflow rule (BB to 10, then SBB to 10, excess
+     * lost); `fuse` rejects it on a target with no burst level left to gain, since its SP branch is
+     * post-launch too.
+     */
+    fusionEffect: z
+      .union([
+        z.literal("sphereSlot"),
+        z.object({ burstLevels: z.number().int().min(1).max(20) }).strict(),
+      ])
+      .optional(),
+    /**
      * What evolving this form into the next form in `forms` costs. Omitted when the step is not
      * transcribed yet or does not exist; never set on a unit's last form.
      */

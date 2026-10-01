@@ -22,6 +22,8 @@ export type FusionPreview = {
   level: number;
   cost: number;
   discarded: number;
+  /** Why `fuse` would reject this draft, or null (M4-04E: a burst toad into a capped target). */
+  problem: string | null;
 };
 
 /**
@@ -56,7 +58,8 @@ export function canBeFodder(unitId: string, formId: string): boolean {
 }
 
 /**
- * Mirrors M4-01C's deterministic preview. Stacked copies come in as rows, one per copy
+ * Mirrors M4-01C's deterministic preview, plus burst toads (M4-04E), which add their
+ * `fusionEffect.burstLevels` to the duplicate pool. Stacked copies come in as rows, one per copy
  * (`stackCopies`). Ownership, squad safety and payment remain in fuse.
  */
 export function fusionPreview(
@@ -68,12 +71,19 @@ export function fusionPreview(
   if (!unit || !form) return null;
   let gain = 0;
   let burstGain = 0;
+  let toads = 0;
   for (const row of fodder) {
     const content = unitContent(row.unit_id);
     const fodderForm = content?.forms.find((f) => f.id === row.form_id);
     if (!content || !fodderForm || !givesFusionExp(fodderForm)) return null;
     const duplicate = row.unit_id === target.unit_id;
     if (duplicate) burstGain += 10;
+    const effect = fodderForm.fusionEffect;
+    if (typeof effect === "object") {
+      // Burst toads share the duplicate pool (M4-04E).
+      burstGain += effect.burstLevels;
+      toads += 1;
+    }
     gain +=
       fodderForm.fusionExp !== undefined
         ? fixedFusionExp(fodderForm.fusionExp, content.element, unit.element, duplicate)
@@ -93,6 +103,8 @@ export function fusionPreview(
   const sbbBefore = target.sbb_level ?? 1;
   const bbGain = Math.min(10 - bbBefore, burstGain);
   const sbbGain = form.bursts.sbb ? Math.min(10 - sbbBefore, burstGain - bbGain) : 0;
+  // With BB and SBB capped a toad could only grant SP, which is post-launch (RESOLVED-85).
+  const capped = bbBefore >= 10 && (!form.bursts.sbb || sbbBefore >= 10);
   return {
     bbLevel: bbBefore + bbGain,
     sbbLevel: form.bursts.sbb ? sbbBefore + sbbGain : null,
@@ -102,5 +114,9 @@ export function fusionPreview(
     level: levelForExp(curve, exp, form.maxLevel),
     cost: fusionZelCost(target.level, fodder.length),
     discarded: Math.max(0, current + gain - exp),
+    problem:
+      toads > 0 && capped
+        ? "Burst levels are already capped; a burst toad would have nothing to grant."
+        : null,
   };
 }

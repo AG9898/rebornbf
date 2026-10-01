@@ -1,0 +1,25 @@
+{
+  "id": "trial-01-captain-locke",
+  "name": "Trial 1: Captain Locke",
+  "trial": {
+    "number": 1,
+    "gate": "story-08-beacon-hollow"
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "trial1-locke"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "trial1-locke-p2",
+          "boss": true
+        }
+      ]
+    }
+  ]
+}

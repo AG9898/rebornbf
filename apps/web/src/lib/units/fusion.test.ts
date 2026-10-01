@@ -98,6 +98,62 @@ describe("fusion preview", () => {
   });
 });
 
+describe("burst toads (M4-04E)", () => {
+  const toad = (unit: string, form: string): OwnedUnitRow => ({
+    ...flask,
+    unit_id: unit,
+    form_id: form,
+  });
+  const lantern = toad("lantern-toad", "lantern-toad-3");
+  const regent = toad("regent-toad", "regent-toad-4");
+  const matriarch = toad("matriarch-toad", "matriarch-toad-4");
+  const omni = (bb: number, sbb: number): OwnedUnitRow => ({
+    ...target,
+    form_id: "brand-omni",
+    bb_level: bb,
+    sbb_level: sbb,
+  });
+
+  it.each([
+    [lantern, 1, 1, 2, 1, 0],
+    [regent, 1, 1, 6, 1, 0],
+    [matriarch, 5, 1, 10, 10, 6],
+    [regent, 10, 9, 10, 10, 4],
+  ])("adds levels BB-then-SBB (%#)", (fodder, bb, sbb, bbAfter, sbbAfter, lost) => {
+    expect(fusionPreview(omni(bb, sbb), [fodder])).toMatchObject({
+      bbLevel: bbAfter,
+      sbbLevel: sbbAfter,
+      burstDiscarded: lost,
+      problem: null,
+    });
+  });
+  it("shares the pool with duplicates and stacked copies", () => {
+    const stacked = stackCopies(
+      [{ id: "s", unit_id: "lantern-toad", form_id: "lantern-toad-3", count: 3 }],
+      { s: 2 },
+    );
+    expect(fusionPreview(omni(1, 1), [{ ...target, id: flask.id }, ...stacked])).toMatchObject({
+      bbLevel: 10,
+      sbbLevel: 4,
+      burstDiscarded: 0,
+      cost: 300,
+    });
+  });
+  it("loses overflow on a form without an SBB", () => {
+    expect(fusionPreview({ ...target, bb_level: 8 }, [regent])).toMatchObject({
+      bbLevel: 10,
+      sbbLevel: null,
+      burstDiscarded: 3,
+      problem: null,
+    });
+  });
+  it("flags a toad into a capped target, as fuse rejects it until SP ships", () => {
+    expect(fusionPreview(omni(10, 10), [lantern])?.problem).toMatch(/capped/);
+    expect(fusionPreview({ ...target, bb_level: 10 }, [lantern])?.problem).toMatch(/capped/);
+    expect(fusionPreview(omni(10, 10), [flask])?.problem).toBeNull();
+  });
+});
+
 describe("fusion draft validation", () => {
   it("allows 1–5 unique UUID fodder ids", () => {
     expect(fusionDraftProblem(target.id, [flask.id])).toBeNull();

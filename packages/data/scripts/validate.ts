@@ -10,11 +10,13 @@ import {
   validateDungeons,
   validateEnemyFile,
   validateEvolutionRefs,
+  validateGemBudget,
   validateGuestFile,
   validateItemFile,
   validateSphereFile,
   validateStageFile,
   validateStory,
+  validateTrials,
   validateTutorials,
   validateUnitFile,
 } from "../src/validate.ts";
@@ -83,8 +85,12 @@ validateDir("stages", (file, json) => {
 });
 // Story placement spans files: numbering, complete chapters, and chapter bosses.
 errors.push(...validateStory(stages));
+// Chapter first-clear gems must meet the §8 gem budget (350 for chapter 1, 400 for chapter 2).
+errors.push(...validateGemBudget(stages));
 // Dungeon gates, key items, and always-captured slots span stages, enemies, and items.
 errors.push(...validateDungeons(stages, enemies, itemIds));
+// Trial numbers are unique and each trial opens on a story stage's first clear.
+errors.push(...validateTrials(stages));
 // The tutorial's preset squad names unit forms, and its enemies may drop nothing granted.
 errors.push(...validateTutorials(stages, new Map(units.map((unit) => [unit.id, unit])), enemies));
 // Banners reference unit forms; unreadable unit files are reported above and skipped here.

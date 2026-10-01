@@ -66,5 +66,5 @@ export const DOCS_LINKS: readonly { title: string; blurb: string }[] = [
   { title: "Battle", blurb: "Turns, sparks, crystals, bursts" },
   { title: "Damage", blurb: "The formula, criticals, elements" },
   { title: "Effects", blurb: "Buffs, debuffs, ailments" },
-  { title: "Progression", blurb: "Fusion, evolution, imps, SP" },
+  { title: "Progression", blurb: "Fusion, evolution, imps, spheres" },
 ];

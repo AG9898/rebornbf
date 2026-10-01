@@ -1,6 +1,6 @@
 -- M3-04D: session claim, first-clear gems, server-rolled Zel, and transactional rollback.
 begin;
-select plan(18);
+select plan(19);
 
 select ok(has_function_privilege('service_role', 'public.grant_battle_rewards(uuid)', 'execute'),
   'the service role may grant rewards');
@@ -51,6 +51,12 @@ select is((select count(*)::int from public.quest_progress where user_id = '0000
   1, 'one first-clear row');
 select is((select count(*)::int from public.wallet_log where user_id = '00000000-0000-0000-0000-00000000007a'),
   3, 'all currency credits logged with no duplicate payment');
+select results_eq(
+  $$select currency, delta, balance_after, reason, ref_id from public.wallet_log
+    where user_id = '00000000-0000-0000-0000-00000000007a' and currency = 'gems'$$,
+  $$values ('gems'::text, 25::bigint, 25::bigint, 'battle_first_clear'::text,
+    '00000000-0000-0000-0000-0000000007a1'::uuid)$$,
+  'the first-clear gem grant writes one wallet_log row for its session (M5-02)');
 select ok((select finished_at is not null from public.battle_sessions where id = '00000000-0000-0000-0000-0000000007a1'),
   'successful session is finished');
 select ok((select finished_at is null from public.battle_sessions where id = '00000000-0000-0000-0000-0000000007a3'),

@@ -7,6 +7,8 @@ import type { BattleEvent } from "./events.ts";
 import { burstThreshold } from "./gauge/index.ts";
 import { createBattle } from "./state/create-battle.ts";
 import type {
+  AutoSettings,
+  AutoUnitMode,
   BattleSetup,
   BattleState,
   BattleUnit,
@@ -38,13 +40,14 @@ function omni(id: string): SquadMemberSetup {
   return { unit, formId: form.id, stats: form.stats.max };
 }
 
-function demoSetup(): BattleSetup {
+function demoSetup(autoSettings?: AutoSettings): BattleSetup {
   const stage = StageSchema.parse(load("stages/demo-stage.json"));
   return {
     squad: ["brand", "maren", "garrick", "rook", "solen"].map(omni),
     leaderIndex: 0,
     ally: { ...omni("morrick"), kind: "guest" },
     waves: stage.waves.map((wave) => wave.enemies.map((slot) => enemySetup(slot.enemy))),
+    ...(autoSettings ? { autoSettings } : {}),
   };
 }
 
@@ -91,7 +94,7 @@ describe("autoInputs (M1-08A)", () => {
     expect(inputs.every((i) => i.type === "attack" && i.tick === state.tick)).toBe(true);
   });
 
-  it("uses the highest charged tier: UBB in Overdrive Mode, then SBB, then BB", () => {
+  it("autoBurstTier reports the highest charged tier: UBB in Overdrive Mode, then SBB, then BB", () => {
     const start = createBattle(demoSetup(), 1);
     const p0 = unitAt(start, "p0");
     const full = threshold(p0, "sbb");
@@ -151,5 +154,158 @@ describe("autoInputs (M1-08A)", () => {
     const start = createBattle(demoSetup(), 3);
     const first = step(start, [{ type: "attack", tick: start.tick, actor: "p0" }]);
     expect(autoInputs(first.state).map((i) => i.actor)).toEqual(["p1", "p2", "p3", "p4", "ally"]);
+  });
+});
+
+// Auto Battle Advance Settings (M1-08E): per-unit modes and the three global toggles.
+
+describe("autoInputs advanced settings (M1-08E)", () => {
+  /** A battle with `settings`, p0 holding `bc` (and optionally in Overdrive), OD gauge `odFull`. */
+  function battle(
+    settings: AutoSettings | undefined,
+    p0: { bc?: "bb" | "sbb" | "ubb" | "none"; overdrive?: boolean } = {},
+    odFull = false,
+  ): BattleState {
+    let state = createBattle(demoSetup(settings), 1);
+    const unit = unitAt(state, "p0");
+    const bc = p0.bc === undefined || p0.bc === "none" ? 0 : threshold(unit, p0.bc);
+    state = patch(state, "p0", {
+      bc,
+      ...(p0.overdrive ? { overdrive: true, overdriveTurns: 4 } : {}),
+    });
+    return odFull ? { ...state, od: { ...state.od, points: state.od.limit } } : state;
+  }
+
+  /** p0's inputs (an `overdrive` input, if any, then its action) as `type[:tier]` strings. */
+  function p0Plan(state: BattleState): string[] {
+    return autoInputs(state)
+      .filter((i) => i.actor === "p0")
+      .map((i) => (i.type === "burst" ? `burst:${i.tier}` : i.type));
+  }
+
+  const mode = (m: AutoUnitMode, rest: AutoSettings = {}) => ({
+    ...rest,
+    modes: { p0: m },
+  });
+
+  it("default Auto: SBB, else BB, else attack; never the UBB, never Overdrive", () => {
+    expect(p0Plan(battle(undefined, { bc: "none" }))).toEqual(["attack"]);
+    expect(p0Plan(battle(undefined, { bc: "bb" }))).toEqual(["burst:bb"]);
+    expect(p0Plan(battle(undefined, { bc: "sbb" }))).toEqual(["burst:sbb"]);
+    // In Overdrive Mode with the UBB charged, Auto still does not UBB.
+    const od = battle(undefined, { bc: "ubb", overdrive: true }, true);
+    expect(p0Plan(od)).not.toContain("burst:ubb");
+    expect(autoInputs(od).some((i) => i.type === "overdrive")).toBe(false);
+    // An explicit all-default settings object behaves the same.
+    expect(autoInputs(battle({}, { bc: "sbb" }, true))).toEqual(
+      autoInputs(battle(undefined, { bc: "sbb" }, true)),
+    );
+  });
+
+  it("Guard mode always guards and Attack mode always normal attacks", () => {
+    expect(p0Plan(battle(mode("guard"), { bc: "sbb" }))).toEqual(["guard"]);
+    expect(p0Plan(battle(mode("attack"), { bc: "sbb" }))).toEqual(["attack"]);
+    expect(p0Plan(battle(mode("attack", { odUbbPriority: true }), { bc: "ubb" }, true))).toEqual([
+      "attack",
+    ]);
+  });
+
+  it("BB mode: BB/SBB, or only BB with Forced BB Priority", () => {
+    expect(p0Plan(battle(mode("bb"), { bc: "bb" }))).toEqual(["burst:bb"]);
+    expect(p0Plan(battle(mode("bb"), { bc: "sbb" }))).toEqual(["burst:sbb"]);
+    const forced = mode("bb", { forcedBbPriority: true });
+    expect(p0Plan(battle(forced, { bc: "sbb" }))).toEqual(["burst:bb"]);
+    expect(p0Plan(battle(forced, { bc: "none" }))).toEqual(["attack"]);
+  });
+
+  it("SBB mode: BB/SBB, or only SBB with Forced BB Priority", () => {
+    expect(p0Plan(battle(mode("sbb"), { bc: "bb" }))).toEqual(["burst:bb"]);
+    expect(p0Plan(battle(mode("sbb"), { bc: "sbb" }))).toEqual(["burst:sbb"]);
+    const forced = mode("sbb", { forcedBbPriority: true });
+    expect(p0Plan(battle(forced, { bc: "bb" }))).toEqual(["attack"]);
+    expect(p0Plan(battle(forced, { bc: "sbb" }))).toEqual(["burst:sbb"]);
+  });
+
+  it("UBB mode: BB/SBB without Forced BB Priority; with it, attack until OD, then Overdrive and UBB", () => {
+    expect(p0Plan(battle(mode("ubb"), { bc: "sbb" }, true))).toEqual(["burst:sbb"]);
+    const forced = mode("ubb", { forcedBbPriority: true });
+    // OD gauge not full: normal attacks, even with the gauge charged.
+    expect(p0Plan(battle(forced, { bc: "sbb" }))).toEqual(["attack"]);
+    // OD gauge full: Overdrive, then UBB once charged (attack while it is not).
+    expect(p0Plan(battle(forced, { bc: "ubb" }, true))).toEqual(["overdrive", "burst:ubb"]);
+    expect(p0Plan(battle(forced, { bc: "none" }, true))).toEqual(["overdrive", "attack"]);
+    // Already in Overdrive Mode: UBB when charged.
+    expect(p0Plan(battle(forced, { bc: "ubb", overdrive: true }))).toEqual(["burst:ubb"]);
+  });
+
+  it("SBB Priority: Auto units wait for the SBB; a unit without an SBB still uses its BB", () => {
+    const settings: AutoSettings = { sbbPriority: true };
+    expect(p0Plan(battle(settings, { bc: "bb" }))).toEqual(["attack"]);
+    expect(p0Plan(battle(settings, { bc: "sbb" }))).toEqual(["burst:sbb"]);
+    let state = battle(settings, { bc: "bb" });
+    const p0 = unitAt(state, "p0");
+    const { sbb: _sbb, ubb: _ubb, ...bbOnly } = p0.form.bursts;
+    state = patch(state, "p0", { form: { ...p0.form, bursts: bbOnly } });
+    expect(p0Plan(state)).toEqual(["burst:bb"]);
+    // Other modes ignore it.
+    expect(p0Plan(battle(mode("bb", settings), { bc: "bb" }))).toEqual(["burst:bb"]);
+  });
+
+  it("OD & UBB Priority: the first UBB-capable Auto unit to act on a full OD gauge Overdrives and UBBs", () => {
+    const settings: AutoSettings = { odUbbPriority: true };
+    expect(p0Plan(battle(settings, { bc: "ubb" }, true))).toEqual(["overdrive", "burst:ubb"]);
+    const inputs = autoInputs(battle(settings, { bc: "ubb" }, true));
+    expect(inputs.filter((i) => i.type === "overdrive")).toHaveLength(1);
+    // Not full: ordinary Auto.
+    expect(p0Plan(battle(settings, { bc: "sbb" }))).toEqual(["burst:sbb"]);
+    // Already in Overdrive Mode: UBB when charged.
+    expect(p0Plan(battle(settings, { bc: "ubb", overdrive: true }))).toEqual(["burst:ubb"]);
+    // A unit with no UBB is passed over; the next UBB-capable unit takes the gauge.
+    let state = battle(settings, { bc: "sbb" }, true);
+    const p0 = unitAt(state, "p0");
+    const { ubb: _ubb, ...noUbb } = p0.form.bursts;
+    state = patch(state, "p0", { form: { ...p0.form, bursts: noUbb } });
+    const next = autoInputs(state);
+    expect(next.find((i) => i.type === "overdrive")?.actor).toBe("p1");
+    expect(p0Plan(state)).toEqual(["burst:sbb"]);
+    // A guard-mode unit never takes the gauge.
+    const guarded = autoInputs(
+      battle({ ...settings, modes: { p0: "guard" } }, { bc: "ubb" }, true),
+    );
+    expect(guarded.find((i) => i.type === "overdrive")?.actor).toBe("p1");
+  });
+
+  it("createBattle validates the settings and stores them only when given", () => {
+    expect(createBattle(demoSetup(), 1).autoSettings).toBeUndefined();
+    const settings: AutoSettings = { modes: { p0: "guard", ally: "ubb" }, sbbPriority: true };
+    expect(createBattle(demoSetup(settings), 1).autoSettings).toEqual(settings);
+    const bad = (s: unknown) => () => createBattle(demoSetup(s as AutoSettings), 1);
+    expect(bad({ modes: { p0: "heal" } })).toThrow(/unknown mode/);
+    expect(bad({ modes: { p9: "bb" } })).toThrow(/no party unit/);
+    expect(bad({ forcedBbPriority: "yes" })).toThrow(/must be a boolean/);
+  });
+
+  it("battles with settings run without rejected inputs and replay identically from the seed", () => {
+    const settings: AutoSettings = {
+      modes: { p1: "sbb", p2: "ubb", p3: "bb", ally: "guard" },
+      forcedBbPriority: true,
+      odUbbPriority: true,
+    };
+    const seed = 99;
+    const live = autoPlay(createBattle(demoSetup(settings), seed));
+    expect(live.log.filter((e) => e.type === "ActionRejected")).toEqual([]);
+    expect(live.turns.flat().some((i) => i.actor === "ally" && i.type === "guard")).toBe(true);
+    // p0 (Auto, OD & UBB Priority) takes the first full OD gauge and lands its UBB.
+    expect(live.log.some((e) => e.type === "OverdriveActivated" && e.actor === "p0")).toBe(true);
+    expect(live.log.some((e) => e.type === "BurstUsed" && e.tier === "ubb")).toBe(true);
+    let state = createBattle(demoSetup(settings), seed);
+    const replay: BattleEvent[] = [];
+    for (const inputs of live.turns) {
+      const turn = playTurn(state, inputs);
+      replay.push(...turn.events);
+      state = turn.state;
+    }
+    expect(replay).toEqual(live.log);
+    expect(state).toEqual(live.state);
   });
 });

@@ -1,0 +1,93 @@
+{
+  "id": "trial1-locke",
+  "name": "Captain Locke",
+  "element": "water",
+  "stats": {
+    "hp": 120000,
+    "atk": 1350,
+    "def": 1200,
+    "rec": 300
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 28,
+    "hitFrames": [0, 14],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "tower-guard",
+      "name": "Tower Guard",
+      "attacks": [
+        {
+          "moveType": "melee",
+          "startDelayFrames": 28,
+          "hitFrames": [0],
+          "damageDistribution": [100],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.st",
+          "value": 1.0,
+          "target": "enemy"
+        },
+        {
+          "id": "buff.def",
+          "value": 9.0,
+          "turns": 2,
+          "target": "self"
+        }
+      ]
+    },
+    {
+      "id": "frost-glaive",
+      "name": "Frost Glaive",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 40,
+          "hitFrames": [0, 8, 16, 24, 32],
+          "damageDistribution": [20, 20, 20, 20, 20],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 2.0,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 4,
+      "skill": "frost-glaive",
+      "target": "random"
+    },
+    {
+      "when": "every_n_turns",
+      "n": 4,
+      "offset": 2,
+      "skill": "tower-guard",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.1,
+    "zel": {
+      "rate": 100,
+      "amount": 3000
+    }
+  }
+}

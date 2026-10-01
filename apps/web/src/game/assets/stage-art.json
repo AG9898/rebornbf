@@ -3,7 +3,7 @@
   "backgrounds": {
     "plains": {
       "chapters": [1],
-      "stages": ["demo-stage", "placeholder-stage", "tutorial"]
+      "stages": ["demo-stage", "placeholder-stage", "trial-01-captain-locke", "tutorial"]
     },
     "saltglass-coast": {
       "chapters": [2],
