@@ -15,6 +15,7 @@ describe("isProtectedPath", () => {
 
   it("protects the unit collection and unit detail pages", () => {
     expect(isProtectedPath("/units")).toBe(true);
+    expect(isProtectedPath("/units/list")).toBe(true);
     expect(isProtectedPath("/units/3f1c2b1e-9a4d-4c55-8e7a-1b2c3d4e5f60")).toBe(true);
   });
 

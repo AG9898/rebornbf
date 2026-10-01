@@ -24,6 +24,7 @@ describe("menu sections", () => {
   it("marks a section on its own path and nested paths", () => {
     expect(activeSection("/units")?.label).toBe("Unit");
     expect(activeSection("/units/brand")?.label).toBe("Unit");
+    expect(activeSection("/units/list")?.label).toBe("Unit"); // M4-06B: All Units under the hub
     expect(activeSection("/unitsx")).toBeUndefined();
   });
 

@@ -27,7 +27,7 @@ export default async function UnitStackPage({
   const supabase = await createSupabaseServerClient();
   const { data: claims } = supabase ? await supabase.auth.getClaims() : { data: null };
   const userId = claims?.claims.sub;
-  if (!supabase || !userId) redirect(`${SIGN_IN_PATH}?next=/units`);
+  if (!supabase || !userId) redirect(`${SIGN_IN_PATH}?next=/units/list`);
   if (!isOwnedUnitId(stackId)) notFound();
 
   const { data: stack } = await supabase

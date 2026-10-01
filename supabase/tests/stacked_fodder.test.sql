@@ -3,6 +3,10 @@
 begin;
 select plan(31);
 
+-- Pin fuse's success roll (M4-06C) to Success so EXP is deterministic; rolled back with the test.
+create or replace function public.fusion_roll()
+returns integer language sql volatile set search_path = '' as $$ select 0 $$;
+
 -- Privileges (5) ---------------------------------------------------------------------------------
 select ok(has_function_privilege('authenticated', 'public.fuse(uuid, uuid[], jsonb)', 'execute'),
   'players may fuse with stacks');

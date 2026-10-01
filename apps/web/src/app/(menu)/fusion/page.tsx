@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import menu from "../../../components/menu/menu.module.css";
@@ -7,7 +6,6 @@ import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import { OWNED_UNIT_COLUMNS, type OwnedUnitRow } from "../../../lib/units/owned-units.ts";
 import { UNIT_STACK_COLUMNS, type UnitStackRow } from "../../../lib/units/unit-stacks.ts";
 import { FusionEditor } from "./FusionEditor.tsx";
-import styles from "./fusion.module.css";
 
 export const metadata: Metadata = { title: "Fusion · BFR" };
 
@@ -48,23 +46,25 @@ export default async function FusionPage({
     ),
   ];
   const { target } = await searchParams;
+  if (units.error || stacks.error || squads.error || wallet.error) {
+    return (
+      <div className={menu.placeholder}>
+        <section className={menu.panel}>
+          <h1 className={`${menu.panelTitle} ${menu.gold}`}>Fuse Units</h1>
+          <p className={menu.panelText} role="alert">
+            Your fusion materials could not be loaded. Try again shortly.
+          </p>
+        </section>
+      </div>
+    );
+  }
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={menu.gold}>Fusion</h1>
-        <Link href="/units">‹ Units</Link>
-      </header>
-      {units.error || stacks.error || squads.error || wallet.error ? (
-        <p role="alert">Your fusion materials could not be loaded. Try again shortly.</p>
-      ) : (
-        <FusionEditor
-          rows={units.data ?? []}
-          stacks={stacks.data ?? []}
-          blocked={blocked}
-          zel={Number(wallet.data?.zel ?? 0)}
-          initialTarget={target}
-        />
-      )}
-    </div>
+    <FusionEditor
+      rows={units.data ?? []}
+      stacks={stacks.data ?? []}
+      blocked={blocked}
+      zel={Number(wallet.data?.zel ?? 0)}
+      initialTarget={target}
+    />
   );
 }

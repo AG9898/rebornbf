@@ -1,7 +1,13 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { fixedFusionExp, fusionZelCost, ordinaryFusionExp } from "./fusion.ts";
+import {
+  FUSION_OUTCOMES,
+  fixedFusionExp,
+  fusionOutcomeExp,
+  fusionZelCost,
+  ordinaryFusionExp,
+} from "./fusion.ts";
 import { FormSchema, type Unit, UnitSchema } from "./schemas/unit.ts";
 
 const unitsDir = join(import.meta.dirname, "..", "content", "units");
@@ -184,5 +190,14 @@ describe("ordinary fodder EXP and Zel (RESOLVED-57)", () => {
 
   it("gives the documented matching Silver Crucible value", () => {
     expect(fixedFusionExp(1_000, "light", "light")).toBe(1_500);
+  });
+
+  it("applies the success-roll multiplier to the summed EXP, rounding down once", () => {
+    // Five matching Flasks (11,295 EXP): Great ⌊16,942.5⌋ = 16,942, Super 22,590.
+    expect(fusionOutcomeExp(11_295, "success")).toBe(11_295);
+    expect(fusionOutcomeExp(11_295, "great")).toBe(16_942);
+    expect(fusionOutcomeExp(11_295, "super")).toBe(22_590);
+    const rates = Object.values(FUSION_OUTCOMES).map((o) => o.rateBp);
+    expect(rates.reduce((a, b) => a + b, 0)).toBe(10_000);
   });
 });

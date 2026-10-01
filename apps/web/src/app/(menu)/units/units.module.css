@@ -1,59 +1,9 @@
 /*
  * Unit collection and detail (M3-03A); the list is the original's All Units (M3-03E) and the
  * detail its Unit Info (M3-03G), per ART_GUIDE -> UI -> Units, Squad, and Unit detail screens.
- * The top block is shared with the evolve page. Sizes use the menu frame's logical pixel, --u.
+ * The evolve page reuses the title bar, pills, and icon classes. Sizes use the menu frame's
+ * logical pixel, --u.
  */
-
-.page {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: calc(var(--u) * 20) calc(var(--u) * 24) calc(var(--u) * 32);
-  user-select: text;
-}
-
-.header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: calc(var(--u) * 18);
-}
-
-.count {
-  font-size: calc(var(--u) * 22);
-  color: #f6d88a;
-}
-
-.back {
-  font-size: calc(var(--u) * 28);
-  color: #f6d88a;
-  text-decoration: none;
-}
-
-.noArt {
-  font-size: calc(var(--u) * 64);
-  color: #6b6456;
-}
-
-.cardMeta {
-  margin-top: calc(var(--u) * 4);
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 18);
-  color: #d8d0bc;
-}
-
-.formName {
-  margin-top: calc(var(--u) * 4);
-  font-size: calc(var(--u) * 26);
-  color: #f6d88a;
-}
-
-.note {
-  margin-top: calc(var(--u) * 12);
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 18);
-  color: #a9a08c;
-}
 
 /* ---------- Units list (M3-03E) ---------- */
 
@@ -290,6 +240,204 @@
   color: #fff;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* A unit the list's pick mode cannot take (M4-06B): greyed and dark, not a link. */
+.iconDimmed {
+  filter: grayscale(0.8) brightness(0.45);
+  cursor: default;
+}
+
+/* ---------- Multi-select picker (M4-06N, RESOLVED-83) ---------- */
+
+/* The picker's title bar also holds Filter, so its plate is narrower. */
+.pickerTitlePlate {
+  width: calc(var(--u) * 236);
+}
+
+.pillButton {
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: calc(var(--u) * 24);
+  cursor: pointer;
+}
+
+.pillButton:disabled {
+  filter: grayscale(0.8) brightness(0.6);
+  cursor: default;
+}
+
+.pickCell {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 4);
+}
+
+.pickIcon {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* In the picker the corner belongs to the tick or badge; a stack's ×N moves to the top left. */
+.pickIcon .stackCount {
+  right: auto;
+  left: 10%;
+}
+
+/* A pickable icon: a grey tick circle at the top right (CSS stand-in until a piece locks). */
+.pickTick,
+.pickBadge {
+  position: absolute;
+  top: calc(var(--u) * -4);
+  right: calc(var(--u) * -4);
+  width: calc(var(--u) * 32);
+  height: calc(var(--u) * 32);
+  border-radius: 50%;
+  border: calc(var(--u) * 3) solid #f4f1e8;
+  box-shadow: 0 calc(var(--u) * 2) 0 rgb(0 0 0 / 0.45);
+  pointer-events: none;
+}
+
+.pickTick {
+  background: #6f6b63;
+}
+
+.pickTick::after {
+  content: "";
+  position: absolute;
+  left: 30%;
+  top: 14%;
+  width: 28%;
+  height: 50%;
+  border: solid #f4f1e8;
+  border-width: 0 calc(var(--u) * 4) calc(var(--u) * 4) 0;
+  transform: rotate(45deg);
+}
+
+/* A picked icon: a red badge with its pick number. */
+.pickBadge {
+  --stroke: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d22a1e;
+  font-size: calc(var(--u) * 20);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 2);
+}
+
+.stepperButton {
+  width: calc(var(--u) * 30);
+  height: calc(var(--u) * 30);
+  border: calc(var(--u) * 2) solid #c99a3a;
+  border-radius: calc(var(--u) * 8);
+  background: #2a1606;
+  color: #fff;
+  font: inherit;
+  font-size: calc(var(--u) * 22);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepperButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stepperValue {
+  --stroke: 3;
+  font-size: calc(var(--u) * 18);
+}
+
+.pickerBar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 12);
+  padding: calc(var(--u) * 8) calc(var(--u) * 16);
+  background: linear-gradient(rgb(20 14 4 / 0.2), rgb(20 14 4 / 0.55));
+}
+
+.pickerCount {
+  font-size: calc(var(--u) * 22);
+}
+
+.confirmPill {
+  width: calc(var(--u) * 160);
+}
+
+.confirmPill:not(:disabled):hover,
+.confirmPill:not(:disabled):focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
+}
+
+/* ---------- Unit hub (M4-06B, RESOLVED-80) ---------- */
+
+.hubGrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, calc(var(--u) * 280));
+  grid-auto-rows: calc(var(--u) * 128);
+  align-content: center;
+  justify-content: center;
+  gap: calc(var(--u) * 22) calc(var(--u) * 18);
+  list-style: none;
+  margin: 0;
+  padding: calc(var(--u) * 16);
+}
+
+/* btn-hub drawn at its own aspect (520x237 at 2x), so its text box maps as percentages. */
+.hubButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.hubButtonArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hubButtonText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: calc(var(--u) * 28);
+  white-space: nowrap;
+}
+
+a.hubButton:hover,
+a.hubButton:focus-visible {
+  filter: brightness(1.15);
+}
+
+a.hubButton:focus-visible {
+  outline: calc(var(--u) * 3) solid #fbe39a;
+  outline-offset: calc(var(--u) * 2);
+  border-radius: calc(var(--u) * 20);
+}
+
+.hubButton[aria-disabled="true"] {
+  filter: grayscale(0.7) brightness(0.7);
+  cursor: default;
 }
 
 /* ---------- Unit detail (M3-03G) ---------- */
@@ -589,4 +737,152 @@ button.actionButton:disabled {
   font-family: system-ui, sans-serif;
   font-size: calc(var(--u) * 16);
   color: #fff;
+}
+
+/* Sphere rows (M4-06J): the item-slot socket (232x248 at 2x) then a stretched stat-plate name plate. */
+.sphereRows {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--u) * 8);
+  padding: 0 calc(var(--u) * 8) calc(var(--u) * 8);
+}
+
+.sphereRow {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sphereRow[data-locked] {
+  opacity: 0.55;
+}
+
+.sphereRow:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.sphereSocket {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 54);
+  aspect-ratio: 232 / 248;
+}
+
+.sphereInitial {
+  --stroke: 4;
+  position: relative;
+  font-size: calc(var(--u) * 26);
+  color: #9ff0ff;
+}
+
+.spherePlate {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 3);
+  height: calc(var(--u) * 54);
+  padding: 0 calc(var(--u) * 6);
+  border: calc(var(--u) * 8) solid transparent;
+  border-image: url("/assets/ui/stat-plate.webp") 20 fill / calc(var(--u) * 10) stretch;
+}
+
+.sphereRow[aria-pressed="true"] .spherePlate,
+.sphereRow:focus-visible .spherePlate {
+  filter: brightness(1.35) drop-shadow(0 0 calc(var(--u) * 4) #ffe680);
+}
+
+.sphereName {
+  --stroke: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(var(--u) * 19);
+  color: #f6d88a;
+}
+
+.sphereSummary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 13);
+  color: #e8e2d0;
+}
+
+/* The Equip Sphere screen (M4-06J): sockets, a status strip, then the owned-sphere list. */
+.equipBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 12) 0 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c99a3a rgb(20 14 4 / 0.55);
+}
+
+.equipHeading {
+  --stroke: 3;
+  margin: 0;
+  padding: 0 calc(var(--u) * 12);
+  font-size: calc(var(--u) * 20);
+  font-weight: 400;
+  color: #f6d88a;
+}
+
+.equipStatus {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  min-height: calc(var(--u) * 50);
+  padding: 0 calc(var(--u) * 12);
+}
+
+.equipMessage {
+  flex: 1;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 16);
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+
+.equipMessage[role="alert"] {
+  color: #ffd2c4;
+}
+
+.sphereList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--u) * 8);
+  margin: 0;
+  padding: 0 calc(var(--u) * 8) calc(var(--u) * 12);
+  list-style: none;
+}
+
+.sphereList .sphereRow {
+  width: 100%;
+}
+
+.sphereTag {
+  --stroke: 3;
+  font-size: calc(var(--u) * 14);
+  color: #6fd0ff;
 }

@@ -1,4 +1,10 @@
-import { type EvolutionRecipe, type Form, MaterialItemSchema, type Unit } from "@bfr/data";
+import {
+  type Element,
+  type EvolutionRecipe,
+  type Form,
+  MaterialItemSchema,
+  type Unit,
+} from "@bfr/data";
 import crownShard from "@bfr/data/content/items/crown-shard.json";
 import zenithCore from "@bfr/data/content/items/zenith-core.json";
 import { formArtFile, type OwnedUnitRow, rarityLabel, unitContent } from "./owned-units.ts";
@@ -37,11 +43,16 @@ export type EvolutionFormView = {
   rarityLabel: string;
   maxLevel: number;
   illustration: string | null;
+  /** The form's battle-idle sprite (the evolve screen's centrepiece, M4-06L), when exported. */
+  sprite: string | null;
 };
 
 export type MaterialUnitNeed = {
   unitId: string;
   name: string;
+  /** The material's element (its icon frame) and square thumb, when known (M4-06L). */
+  element: Element | null;
+  thumb: string | null;
   count: number;
   /** Spendable copies owned: not the unit itself and not in a squad or ally slot, stacks included. */
   owned: number;
@@ -80,6 +91,18 @@ function formView(unitId: string, form: Form): EvolutionFormView {
     rarityLabel: rarityLabel(form.rarity),
     maxLevel: form.maxLevel,
     illustration: art ? `/assets/units/${unitId}/illustration-${art}.png` : null,
+    sprite: art ? `/assets/units/${unitId}/battle-idle-${art}.png` : null,
+  };
+}
+
+/** A material unit's element and thumb from its first (only) form's art. */
+function materialArt(unitId: string): { element: Element | null; thumb: string | null } {
+  const unit = unitContent(unitId);
+  const form = unit?.forms[0];
+  const art = unit && form ? formArtFile(unitId, form.rarity) : null;
+  return {
+    element: unit?.element ?? null,
+    thumb: art ? `/assets/ui/cards/thumb/${unitId}-${art}.webp` : null,
   };
 }
 
@@ -158,7 +181,7 @@ export function evolutionPlan(
       );
     }
     materialIds.push(...spendable.slice(0, count - fromStacks).map((row) => row.id));
-    return { unitId, name, count, owned: available, stacked, inSquad };
+    return { unitId, name, ...materialArt(unitId), count, owned: available, stacked, inSquad };
   });
 
   const itemCounts = new Map(items.map((row) => [row.item_id, Number(row.count)]));
@@ -187,6 +210,27 @@ export function evolutionPlan(
     materialStacks,
     problems,
   };
+}
+
+/** The evolve screen's red status strip labels (M4-06L, ART_GUIDE → UI → Evolve screen). */
+export type EvolveBlocker = "Insufficient Units" | "Insufficient Zel" | "Insufficient Level";
+
+/**
+ * Why the plan cannot run, as the status strip's short labels: missing material units or items,
+ * missing Zel, then a level below the form's cap. Empty when the evolution can run.
+ */
+export function evolveBlockers(
+  plan: Pick<EvolutionPlan, "levelReady" | "zel" | "zelOwned"> & {
+    units: readonly { owned: number; count: number }[];
+    items: readonly { owned: number; count: number }[];
+  },
+): EvolveBlocker[] {
+  const blockers: EvolveBlocker[] = [];
+  const short = (need: { owned: number; count: number }): boolean => need.owned < need.count;
+  if (plan.units.some(short) || plan.items.some(short)) blockers.push("Insufficient Units");
+  if (plan.zelOwned < plan.zel) blockers.push("Insufficient Zel");
+  if (!plan.levelReady) blockers.push("Insufficient Level");
+  return blockers;
 }
 
 /** Strips the RPC's `evolve: ` prefix and capitalises a player-facing error message. */

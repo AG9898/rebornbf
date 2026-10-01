@@ -1,72 +1,63 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import type { ReactNode } from "react";
-import { SIGN_IN_PATH } from "../../../lib/supabase/routes.ts";
-import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
-import {
-  OWNED_UNIT_COLUMNS,
-  type OwnedUnitRow,
-  parseUnitSort,
-} from "../../../lib/units/owned-units.ts";
-import {
-  collectionEntries,
-  ownedCopyTotal,
-  UNIT_STACK_COLUMNS,
-  type UnitStackRow,
-} from "../../../lib/units/unit-stacks.ts";
-import { UnitsList } from "./UnitsList.tsx";
+import menu from "../../../components/menu/menu.module.css";
+import { textBoxStyle } from "../../../components/menu/text-box.ts";
+import { UiImage } from "../../../components/menu/UiImage.tsx";
+import { UNIT_HUB_BUTTONS, type UnitHubButton } from "../../../lib/units/unit-hub.ts";
+import styles from "./units.module.css";
 
-export const metadata: Metadata = { title: "Units · BFR" };
+export const metadata: Metadata = { title: "Unit · BFR" };
 
 /**
- * The unit collection, laid out as the original's All Units (M3-03E, ART_GUIDE → UI → Units,
- * Squad, and Unit detail screens): title bar, a five-column grid of element-framed thumbs over
- * `bg-olive`, and the help ticker. The signed-in player's `owned_units`, `owned_unit_stacks`
- * (one tile per stack, M4-05C), and `squads` are read with their session, so RLS returns only
- * their own rows. Protected by `src/proxy.ts`.
+ * The Unit hub, the original's Unit menu (M4-06B, RESOLVED-80; ART_GUIDE → UI → Unit hub): title
+ * bar with Back and the "Unit" title plate, a 2×3 grid of `btn-hub` buttons over `bg-olive`, and
+ * the help ticker. All Units lives at `/units/list`; Equip Sphere opens it with `?pick=sphere`
+ * (M4-06J). Sell Unit stays disabled until its screen exists (M4-06I). Protected by `src/proxy.ts`; it reads no rows.
  */
-export default async function UnitsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ sort?: string | string[] }>;
-}): Promise<ReactNode> {
-  const supabase = await createSupabaseServerClient();
-  const { data: claims } = supabase ? await supabase.auth.getClaims() : { data: null };
-  const userId = claims?.claims.sub;
-  if (!supabase || !userId) redirect(`${SIGN_IN_PATH}?next=/units`);
-
-  const sort = parseUnitSort((await searchParams).sort);
-  const [unitsResult, stacksResult, squadsResult] = await Promise.all([
-    supabase
-      .from("owned_units")
-      .select(OWNED_UNIT_COLUMNS)
-      .eq("user_id", userId)
-      .overrideTypes<OwnedUnitRow[], { merge: false }>(),
-    supabase
-      .from("owned_unit_stacks")
-      .select(UNIT_STACK_COLUMNS)
-      .eq("user_id", userId)
-      .gt("count", 0)
-      .overrideTypes<UnitStackRow[], { merge: false }>(),
-    supabase
-      .from("squads")
-      .select("unit_ids")
-      .eq("user_id", userId)
-      .overrideTypes<{ unit_ids: string[] }[], { merge: false }>(),
-  ]);
-
-  const failed = Boolean(unitsResult.error || stacksResult.error || squadsResult.error);
-  const rows = failed ? [] : (unitsResult.data ?? []);
-  const stacks = failed ? [] : (stacksResult.data ?? []);
-  const party = new Set((squadsResult.data ?? []).flatMap((squad) => squad.unit_ids));
-
+export default function UnitHubPage(): ReactNode {
   return (
-    <UnitsList
-      units={collectionEntries(rows, stacks, sort)}
-      total={ownedCopyTotal(rows, stacks)}
-      party={party}
-      sort={sort}
-      failed={failed}
-    />
+    <div className={styles.listPage}>
+      <header className={styles.titleBar}>
+        <Link href="/home" className={`${styles.pill} ${styles.backButton}`}>
+          <span className={styles.outline}>Back</span>
+        </Link>
+        <div className={styles.titlePlate}>
+          <UiImage name="title-plate" className={styles.titlePlateArt} />
+          <div className={styles.titleText} style={textBoxStyle("title-plate")}>
+            <h1 className={styles.outline}>Unit</h1>
+          </div>
+        </div>
+      </header>
+
+      <nav aria-label="Unit menu" className={styles.hubGrid}>
+        {UNIT_HUB_BUTTONS.map((button) => (
+          <HubButton key={button.label} button={button} />
+        ))}
+      </nav>
+
+      <p className={menu.ticker}>Select a Unit Menu</p>
+    </div>
+  );
+}
+
+/** One `btn-hub` button, its label fitted in the piece's text box; no href renders it disabled. */
+function HubButton({ button }: { button: UnitHubButton }): ReactNode {
+  const face = (
+    <>
+      <UiImage name="btn-hub" className={styles.hubButtonArt} />
+      <span className={`${styles.hubButtonText} ${styles.outline}`} style={textBoxStyle("btn-hub")}>
+        {button.label}
+      </span>
+    </>
+  );
+  return button.href ? (
+    <Link href={button.href} className={styles.hubButton}>
+      {face}
+    </Link>
+  ) : (
+    <span className={styles.hubButton} aria-disabled="true" title="Coming soon">
+      {face}
+    </span>
   );
 }

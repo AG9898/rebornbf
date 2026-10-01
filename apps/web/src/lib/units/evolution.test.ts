@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   evolutionPlan,
+  evolveBlockers,
   evolveErrorMessage,
   materialItemName,
   materialUnitName,
@@ -53,6 +54,7 @@ describe("evolutionPlan (M4-02C)", () => {
         id: "brand-4",
         rarityLabel: "4★",
         illustration: "/assets/units/brand/illustration-4star.png",
+        sprite: "/assets/units/brand/battle-idle-4star.png",
       },
       omni: false,
       levelReady: true,
@@ -63,6 +65,8 @@ describe("evolutionPlan (M4-02C)", () => {
       {
         unitId: "cinder-effigy",
         name: "Cinder Effigy",
+        element: "fire",
+        thumb: null, // no exported effigy art in the web content map yet
         count: 1,
         owned: 1,
         stacked: 0,
@@ -71,6 +75,8 @@ describe("evolutionPlan (M4-02C)", () => {
       {
         unitId: "cinder-sprite",
         name: expect.any(String),
+        element: "fire",
+        thumb: "/assets/ui/cards/thumb/cinder-sprite-2star.webp",
         count: 1,
         owned: 1,
         stacked: 0,
@@ -79,6 +85,7 @@ describe("evolutionPlan (M4-02C)", () => {
     ]);
     expect(plan?.materialIds).toEqual([effigy.id, sprite.id]);
     expect(plan?.materialStacks).toEqual({});
+    expect(plan && evolveBlockers(plan)).toEqual([]);
   });
 
   it("spends stacked copies first and counts them as owned (M4-05C)", () => {
@@ -117,6 +124,11 @@ describe("evolutionPlan (M4-02C)", () => {
       "Take Cinder Effigy out of your squads first.",
       `Needs 1 more ${materialUnitName("cinder-sprite")}.`,
       "Needs 60,000 more Zel.",
+    ]);
+    expect(plan && evolveBlockers(plan)).toEqual([
+      "Insufficient Units",
+      "Insufficient Zel",
+      "Insufficient Level",
     ]);
     expect(plan?.materialIds).toEqual([]);
   });
@@ -171,6 +183,21 @@ describe("evolutionPlan (M4-02C)", () => {
         }
       }
     }
+  });
+});
+
+describe("evolveBlockers (M4-06L)", () => {
+  const ready = { levelReady: true, units: [], items: [], zel: 100, zelOwned: 100 };
+
+  it("is empty when everything is met", () => {
+    expect(evolveBlockers(ready)).toEqual([]);
+  });
+
+  it("reports a short material item as Insufficient Units and short Zel on its own", () => {
+    expect(evolveBlockers({ ...ready, items: [{ owned: 0, count: 1 }] })).toEqual([
+      "Insufficient Units",
+    ]);
+    expect(evolveBlockers({ ...ready, zelOwned: 99 })).toEqual(["Insufficient Zel"]);
   });
 });
 

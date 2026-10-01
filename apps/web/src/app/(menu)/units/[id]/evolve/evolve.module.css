@@ -1,96 +1,289 @@
-/* Evolution screen (M4-02C). Sizes use the menu frame's logical pixel, --u. */
+/*
+ * Evolve Unit screen (M4-02C; the original's Evolve Unit since M4-06L, ART_GUIDE -> UI -> Evolve
+ * screen). The page sits on units.module.css's bg-olive list page and title bar. Sizes use the
+ * menu frame's logical pixel, --u.
+ */
 
-.forms {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: calc(var(--u) * 12);
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 14);
+  padding: calc(var(--u) * 16) calc(var(--u) * 10) calc(var(--u) * 12);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c99a3a rgb(20 14 4 / 0.55);
 }
 
-.form {
+.message {
+  margin: calc(var(--u) * 24) calc(var(--u) * 14);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 20);
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* Current plates | current sprite | arrow | next silhouette | ???? plates. */
+.stage {
+  display: grid;
+  grid-template-columns: calc(var(--u) * 132) 1fr calc(var(--u) * 40) 1fr calc(var(--u) * 132);
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  min-height: calc(var(--u) * 260);
+}
+
+.plates {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 4);
+  margin: 0;
+}
+
+/* stat-plate (440x92 at 2x) stretched by its rim: 20 px slices are 8 logical px. */
+.plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 4);
+  height: calc(var(--u) * 34);
+  padding: 0 calc(var(--u) * 4);
+  border: calc(var(--u) * 8) solid transparent;
+  border-image: url("/assets/ui/stat-plate.webp") 20 fill / calc(var(--u) * 8) stretch;
+}
+
+.plateLabel,
+.plateValue {
+  --stroke: 3;
+  font-size: calc(var(--u) * 16);
+  white-space: nowrap;
+}
+
+.plateLabel {
+  color: #f6d88a;
+}
+
+.plateValue {
+  margin: 0;
+}
+
+.sprite {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  font-size: calc(var(--u) * 22);
+  margin: 0;
 }
 
-.form img {
+.sprite img {
   width: 100%;
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 12);
-  background: #10131d;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 3) rgb(0 0 0 / 0.45));
 }
 
+/* The next form as a solid white silhouette. */
+.sprite[data-silhouette] img {
+  filter: brightness(0) invert(1) drop-shadow(0 0 calc(var(--u) * 6) rgb(255 255 255 / 0.6));
+}
+
+.spriteInitial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  font-size: calc(var(--u) * 72);
+  color: rgb(42 22 6 / 0.5);
+}
+
+.sprite[data-silhouette] .spriteInitial {
+  color: #fff;
+}
+
+.spriteRarity {
+  --stroke: 3;
+  font-size: calc(var(--u) * 18);
+  color: #ffd23a;
+}
+
+/* A gold arrow (CSS stand-in): a bevelled chevron pointing at the next form. */
 .arrow {
-  font-size: calc(var(--u) * 40);
+  justify-self: center;
+  width: calc(var(--u) * 34);
+  height: calc(var(--u) * 50);
+  background: linear-gradient(#fff3b8, #f0b630 55%, #a8640e);
+  clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%, 45% 50%);
+  filter: drop-shadow(0 calc(var(--u) * 2) 0 #2a1606);
+}
+
+/* The Evolution Materials panel: item-panel's gold frame over a dark slate. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 10);
+  border: calc(var(--u) * 20) solid transparent;
+  border-image: url("/assets/ui/item-panel.webp") 110 / calc(var(--u) * 20) / 0 stretch;
+  background: #3a4a66 url("/assets/ui/bg-slate.webp") center / calc(var(--u) * 256);
+  background-blend-mode: multiply;
+  background-clip: padding-box;
+}
+
+.panelTitle {
+  --stroke: 3;
+  margin: 0;
+  font-size: calc(var(--u) * 22);
+  font-weight: 400;
   color: #f6d88a;
 }
 
-.list {
-  margin: calc(var(--u) * 18) 0 0;
+.materials {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: calc(var(--u) * 10);
+  margin: 0;
   padding: 0;
   list-style: none;
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 22);
-  color: #f2ead6;
 }
 
-.list li {
+.material {
   display: flex;
-  justify-content: space-between;
-  gap: calc(var(--u) * 12);
-  padding: calc(var(--u) * 8) calc(var(--u) * 10);
-  border-bottom: calc(var(--u) * 2) solid rgb(201 154 58 / 0.35);
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+}
+
+.materialIcon {
+  width: 100%;
+}
+
+/* Items have no element frame or art yet: a gold CSS frame around the initial. */
+.material .materialIcon[data-item] > span:first-child {
+  border-color: #c99a3a;
 }
 
 .have {
-  color: #9fe08a;
+  --stroke: 3;
+  font-size: calc(var(--u) * 17);
   white-space: nowrap;
 }
 
-.list li[data-met="false"] .have {
-  color: #ff8a7a;
+.material[data-short] .have {
+  color: #ff6b5a;
 }
 
-.actions {
-  margin-top: calc(var(--u) * 20);
+.problems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 16);
+  color: #e8e2d0;
+}
+
+/* Bottom bar: an optional red status strip over the Evolve button and the Zel Cost plate. */
+.bottom {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.strip {
+  --stroke: 3;
+  margin: 0;
+  padding: calc(var(--u) * 6) calc(var(--u) * 14);
+  background: linear-gradient(
+    90deg,
+    rgb(150 18 12 / 0.15),
+    rgb(170 22 14 / 0.9) 20% 80%,
+    rgb(150 18 12 / 0.15)
+  );
+  font-size: calc(var(--u) * 20);
   text-align: center;
 }
 
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 24);
+  padding: calc(var(--u) * 8) calc(var(--u) * 16);
+  background: linear-gradient(rgb(20 14 4 / 0.2), rgb(20 14 4 / 0.6));
+}
+
+/* btn-hub drawn at its own aspect (520x237 at 2x), so its text box maps as percentages. */
 .button {
-  min-width: calc(var(--u) * 260);
-  padding: calc(var(--u) * 12) calc(var(--u) * 24);
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 14);
-  background: linear-gradient(#7a4f16, #4a2f0c);
-  color: #fbe39a;
-  font-size: calc(var(--u) * 28);
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 240);
+  aspect-ratio: 520 / 237;
+  padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
 }
 
+.buttonArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.buttonText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 30);
+  white-space: nowrap;
+}
+
+.button:hover:not(:disabled),
+.button:focus-visible {
+  filter: brightness(1.15);
+}
+
+.button:focus-visible {
+  outline: calc(var(--u) * 3) solid #fbe39a;
+  outline-offset: calc(var(--u) * 2);
+  border-radius: calc(var(--u) * 20);
+}
+
 .button:disabled {
-  opacity: 0.5;
+  filter: grayscale(0.7) brightness(0.7);
   cursor: default;
 }
 
-.error {
-  margin-top: calc(var(--u) * 10);
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 20);
-  color: #ff8a7a;
+/* Zel Cost plate (CSS stand-in on stat-plate). */
+.zelPlate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  min-width: calc(var(--u) * 200);
+  padding: calc(var(--u) * 2) calc(var(--u) * 10);
+  border: calc(var(--u) * 10) solid transparent;
+  border-image: url("/assets/ui/stat-plate.webp") 20 fill / calc(var(--u) * 10) stretch;
 }
 
-.link {
-  display: inline-block;
-  margin-top: calc(var(--u) * 18);
-  padding: calc(var(--u) * 10) calc(var(--u) * 22);
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 14);
-  color: #fbe39a;
-  font-size: calc(var(--u) * 26);
-  text-decoration: none;
+.zelLabel {
+  --stroke: 3;
+  font-size: calc(var(--u) * 17);
+  color: #f6d88a;
+}
+
+.zelValue {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  font-size: calc(var(--u) * 24);
+}
+
+.zelIcon {
+  width: calc(var(--u) * 28);
+  height: calc(var(--u) * 28);
 }

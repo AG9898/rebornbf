@@ -1,6 +1,10 @@
 -- M4-01C: duplicate EXP rounding and BB-first overflow, using seeded Brand forms.
 begin;
 select plan(11);
+
+-- Pin fuse's success roll (M4-06C) to Success so EXP is deterministic; rolled back with the test.
+create or replace function public.fusion_roll()
+returns integer language sql volatile set search_path = '' as $$ select 0 $$;
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000dc', 'duplicates@example.test');
 insert into public.wallets (user_id, zel) values

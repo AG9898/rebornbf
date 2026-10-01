@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { canBeFodder, fusionDraftProblem, fusionPreview } from "./fusion.ts";
+import {
+  canBeFodder,
+  FUSION_MINIMUM_NOTE,
+  fusionDraftProblem,
+  fusionPreview,
+  fusionResultMessage,
+} from "./fusion.ts";
 import type { OwnedUnitRow } from "./owned-units.ts";
 import { stackCopies } from "./unit-stacks.ts";
 
@@ -207,5 +213,24 @@ describe("canBeFodder", () => {
     expect(canBeFodder("moss-sprite", "moss-sprite-2")).toBe(true);
     expect(canBeFodder("cinder-mote", "cinder-mote-1")).toBe(false);
     expect(canBeFodder("nobody", "nobody-3")).toBe(false);
+  });
+});
+
+describe("fusion success rolls (M4-06C)", () => {
+  it("reports the server's outcome and EXP", () => {
+    expect(fusionResultMessage({ outcome: "great", exp_gained: 3388 })).toBe(
+      "Great Success! +3,388 EXP. Your unit has been updated.",
+    );
+    expect(fusionResultMessage({ outcome: "success", exp_gained: 2259 })).toMatch(/^Success! /);
+    expect(fusionResultMessage(null)).toBe("Fusion complete. Your unit has been updated.");
+    expect(fusionResultMessage({ outcome: "toString", exp_gained: 1 })).toBe(
+      "Fusion complete. Your unit has been updated.",
+    );
+  });
+
+  it("marks the preview EXP as the minimum", () => {
+    expect(FUSION_MINIMUM_NOTE).toBe(
+      "Minimum: a Great Success (×1.5, 10%) or Super Success (×2, 5%) may give more.",
+    );
   });
 });

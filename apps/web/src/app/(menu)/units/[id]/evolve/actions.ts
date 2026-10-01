@@ -41,7 +41,7 @@ export async function evolveUnit(
   });
   if (error) return { ok: false, message: evolveErrorMessage(error.code, error.message) };
 
-  revalidatePath("/units");
+  revalidatePath("/units/list");
   revalidatePath(`/units/${unitId}`);
   return { ok: true };
 }

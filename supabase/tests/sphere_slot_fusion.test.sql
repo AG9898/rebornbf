@@ -4,6 +4,10 @@
 begin;
 select plan(30);
 
+-- Pin fuse's success roll (M4-06C) to Success so EXP is deterministic; rolled back with the test.
+create or replace function public.fusion_roll()
+returns integer language sql volatile set search_path = '' as $$ select 0 $$;
+
 -- Fixtures ----------------------------------------------------------------------------------------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000d0a1', 'slot-a@example.test'),
@@ -80,7 +84,7 @@ select throws_ok($$select public.equip_sphere('00000000-0000-0000-0000-00000000d
 
 -- One toad row unlocks t1's slot (6)
 select is(public.fuse('00000000-0000-0000-0000-00000000d011',
-    array['00000000-0000-0000-0000-00000000d0f1']::uuid[]) - 'exp' - 'level' - 'target_id',
+    array['00000000-0000-0000-0000-00000000d0f1']::uuid[]) - 'exp' - 'level' - 'target_id' - 'outcome',
   '{"exp_gained": 100, "bb_level": 1, "sbb_level": 1, "zel_spent": 100, "fodder_consumed": 1,
     "sphere_slot_unlocked": true}'::jsonb,
   'a Satchel Toad unlocks the slot and gives ordinary 3★ EXP');

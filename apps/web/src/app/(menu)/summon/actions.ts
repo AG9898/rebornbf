@@ -42,7 +42,7 @@ export async function summonUnits(bannerId: string, count: number): Promise<Summ
       ok: false,
       message: "The summon finished, but its results could not be read. Check your units.",
     };
-  for (const path of ["/summon", "/units", "/home"]) revalidatePath(path);
+  for (const path of ["/summon", "/units/list", "/home"]) revalidatePath(path);
   return { ok: true, outcome };
 }
 
@@ -74,6 +74,6 @@ export async function summonWithTicket(bannerId: string): Promise<SummonActionRe
       ok: false,
       message: "The summon finished, but its results could not be read. Check your units.",
     };
-  for (const path of ["/summon", "/units", "/home"]) revalidatePath(path);
+  for (const path of ["/summon", "/units/list", "/home"]) revalidatePath(path);
   return { ok: true, outcome };
 }

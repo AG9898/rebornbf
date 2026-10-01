@@ -5,8 +5,10 @@ import menu from "../../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../components/menu/UiImage.tsx";
 import type { UnitDetailView } from "../../../../lib/units/owned-units.ts";
+import type { SphereSocketView } from "../../../../lib/units/spheres.ts";
 import { SplitButton } from "../stack/[stackId]/SplitButton.tsx";
 import styles from "../units.module.css";
+import { SphereSocketFace } from "./SphereSocketFace.tsx";
 
 const SKILL_ROWS = [
   { key: "leader", label: "Leader Skill", tag: "skill-tag-red" },
@@ -25,12 +27,15 @@ export function UnitDetail({
   unit,
   evolveLabel,
   stack,
+  spheres,
 }: {
   unit: UnitDetailView;
   /** "Evolve" or "Omni Evolve" when the form has a next form to evolve into; otherwise null. */
   evolveLabel: string | null;
   /** Set when this is a stack of untouched copies: its `owned_unit_stacks` id and count. */
   stack?: { id: string; count: number };
+  /** The unit's sphere sockets (M4-06J); each row opens the Equip Sphere screen. Not for stacks. */
+  spheres?: readonly SphereSocketView[];
 }): ReactNode {
   const stats = unit.currentStats;
   const statRows: readonly [string, string][] = [
@@ -42,26 +47,7 @@ export function UnitDetail({
   const atCap = unit.maxLevel !== null && unit.level >= unit.maxLevel;
   return (
     <div className={styles.detailPage} data-element={unit.element ?? undefined}>
-      <header className={styles.titleBar}>
-        <Link href="/units" className={`${styles.pill} ${styles.backButton}`}>
-          <span className={styles.outline}>Back</span>
-        </Link>
-        <div className={styles.detailPlate}>
-          <UiImage name="title-plate" className={styles.titlePlateArt} />
-          <div className={styles.detailPlateText} style={textBoxStyle("title-plate")}>
-            {unit.element ? (
-              <UiImage name={`orb-${unit.element}`} className={styles.detailOrb} />
-            ) : null}
-            <div className={styles.detailNames}>
-              <Stars rarity={unit.rarity} label={unit.rarityLabel} />
-              <h1 className={styles.outline}>
-                {unit.formName ? <span className={styles.detailForm}>{unit.formName}</span> : null}
-                {unit.name}
-              </h1>
-            </div>
-          </div>
-        </div>
-      </header>
+      <UnitTitleBar unit={unit} backHref="/units/list" />
 
       <div className={styles.detailBody}>
         <section className={styles.hero}>
@@ -123,6 +109,21 @@ export function UnitDetail({
           )}
         </section>
 
+        {spheres && !stack ? (
+          <nav className={styles.sphereRows} aria-label="Spheres">
+            {spheres.map((socket) => (
+              <Link
+                key={socket.slot}
+                href={`/units/${unit.id}/spheres`}
+                className={styles.sphereRow}
+                data-locked={!socket.unlocked || undefined}
+              >
+                <SphereSocketFace socket={socket} />
+              </Link>
+            ))}
+          </nav>
+        ) : null}
+
         <section className={styles.skills} aria-label="Skills">
           {SKILL_ROWS.map(({ key, label, tag }) => {
             const name = unit.skills[key];
@@ -157,6 +158,41 @@ export function UnitDetail({
           : "Enhance a unit through fusion, or evolve it at its level cap."}
       </p>
     </div>
+  );
+}
+
+/**
+ * The detail's title bar: Back and the title plate with the element orb, rarity stars, form name,
+ * and unit name. Shared with the Equip Sphere screen (M4-06J).
+ */
+export function UnitTitleBar({
+  unit,
+  backHref,
+}: {
+  unit: Pick<UnitDetailView, "element" | "rarity" | "rarityLabel" | "formName" | "name">;
+  backHref: string;
+}): ReactNode {
+  return (
+    <header className={styles.titleBar}>
+      <Link href={backHref} className={`${styles.pill} ${styles.backButton}`}>
+        <span className={styles.outline}>Back</span>
+      </Link>
+      <div className={styles.detailPlate}>
+        <UiImage name="title-plate" className={styles.titlePlateArt} />
+        <div className={styles.detailPlateText} style={textBoxStyle("title-plate")}>
+          {unit.element ? (
+            <UiImage name={`orb-${unit.element}`} className={styles.detailOrb} />
+          ) : null}
+          <div className={styles.detailNames}>
+            <Stars rarity={unit.rarity} label={unit.rarityLabel} />
+            <h1 className={styles.outline}>
+              {unit.formName ? <span className={styles.detailForm}>{unit.formName}</span> : null}
+              {unit.name}
+            </h1>
+          </div>
+        </div>
+      </div>
+    </header>
   );
 }
 

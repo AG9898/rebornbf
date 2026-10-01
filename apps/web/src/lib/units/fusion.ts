@@ -1,4 +1,6 @@
 import {
+  FUSION_OUTCOMES,
+  type FusionOutcome,
   fixedFusionExp,
   fusionZelCost,
   levelForExp,
@@ -14,6 +16,10 @@ import {
 } from "./unit-stacks.ts";
 
 export type FusionPreview = {
+  /**
+   * EXP before the server's success roll (M4-06C): the minimum, since a Great (×1.5) or Super (×2)
+   * Success raises it. The roll happens only inside `fuse`.
+   */
   bbLevel: number;
   sbbLevel: number | null;
   burstDiscarded: number;
@@ -120,3 +126,20 @@ export function fusionPreview(
         : null,
   };
 }
+
+/** Names `fuse`'s server-rolled outcome (M4-06C, RESOLVED-78) and the EXP it gave. */
+export function fusionResultMessage(data: unknown): string {
+  const result = (data ?? {}) as { outcome?: unknown; exp_gained?: unknown };
+  const outcome =
+    typeof result.outcome === "string" && Object.hasOwn(FUSION_OUTCOMES, result.outcome)
+      ? FUSION_OUTCOMES[result.outcome as FusionOutcome]
+      : null;
+  if (!outcome || typeof result.exp_gained !== "number")
+    return "Fusion complete. Your unit has been updated.";
+  return `${outcome.label}! +${result.exp_gained.toLocaleString("en-US")} EXP. Your unit has been updated.`;
+}
+
+/** The preview's note that a success roll may raise the EXP shown. */
+export const FUSION_MINIMUM_NOTE = `Minimum: a ${FUSION_OUTCOMES.great.label} (×1.5, ${
+  FUSION_OUTCOMES.great.rateBp / 100
+}%) or ${FUSION_OUTCOMES.super.label} (×2, ${FUSION_OUTCOMES.super.rateBp / 100}%) may give more.`;

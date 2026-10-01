@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
-import { fusionDraftProblem } from "../../../lib/units/fusion.ts";
+import { fusionDraftProblem, fusionResultMessage } from "../../../lib/units/fusion.ts";
 import { type StackQuantities, stackArgs } from "../../../lib/units/unit-stacks.ts";
 
 export type FuseResult = { ok: true; message: string } | { ok: false; message: string };
@@ -22,7 +22,7 @@ export async function fuseUnits(
   if (!supabase) return { ok: false, message: "Fusion is unavailable right now." };
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims.sub) return { ok: false, message: "Sign in to fuse units." };
-  const { error } = await supabase.rpc("fuse", {
+  const { data, error } = await supabase.rpc("fuse", {
     p_target: target,
     p_fodder: fodder,
     p_fodder_stacks: stackArgs(stacks),
@@ -36,7 +36,7 @@ export async function fuseUnits(
           : "Fusion failed. Reload your collection and try again.",
     };
   }
-  for (const path of ["/fusion", "/units", `/units/${target}`, "/home", "/squad"])
+  for (const path of ["/fusion", "/units/list", `/units/${target}`, "/home", "/squad"])
     revalidatePath(path);
-  return { ok: true, message: "Fusion complete. Your unit has been updated." };
+  return { ok: true, message: fusionResultMessage(data) };
 }

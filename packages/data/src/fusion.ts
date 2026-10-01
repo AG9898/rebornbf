@@ -64,3 +64,25 @@ export function ordinaryFusionExp(
 export function fusionZelCost(targetLevel: number, fodderCount: number): number {
   return 100 * targetLevel * fodderCount;
 }
+
+/** The server's once-per-fusion success roll (GAME_DESIGN §6 → Level EXP and fusion, RESOLVED-78). */
+export type FusionOutcome = "success" | "great" | "super";
+
+/**
+ * Each outcome's chance in basis points (BFR rates, owner) and its EXP multiplier as an exact
+ * fraction (sourced). `fuse` draws a roll in [0, 9999]: below 8,500 is Success, below 9,500 Great,
+ * otherwise Super. Display only — the roll is never made on the client.
+ */
+export const FUSION_OUTCOMES: Readonly<
+  Record<FusionOutcome, { label: string; rateBp: number; numerator: number; denominator: number }>
+> = {
+  success: { label: "Success", rateBp: 8_500, numerator: 1, denominator: 1 },
+  great: { label: "Great Success", rateBp: 1_000, numerator: 3, denominator: 2 },
+  super: { label: "Super Success", rateBp: 500, numerator: 2, denominator: 1 },
+};
+
+/** A fusion's summed EXP (each fodder already rounded) times the outcome's multiplier, rounded down. */
+export function fusionOutcomeExp(summedExp: number, outcome: FusionOutcome): number {
+  const { numerator, denominator } = FUSION_OUTCOMES[outcome];
+  return Math.floor((summedExp * numerator) / denominator);
+}

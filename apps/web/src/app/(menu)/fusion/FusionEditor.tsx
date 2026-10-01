@@ -3,29 +3,50 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useState, useTransition } from "react";
-import { canBeFodder, fusionPreview } from "../../../lib/units/fusion.ts";
+import { type ReactNode, useMemo, useState, useTransition } from "react";
+import menu from "../../../components/menu/menu.module.css";
+import { textBoxStyle } from "../../../components/menu/text-box.ts";
+import { UiImage } from "../../../components/menu/UiImage.tsx";
+import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
+import { FUSION_MINIMUM_NOTE, fusionPreview } from "../../../lib/units/fusion.ts";
+import {
+  addFodderPicks,
+  baseIneligible,
+  chooseBase,
+  FODDER_SPOTS,
+  type FusionDraft,
+  fodderIneligible,
+  fodderPedestals,
+  fodderPickerEntries,
+  freePedestals,
+  removeFodderPedestal,
+} from "../../../lib/units/fusion-stage.ts";
 import {
   type OwnedUnitRow,
-  sortOwnedUnits,
+  type OwnedUnitView,
   toOwnedUnitView,
 } from "../../../lib/units/owned-units.ts";
 import {
+  type CollectionEntry,
+  collectionEntries,
   FUSION_FODDER_LIMIT,
-  type StackQuantities,
-  setStackQuantity,
   stackCopies,
-  stackCopyRow,
   stackQuantityTotal,
   type UnitStackRow,
 } from "../../../lib/units/unit-stacks.ts";
+import squad from "../squad/squad.module.css";
+import units from "../units/units.module.css";
 import { fuseUnits } from "./actions.ts";
 import styles from "./fusion.module.css";
 
+type Mode = "stage" | "base" | "fodder";
+
 /**
- * The fusion screen's editor (M4-01B): target, fodder, preview, and confirm. Stacked copies
- * (M4-05C) show once per stack with a quantity stepper capped by the stack's count and the 1–5
- * fodder limit; a stack cannot be the target until a copy is split out on its detail page.
+ * The Fuse Units stage (M4-01B/C, restyled in M4-06D; ART_GUIDE → UI → Fusion stage): the base's
+ * idle sprite on the centre pedestal with its stat plate, five fodder pedestals at the corners and
+ * bottom centre, Change Base and Display Status in the title bar, and a Fuse pill that opens the
+ * confirm. An empty pedestal opens the multi-select picker (M4-06N) for the base or the fodder; a
+ * filled fodder pedestal removes that copy. The `fuse` RPC re-checks everything server-side.
  */
 export function FusionEditor({
   rows,
@@ -41,248 +62,384 @@ export function FusionEditor({
   initialTarget?: string;
 }): ReactNode {
   const router = useRouter();
-  const [targetId, setTargetId] = useState(
-    rows.some((r) => r.id === initialTarget) ? (initialTarget ?? "") : "",
-  );
-  const [fodderIds, setFodderIds] = useState<string[]>([]);
-  const [stackQty, setStackQty] = useState<StackQuantities>({});
+  const entries = useMemo(() => collectionEntries(rows, stacks), [rows, stacks]);
+  const [draft, setDraft] = useState<FusionDraft>(() => ({
+    targetId:
+      initialTarget &&
+      rows.some((r) => r.id === initialTarget) &&
+      !baseIneligible(entries).includes(initialTarget)
+        ? initialTarget
+        : "",
+    fodderIds: [],
+    stacks: {},
+  }));
+  const [mode, setMode] = useState<Mode>("stage");
+  const [showStatus, setShowStatus] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
-  const target = rows.find((r) => r.id === targetId);
-  const preview = target
-    ? fusionPreview(target, [
-        ...rows.filter((r) => fodderIds.includes(r.id)),
-        ...stackCopies(stacks, stackQty),
-      ])
-    : null;
-  const units = sortOwnedUnits(rows.map(toOwnedUnitView));
-  const stackViews = sortOwnedUnits(
-    stacks
-      .filter((stack) => canBeFodder(stack.unit_id, stack.form_id))
-      .map((stack) => ({ ...toOwnedUnitView(stackCopyRow(stack)), stack })),
-  );
-  const copies = fodderIds.length + stackQuantityTotal(stackQty);
+
+  const target = rows.find((r) => r.id === draft.targetId);
+  const targetView = target ? toOwnedUnitView(target) : null;
+  const fodderRows = [
+    ...rows.filter((r) => draft.fodderIds.includes(r.id)),
+    ...stackCopies(stacks, draft.stacks),
+  ];
+  const preview = target ? fusionPreview(target, fodderRows) : null;
+  const pedestals = fodderPedestals(draft);
+  const copies = draft.fodderIds.length + stackQuantityTotal(draft.stacks);
   const canFuse = preview !== null && preview.problem === null && copies > 0 && zel >= preview.cost;
+  const byId = new Map(entries.map((entry) => [entry.id, entry]));
 
-  function changeStack(stack: UnitStackRow, wanted: number): void {
-    setStackQty(setStackQuantity(stackQty, stack, wanted, fodderIds.length));
-    resetConfirmation();
-  }
+  const baseDimmed = useMemo(() => baseIneligible(entries), [entries]);
+  const fodderEntries = useMemo(() => fodderPickerEntries(entries, draft), [entries, draft]);
+  const fodderDimmed = useMemo(
+    () => fodderIneligible(fodderEntries, blocked),
+    [fodderEntries, blocked],
+  );
 
-  function resetConfirmation(): void {
+  function update(next: FusionDraft): void {
+    setDraft(next);
     setConfirming(false);
     setMessage(null);
   }
 
+  function fuse(): void {
+    startTransition(async () => {
+      try {
+        const result = await fuseUnits(draft.targetId, [...draft.fodderIds], draft.stacks);
+        setMessage({ ok: result.ok, text: result.message });
+        setConfirming(false);
+        if (result.ok) {
+          setDraft({ ...draft, fodderIds: [], stacks: {} });
+          router.refresh();
+        }
+      } catch {
+        setMessage({
+          ok: false,
+          text: "Could not reach fusion. Reload your collection before trying again.",
+        });
+        setConfirming(false);
+      }
+    });
+  }
+
+  if (mode === "base") {
+    return (
+      <UnitPicker
+        title="Select Base"
+        units={entries}
+        limit={1}
+        ineligible={baseDimmed}
+        party={blocked}
+        initialPicks={draft.targetId ? [{ id: draft.targetId, copies: 1 }] : []}
+        backHref="/fusion"
+        onBack={() => setMode("stage")}
+        ticker="Select the unit to level up."
+        onConfirm={(result) => {
+          const picked = result.unitIds[0];
+          if (picked) update(chooseBase(draft, picked));
+          setMode("stage");
+        }}
+      />
+    );
+  }
+
+  if (mode === "fodder") {
+    return (
+      <UnitPicker
+        title="Select Units"
+        units={fodderEntries}
+        limit={freePedestals(draft)}
+        ineligible={fodderDimmed}
+        party={blocked}
+        backHref="/fusion"
+        onBack={() => setMode("stage")}
+        ticker="Select units to fuse. Squad and ally units are protected."
+        onConfirm={(result) => {
+          update(addFodderPicks(draft, result));
+          setMode("stage");
+        }}
+      />
+    );
+  }
+
+  const strip = message
+    ? message.text
+    : !targetView
+      ? rows.length === 0
+        ? "You have no units to level yet. Play the story to collect units."
+        : "Tap the centre pedestal to choose the unit to level."
+      : copies === 0
+        ? "Tap an empty pedestal to add fodder. Fodder is consumed permanently."
+        : (preview?.problem ??
+          (zel < (preview?.cost ?? 0) ? "Not enough Zel." : "Tap a fodder unit to remove it."));
+
   return (
-    <>
-      <p className={styles.balance}>{zel.toLocaleString("en-US")} Zel available</p>
-      {rows.length === 0 && stacks.length === 0 ? (
-        <p>You have no units yet. Play the story to collect units.</p>
-      ) : (
-        <>
-          <label className={styles.label} htmlFor="fusion-target">
-            Unit to level
-          </label>
-          <select
-            id="fusion-target"
-            className={styles.select}
-            value={targetId}
-            disabled={pending}
-            onChange={(event) => {
-              setTargetId(event.target.value);
-              setFodderIds([]);
-              setStackQty({});
-              resetConfirmation();
-            }}
+    <div className={squad.page}>
+      <header className={units.titleBar}>
+        <Link href="/units" className={`${units.pill} ${units.backButton}`}>
+          <span className={units.outline}>Back</span>
+        </Link>
+        <div className={`${units.titlePlate} ${styles.titlePlate}`}>
+          <UiImage name="title-plate" className={units.titlePlateArt} />
+          <div className={units.titleText} style={textBoxStyle("title-plate")}>
+            <h1 className={units.outline}>Fuse Units</h1>
+          </div>
+        </div>
+        <button
+          type="button"
+          className={`${units.pill} ${squad.barButton} ${styles.barButton}`}
+          onClick={() => setMode("base")}
+          disabled={pending || entries.length === 0}
+        >
+          <span className={units.outline}>Change Base</span>
+        </button>
+        <button
+          type="button"
+          className={`${units.pill} ${squad.barButton} ${styles.barButton} ${showStatus ? squad.barButtonLit : ""}`}
+          onClick={() => setShowStatus((on) => !on)}
+          aria-pressed={showStatus}
+        >
+          <span className={units.outline}>Display Status</span>
+        </button>
+      </header>
+
+      <div className={squad.body}>
+        <section className={styles.stage} aria-label="Fusion stage">
+          <BasePedestal
+            unit={targetView}
+            disabled={pending || entries.length === 0}
+            onTap={() => setMode("base")}
+          />
+          {FODDER_SPOTS.map((spot, index) => {
+            const pedestal = pedestals[index];
+            const unit = pedestal ? byId.get(pedestal.id) : undefined;
+            return (
+              <FodderPedestal
+                key={spot}
+                spot={spot}
+                unit={unit}
+                disabled={pending || (!pedestal && !targetView)}
+                onTap={() => {
+                  if (pedestal) update(removeFodderPedestal(draft, index));
+                  else setMode("fodder");
+                }}
+              />
+            );
+          })}
+        </section>
+
+        <p
+          className={`${squad.plate} ${squad.strip} ${message && !message.ok ? squad.stripError : ""}`}
+          role="status"
+        >
+          {strip}
+        </p>
+
+        <div className={styles.fuseBar}>
+          <span className={`${squad.plate} ${styles.zelPlate}`}>
+            <UiImage name="icon-zel" className={styles.zelIcon} />
+            <span className={units.outline}>{zel.toLocaleString("en-US")}</span>
+          </span>
+          <span className={`${styles.fodderCount} ${units.outline}`}>
+            Fodder {copies}/{FUSION_FODDER_LIMIT}
+          </span>
+          <button
+            type="button"
+            className={`${units.pill} ${units.pillButton} ${styles.fusePill} ${canFuse ? squad.barButtonLit : ""}`}
+            disabled={pending || !canFuse || confirming}
+            onClick={() => setConfirming(true)}
           >
-            <option value="">Choose a unit</option>
-            {units
-              .filter((u) => u.maxLevel !== null)
-              .map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} · {u.rarityLabel} · Lv {u.level}
-                </option>
-              ))}
-          </select>
-          <h2 className={styles.label}>
-            Fodder · {copies}/{FUSION_FODDER_LIMIT}
-          </h2>
-          <p className={styles.note}>
-            Fodder is consumed permanently. Units in any squad or ally slot are protected. Stacked
-            units are chosen by quantity; split a copy out on its detail page to level it instead.
-          </p>
-          <ul className={styles.grid}>
-            {units
-              .filter((u) => u.id !== targetId)
-              .map((u) => {
-                const selected = fodderIds.includes(u.id);
-                const inSquad = blocked.includes(u.id);
-                return (
-                  <li key={u.id}>
-                    <button
-                      type="button"
-                      className={styles.card}
-                      aria-pressed={selected}
-                      disabled={
-                        pending ||
-                        !target ||
-                        inSquad ||
-                        !u.maxLevel ||
-                        !canBeFodder(u.unitId, u.formId) ||
-                        (!selected && copies >= FUSION_FODDER_LIMIT)
-                      }
-                      onClick={() => {
-                        setFodderIds(
-                          selected ? fodderIds.filter((id) => id !== u.id) : [...fodderIds, u.id],
-                        );
-                        resetConfirmation();
-                      }}
-                    >
-                      {u.thumb ? (
-                        <Image src={u.thumb} alt="" width={256} height={256} unoptimized />
-                      ) : (
-                        <span>{u.name.charAt(0)}</span>
-                      )}
-                      <span>{u.name}</span>
-                      <small>
-                        {u.rarityLabel} · Lv {u.level}
-                        {inSquad ? " · In squad" : ""}
-                      </small>
-                    </button>
-                  </li>
-                );
-              })}
-          </ul>
-          {stackViews.length > 0 && (
-            <ul className={styles.grid} aria-label="Stacked units">
-              {stackViews.map((u) => {
-                const chosen = stackQty[u.stack.id] ?? 0;
-                const room = chosen < u.stack.count && copies < FUSION_FODDER_LIMIT;
-                return (
-                  <li key={u.stack.id}>
-                    <div className={styles.card} data-chosen={chosen > 0 || undefined}>
-                      <span className={styles.thumbBox}>
-                        {u.thumb ? (
-                          <Image src={u.thumb} alt="" width={256} height={256} unoptimized />
-                        ) : (
-                          <span>{u.name.charAt(0)}</span>
-                        )}
-                        <span className={styles.stackBadge}>×{u.stack.count}</span>
-                      </span>
-                      <span>{u.name}</span>
-                      <small>
-                        {u.rarityLabel} · Lv {u.level}
-                      </small>
-                      <span className={styles.stepper}>
-                        <button
-                          type="button"
-                          aria-label={`One fewer ${u.name}`}
-                          disabled={pending || !target || chosen === 0}
-                          onClick={() => changeStack(u.stack, chosen - 1)}
-                        >
-                          −
-                        </button>
-                        <output aria-label={`${u.name} chosen`}>{chosen}</output>
-                        <button
-                          type="button"
-                          aria-label={`One more ${u.name}`}
-                          disabled={pending || !target || !room}
-                          onClick={() => changeStack(u.stack, chosen + 1)}
-                        >
-                          +
-                        </button>
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {preview && (
-            <section className={styles.preview} aria-live="polite">
-              <p>EXP gained: {preview.gain.toLocaleString("en-US")}</p>
-              <p>
-                Level {target?.level} → {preview.level} · Total EXP{" "}
-                {preview.exp.toLocaleString("en-US")}
-              </p>
-              <p>
-                BB {target?.bb_level ?? 1} → {preview.bbLevel}
-              </p>
-              {preview.sbbLevel !== null && (
-                <p>
-                  SBB {target?.sbb_level ?? 1} → {preview.sbbLevel}
-                </p>
-              )}
-              {preview.burstDiscarded > 0 && (
-                <p>
-                  {preview.burstDiscarded} burst levels exceed the available caps and will be lost.
-                </p>
-              )}
-              <p>Cost: {preview.cost.toLocaleString("en-US")} Zel</p>
-              {preview.discarded > 0 && (
-                <p>
-                  {preview.discarded.toLocaleString("en-US")} EXP exceeds the level cap and will be
-                  lost.
-                </p>
-              )}
-              {zel < preview.cost && <p>Not enough Zel.</p>}
-              {preview.problem && <p>{preview.problem}</p>}
-            </section>
-          )}
-          {confirming ? (
-            <section className={styles.preview} aria-label="Confirm fusion">
-              <p>
-                Consume {copies} selected units for {preview?.cost.toLocaleString("en-US")} Zel?
-              </p>
+            <span className={units.outline}>Fuse</span>
+          </button>
+        </div>
+
+        {confirming && preview ? (
+          <section className={`${squad.plate} ${styles.panel}`} aria-label="Confirm fusion">
+            <p>
+              Consume {copies} selected {copies === 1 ? "unit" : "units"} for{" "}
+              {preview.cost.toLocaleString("en-US")} Zel?
+            </p>
+            <div className={styles.panelButtons}>
               <button
                 type="button"
+                className={`${units.pill} ${units.pillButton} ${styles.panelPill} ${squad.barButtonLit}`}
                 disabled={pending || !canFuse}
-                onClick={() =>
-                  startTransition(async () => {
-                    try {
-                      const result = await fuseUnits(targetId, fodderIds, stackQty);
-                      setMessage(result.message);
-                      setConfirming(false);
-                      if (result.ok) {
-                        setFodderIds([]);
-                        setStackQty({});
-                        router.refresh();
-                      }
-                    } catch {
-                      setMessage(
-                        "Could not reach fusion. Reload your collection before trying again.",
-                      );
-                      setConfirming(false);
-                    }
-                  })
-                }
+                onClick={fuse}
               >
-                {pending ? "Fusing…" : "Confirm fusion"}
+                <span className={units.outline}>{pending ? "Fusing" : "Confirm"}</span>
               </button>
-              <button type="button" disabled={pending} onClick={() => setConfirming(false)}>
-                Cancel
+              <button
+                type="button"
+                className={`${units.pill} ${units.pillButton} ${styles.panelPill}`}
+                disabled={pending}
+                onClick={() => setConfirming(false)}
+              >
+                <span className={units.outline}>Cancel</span>
               </button>
-            </section>
-          ) : (
-            <button
-              className={styles.fuse}
-              type="button"
-              disabled={pending || !canFuse}
-              onClick={() => setConfirming(true)}
-            >
-              Fuse selected units
-            </button>
-          )}
-        </>
+            </div>
+          </section>
+        ) : null}
+
+        {showStatus ? (
+          <section
+            className={`${squad.plate} ${styles.panel}`}
+            aria-label="Fusion status"
+            aria-live="polite"
+          >
+            {!preview || !target ? (
+              <p>Choose a base unit to see the fusion result.</p>
+            ) : (
+              <>
+                <p>EXP gained: at least {preview.gain.toLocaleString("en-US")}</p>
+                <p className={styles.note}>{FUSION_MINIMUM_NOTE}</p>
+                <p>
+                  Level {target.level} → {preview.level} · Total EXP{" "}
+                  {preview.exp.toLocaleString("en-US")}
+                </p>
+                <p>
+                  BB {target.bb_level ?? 1} → {preview.bbLevel}
+                  {preview.sbbLevel !== null
+                    ? ` · SBB ${target.sbb_level ?? 1} → ${preview.sbbLevel}`
+                    : ""}
+                </p>
+                {preview.burstDiscarded > 0 && (
+                  <p>
+                    {preview.burstDiscarded} burst levels exceed the available caps and will be
+                    lost.
+                  </p>
+                )}
+                <p>Cost: {preview.cost.toLocaleString("en-US")} Zel</p>
+                {preview.discarded > 0 && (
+                  <p>
+                    {preview.discarded.toLocaleString("en-US")} EXP exceeds the level cap and will
+                    be lost.
+                  </p>
+                )}
+                {zel < preview.cost && <p>Not enough Zel.</p>}
+                {preview.problem && <p>{preview.problem}</p>}
+              </>
+            )}
+          </section>
+        ) : null}
+      </div>
+
+      <p className={menu.ticker}>
+        {targetView
+          ? "Tap an empty pedestal to add fodder, or a fodder unit to remove it."
+          : "Tap the centre pedestal to choose a base unit."}
+      </p>
+    </div>
+  );
+}
+
+/** A pedestal's sprite (or initial) standing on the stone. */
+function PedestalSprite({
+  unit,
+  className = "",
+}: {
+  unit: OwnedUnitView | undefined | null;
+  className?: string;
+}): ReactNode {
+  if (!unit) return null;
+  return unit.sprite ? (
+    <Image
+      src={unit.sprite}
+      alt=""
+      width={128}
+      height={128}
+      className={`${squad.sprite} ${className}`}
+      unoptimized
+      draggable={false}
+    />
+  ) : (
+    <span className={`${squad.noSprite} ${units.outline}`}>{unit.name.charAt(0)}</span>
+  );
+}
+
+/** The centre pedestal: the base's sprite and its two-line stat plate, or an empty stone. */
+function BasePedestal({
+  unit,
+  disabled,
+  onTap,
+}: {
+  unit: OwnedUnitView | null;
+  disabled: boolean;
+  onTap: () => void;
+}): ReactNode {
+  const s = unit?.currentStats;
+  const value = (n: number | undefined) => (n === undefined ? "–" : String(n));
+  return (
+    <button
+      type="button"
+      className={`${squad.pedestal} ${styles.base} ${unit ? "" : squad.pedestalEmpty}`}
+      onClick={onTap}
+      disabled={disabled}
+      aria-label={unit ? `Base: ${unit.name}, Lv ${unit.level}. Change base` : "Choose a base unit"}
+    >
+      <UiImage name="squad-pedestal" className={squad.pedestalArt} />
+      <PedestalSprite unit={unit} />
+      {unit ? (
+        <span className={`${squad.plate} ${squad.statPlate}`}>
+          {unit.element ? <UiImage name={`orb-${unit.element}`} className={squad.orb} /> : null}
+          <span className={squad.statLine}>
+            <Stat label="Lv." value={String(unit.level)} />
+            <Stat label="HP" value={value(s?.hp)} />
+          </span>
+          <span className={squad.statLine}>
+            <Stat label="ATK" value={value(s?.atk)} />
+            <Stat label="DEF" value={value(s?.def)} />
+            <Stat label="REC" value={value(s?.rec)} />
+          </span>
+        </span>
+      ) : (
+        <span className={`${styles.emptyMark} ${units.outline}`} aria-hidden>
+          Base
+        </span>
       )}
-      {message && <p role="status">{message}</p>}
-      {targetId && (
-        <Link className={styles.detailLink} href={`/units/${targetId}`}>
-          View target unit
-        </Link>
+    </button>
+  );
+}
+
+/** A fodder pedestal: the fodder's sprite and level, or an empty stone with a plus. */
+function FodderPedestal({
+  spot,
+  unit,
+  disabled,
+  onTap,
+}: {
+  spot: (typeof FODDER_SPOTS)[number];
+  unit: CollectionEntry | undefined;
+  disabled: boolean;
+  onTap: () => void;
+}): ReactNode {
+  return (
+    <button
+      type="button"
+      className={`${squad.pedestal} ${styles.fodder} ${unit ? "" : squad.pedestalEmpty}`}
+      data-spot={spot}
+      onClick={onTap}
+      disabled={disabled}
+      aria-label={unit ? `Remove ${unit.name} from the fodder` : "Add fodder"}
+    >
+      <UiImage name="squad-pedestal" className={`${squad.pedestalArt} ${styles.fodderStone}`} />
+      <PedestalSprite unit={unit} className={styles.fodderSprite} />
+      {unit ? (
+        <span className={`${styles.fodderLevel} ${units.outline}`}>Lv.{unit.level}</span>
+      ) : (
+        <span className={`${styles.emptyMark} ${units.outline}`} aria-hidden>
+          +
+        </span>
       )}
-    </>
+    </button>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }): ReactNode {
+  return (
+    <span className={`${squad.stat} ${units.outline}`}>
+      <span className={squad.statLabel}>{label}</span> {value}
+    </span>
   );
 }

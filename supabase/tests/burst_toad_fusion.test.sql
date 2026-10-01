@@ -45,7 +45,7 @@ select set_config('request.jwt.claims',
 
 -- Lantern Toad row: BB 1 -> 2 (3)
 select is(public.fuse('00000000-0000-0000-0000-00000000e011',
-    array['00000000-0000-0000-0000-00000000e0f1']::uuid[]) - 'exp' - 'level' - 'target_id' - 'exp_gained',
+    array['00000000-0000-0000-0000-00000000e0f1']::uuid[]) - 'exp' - 'level' - 'target_id' - 'exp_gained' - 'outcome',
   '{"bb_level": 2, "sbb_level": 1, "zel_spent": 100, "fodder_consumed": 1}'::jsonb,
   'a Lantern Toad adds one BB level');
 select ok(not exists (select 1 from public.owned_units
@@ -56,7 +56,7 @@ select is((select array[bb_level, sbb_level] from public.owned_units
 
 -- Matriarch Toad stack: BB 5 -> 10, SBB 1 -> 10, 6 lost (3)
 select is((public.fuse('00000000-0000-0000-0000-00000000e012', '{}'::uuid[],
-    '{"00000000-0000-0000-0000-00000000e5c1": 1}'::jsonb) - 'exp' - 'level' - 'target_id' - 'exp_gained'),
+    '{"00000000-0000-0000-0000-00000000e5c1": 1}'::jsonb) - 'exp' - 'level' - 'target_id' - 'exp_gained' - 'outcome'),
   '{"bb_level": 10, "sbb_level": 10, "zel_spent": 100, "fodder_consumed": 1}'::jsonb,
   'a stacked Matriarch Toad fills BB, carries into SBB, and loses the excess');
 select is((select count from public.owned_unit_stacks
@@ -76,7 +76,7 @@ select is((select sbb_level from public.owned_units
 -- Duplicate and toads share one pool: 10 + 1 + 1 from BB 1 -> BB 10, SBB 4 (2)
 select is((public.fuse('00000000-0000-0000-0000-00000000e014',
     array['00000000-0000-0000-0000-00000000e0f3']::uuid[],
-    '{"00000000-0000-0000-0000-00000000e5c2": 2}'::jsonb) - 'exp' - 'level' - 'target_id' - 'exp_gained'),
+    '{"00000000-0000-0000-0000-00000000e5c2": 2}'::jsonb) - 'exp' - 'level' - 'target_id' - 'exp_gained' - 'outcome'),
   '{"bb_level": 10, "sbb_level": 4, "zel_spent": 300, "fodder_consumed": 3}'::jsonb,
   'a duplicate and two Lantern Toads add 12 levels in one pool');
 select is((select count from public.owned_unit_stacks

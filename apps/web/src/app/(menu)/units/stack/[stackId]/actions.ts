@@ -33,7 +33,7 @@ export async function splitStack(stackId: string): Promise<SplitResult> {
     };
   }
 
-  for (const path of ["/units", `/units/stack/${stackId}`, "/fusion", "/squad"]) {
+  for (const path of ["/units/list", `/units/stack/${stackId}`, "/fusion", "/squad"]) {
     revalidatePath(path);
   }
   return { ok: true, unitId: data.id };
