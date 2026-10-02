@@ -1,7 +1,7 @@
 "use client";
 
+import type { Stage } from "@bfr/data";
 import type { BattleEvent } from "@bfr/engine";
-import Link from "next/link";
 import type Phaser from "phaser";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +12,7 @@ import { mountBattle } from "../../game/mount-battle.ts";
 import type { BattleSpec } from "../../game/playback/battle-scene.ts";
 import { type Submission, submitSession } from "../../lib/battle/submit-session.ts";
 import { menuFont } from "../../styles/fonts.ts";
+import { BattleEnding } from "./BattleEnding.tsx";
 import styles from "./battle.module.css";
 
 /**
@@ -23,14 +24,17 @@ import styles from "./battle.module.css";
 export default function PhaserBattle({
   spec,
   sessionId,
-  back = { href: "/quests", label: "Back to quest map" },
+  stage,
+  back = { href: "/quests", label: "Back to quests" },
   onEvents,
   onResult,
   children,
 }: {
   spec: BattleSpec;
   sessionId?: string;
-  /** Where the end-of-battle panel links back to (the Trials page for a trial). */
+  /** The session's stage: names the quest on the result screen (M2-07H). */
+  stage?: Pick<Stage, "name" | "story" | "trial">;
+  /** Where the result flow and give-up link back to (the Trials page for a trial). */
   back?: { href: string; label: string };
   onEvents?: (events: readonly BattleEvent[]) => void;
   onResult?: (result: "win" | "lose") => void;
@@ -152,15 +156,6 @@ export default function PhaserBattle({
     };
   }, [spec, sessionId]);
 
-  const endingText =
-    ending === "lost"
-      ? "Battle lost. No rewards were claimed."
-      : ending === "pending"
-        ? "Verifying battle…"
-        : ending?.ok
-          ? `Verified win in ${ending.turns} turns · ${ending.rewards.gems} gems · ${ending.rewards.zel} Zel${ending.rewards.first_clear ? " · First clear!" : ""}`
-          : ending?.error;
-
   return (
     <section
       ref={stageRef}
@@ -181,53 +176,15 @@ export default function PhaserBattle({
         className={`${styles.canvasHost} relative shrink-0 overflow-hidden shadow-[0_0_24px_rgba(0,0,0,0.6)]`}
       >
         {children && <div className={styles.overlay}>{children}</div>}
-        {sessionId && ending && (
-          <div
-            className="absolute inset-x-[5%] top-[55%] z-10 flex flex-col items-center gap-3 rounded-lg bg-[#0e1326]/95 p-3 text-center text-[clamp(11px,2.4vw,18px)] text-[#e8e6f0]"
-            role="status"
-            aria-live="polite"
-          >
-            <p>{endingText}</p>
-            {typeof ending === "object" && ending.ok && ending.rewards.starter && (
-              <section
-                aria-label="Starter unlocked"
-                className="rounded-lg border border-amber-200/60 p-3"
-              >
-                <h2 className="font-semibold text-amber-200">Starter unlocked!</h2>
-                <p>
-                  {ending.rewards.starter.name} · {ending.rewards.starter.rarity}★
-                </p>
-                <Link
-                  href={`/units/${ending.rewards.starter.ownedUnitId}`}
-                  className="text-amber-200 underline"
-                >
-                  View unit
-                </Link>
-              </section>
-            )}
-            {typeof ending === "object" && ending.ok && ending.rewards.units && (
-              <ul aria-label="First-clear units" className="text-amber-200">
-                {ending.rewards.units.map((unit) => (
-                  <li key={unit.name}>
-                    {unit.name} ×{unit.count}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {ending === "lost" && continueAction && (
-              <button
-                type="button"
-                disabled={continuing}
-                onClick={() => void continueAction()}
-                className="rounded bg-amber-200 px-4 py-2 font-semibold text-slate-950 disabled:opacity-50"
-              >
-                {continuing ? "Continuing…" : "Continue · 5 gems"}
-              </button>
-            )}
-            {continueError && <p role="alert">{continueError}</p>}
-            <Link href={back.href} className="font-semibold text-amber-200 underline">
-              {back.label}
-            </Link>
+        {sessionId && stage && ending && (
+          <div className={styles.overlay}>
+            <BattleEnding
+              ending={ending}
+              stage={stage}
+              back={back}
+              continueState={{ action: continueAction, busy: continuing, error: continueError }}
+              reducedMotion={spec.reducedMotion ?? false}
+            />
           </div>
         )}
       </div>

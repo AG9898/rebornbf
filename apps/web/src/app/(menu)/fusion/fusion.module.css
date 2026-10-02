@@ -284,3 +284,289 @@
 .slotConfirm {
   width: calc(var(--u) * 112);
 }
+
+/* ---------- Fusion animation (M4-06E): fodder flies into the base, then a flash ---------- */
+
+.fusingPage .stage {
+  overflow: hidden;
+}
+
+.flyIn {
+  animation: fodder-fly 700ms 150ms ease-in forwards;
+}
+
+/* Each spot's offset from its sprite centre to the base sprite's centre (320, 214 logical). */
+.fodder[data-spot="tl"] .flyIn {
+  --dx: 210;
+  --dy: 130;
+}
+
+.fodder[data-spot="tr"] .flyIn {
+  --dx: -210;
+  --dy: 130;
+}
+
+.fodder[data-spot="bl"] .flyIn {
+  --dx: 210;
+  --dy: -160;
+}
+
+.fodder[data-spot="br"] .flyIn {
+  --dx: -210;
+  --dy: -160;
+}
+
+.fodder[data-spot="bc"] .flyIn {
+  --dx: 0;
+  --dy: -240;
+}
+
+@keyframes fodder-fly {
+  to {
+    transform: translate(calc(var(--u) * var(--dx)), calc(var(--u) * var(--dy))) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.fusingBase {
+  animation: base-glow 500ms 750ms ease-out;
+}
+
+@keyframes base-glow {
+  50% {
+    filter: brightness(2.2);
+    transform: scale(1.12);
+  }
+}
+
+/* The flash: a white burst over the base; its animationend opens the result screen. */
+.flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle at 50% 38%,
+    #fff 0,
+    rgb(255 250 220 / 0.9) 30%,
+    transparent 75%
+  );
+  animation: fusion-flash 550ms 850ms ease-out forwards;
+}
+
+@keyframes fusion-flash {
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flyIn {
+    animation: fodder-fade 200ms ease-out forwards;
+  }
+
+  @keyframes fodder-fade {
+    to {
+      opacity: 0;
+    }
+  }
+
+  .fusingBase {
+    animation: none;
+  }
+
+  .flash {
+    animation: fusion-flash 300ms 200ms linear forwards;
+  }
+}
+
+.skipRow {
+  display: flex;
+  justify-content: center;
+  margin: calc(var(--u) * 12) 0 calc(var(--u) * 16);
+}
+
+.skipPill {
+  width: calc(var(--u) * 150);
+}
+
+/* ---------- Fusion result (M4-06E, ART_GUIDE -> UI -> Fusion result) ---------- */
+
+.resultPage {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(var(--u) * 16) calc(var(--u) * 16) 0;
+  background: #000;
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+}
+
+.resultOrb {
+  width: calc(var(--u) * 40);
+  height: calc(var(--u) * 40);
+}
+
+.resultName {
+  margin: 0;
+  font-size: calc(var(--u) * 34);
+  color: #ffd75a;
+}
+
+/* The gold-rimmed table: Lv./HP/BB Lv. left, Atk/Def/Rec right. */
+.resultTable {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--u) * 6) calc(var(--u) * 24);
+  width: 100%;
+  max-width: calc(var(--u) * 600);
+  margin-top: calc(var(--u) * 14);
+  padding: calc(var(--u) * 10) calc(var(--u) * 16);
+  border: calc(var(--u) * 3) solid #c99a3a;
+  border-radius: calc(var(--u) * 10);
+  background: rgb(30 22 8 / 0.75);
+  box-shadow: inset 0 0 0 calc(var(--u) * 1) #fbe39a;
+}
+
+.resultColumn {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 6);
+}
+
+.resultRow {
+  --stroke: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: calc(var(--u) * 21);
+}
+
+.resultRow dt {
+  color: #fbe39a;
+}
+
+.resultRow dd {
+  margin: 0;
+  display: flex;
+  gap: calc(var(--u) * 6);
+}
+
+.resultArrow {
+  color: #fbe39a;
+  font-size: 0.7em;
+  align-self: center;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.risen {
+  color: #5fc4ff;
+}
+
+.nextLevel {
+  --stroke: 3;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: calc(var(--u) * 600);
+  margin-top: calc(var(--u) * 10);
+  padding-inline: calc(var(--u) * 4);
+  font-size: calc(var(--u) * 21);
+}
+
+.resultExpBar {
+  width: 100%;
+  max-width: calc(var(--u) * 600);
+  margin-top: calc(var(--u) * 6);
+}
+
+.successText {
+  --stroke: 3;
+  margin: calc(var(--u) * 12) 0 0;
+  font-size: calc(var(--u) * 26);
+  color: #ffe34a;
+}
+
+/* LEVEL UP!! in code (owner choice, 2026-10-02): gold-to-orange fill, dark outline, warm glow. */
+.levelUp {
+  margin: calc(var(--u) * 10) 0 0;
+  font-family: var(--font-menu), system-ui, sans-serif;
+  font-size: calc(var(--u) * 58);
+  line-height: 1.05;
+  letter-spacing: calc(var(--u) * 2);
+  background: linear-gradient(180deg, #fff3a8 0%, #ffd23c 40%, #ff9a1f 75%, #e8560c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: calc(var(--u) * 3) #3a1a04;
+  paint-order: stroke fill;
+  filter: drop-shadow(0 0 calc(var(--u) * 10) rgb(255 170 50 / 0.75))
+    drop-shadow(0 calc(var(--u) * 3) 0 #2a1204);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .levelUp {
+    animation: level-up-pop 400ms ease-out;
+  }
+
+  @keyframes level-up-pop {
+    from {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+  }
+}
+
+/* The idle sprite standing on result-halo (560 x 198 at 2x). */
+.haloStage {
+  position: relative;
+  width: calc(var(--u) * 280);
+  height: calc(var(--u) * 200);
+  margin-top: calc(var(--u) * 8);
+}
+
+.halo {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(var(--u) * 280);
+  height: auto;
+}
+
+.haloStage .resultSprite {
+  left: calc(var(--u) * 52);
+  top: auto;
+  bottom: calc(var(--u) * 26);
+  width: calc(var(--u) * 176);
+  height: calc(var(--u) * 176);
+}
+
+.quote {
+  max-width: calc(var(--u) * 560);
+  margin: calc(var(--u) * 10) 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  line-height: 1.4;
+  text-align: center;
+  white-space: pre-line;
+  color: #fff;
+}

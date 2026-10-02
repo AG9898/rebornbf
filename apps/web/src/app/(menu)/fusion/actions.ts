@@ -3,9 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import { fusionDraftProblem, fusionResultMessage } from "../../../lib/units/fusion.ts";
+import { type FuseResponse, parseFuseResponse } from "../../../lib/units/fusion-result.ts";
 import { type StackQuantities, stackArgs } from "../../../lib/units/unit-stacks.ts";
 
-export type FuseResult = { ok: true; message: string } | { ok: false; message: string };
+/** `response` carries `fuse`'s outcome for the result screen; null if it came back malformed. */
+export type FuseResult =
+  | { ok: true; message: string; response: FuseResponse | null }
+  | { ok: false; message: string };
 
 /**
  * Fuses owned-row fodder and stacked copies (`{ "<stack id>": copies }`, M4-05C) into `target`
@@ -38,5 +42,5 @@ export async function fuseUnits(
   }
   for (const path of ["/fusion", "/units/list", `/units/${target}`, "/home", "/squad"])
     revalidatePath(path);
-  return { ok: true, message: fusionResultMessage(data) };
+  return { ok: true, message: fusionResultMessage(data), response: parseFuseResponse(data) };
 }

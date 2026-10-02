@@ -9,14 +9,13 @@ import type { BattleSpec } from "../../game/playback/battle-scene.ts";
 import { stageBossWaves } from "../../game/playback/cues.ts";
 import { DEMO_BATTLE_SPEC } from "../../game/playback/demo-battle.ts";
 import { stageNames } from "../../game/playback/stage-names.ts";
+import { questReturn } from "../../lib/battle/result-screen.ts";
 import type { SessionBattle } from "../../lib/battle/session-battle.ts";
 
 const PhaserBattle = dynamic(() => import("./PhaserBattle.tsx"), {
   ssr: false,
   loading: () => <p className="m-auto text-sm">Loading battle scene…</p>,
 });
-
-const TRIALS_BACK = { href: "/trials", label: "Back to Trials" };
 
 /** A session battle (M3-04B): the session's stage and squad, one run on the server-issued seed. */
 function sessionSpec(battle: SessionBattle): BattleSpec {
@@ -61,6 +60,7 @@ export default function BattleClient({
     }),
     [battle, speed, reducedMotion],
   );
-  const back = battle?.stage.trial ? TRIALS_BACK : undefined;
-  return <PhaserBattle spec={spec} sessionId={sessionId} back={back} />;
+  const stage = battle?.stage;
+  const back = stage ? questReturn(stage) : undefined;
+  return <PhaserBattle spec={spec} sessionId={sessionId} stage={stage} back={back} />;
 }

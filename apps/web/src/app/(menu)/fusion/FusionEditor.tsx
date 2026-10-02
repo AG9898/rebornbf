@@ -10,6 +10,7 @@ import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
 import { gameAudio } from "../../../game/audio/index.ts";
 import { FUSION_MINIMUM_NOTE, fusionPreview } from "../../../lib/units/fusion.ts";
+import { type FusionResultView, fusionResultView } from "../../../lib/units/fusion-result.ts";
 import {
   baseIneligible,
   chooseBase,
@@ -37,9 +38,18 @@ import squad from "../squad/squad.module.css";
 import units from "../units/units.module.css";
 import { fuseUnits } from "./actions.ts";
 import { FodderPicker } from "./FodderPicker.tsx";
+import { type FlyingFodder, FusionResult } from "./FusionResult.tsx";
 import styles from "./fusion.module.css";
 
 type Mode = "stage" | "base" | "fodder";
+
+/** A finished fusion being shown: the fly-in's sprites and the result screen (M4-06E). */
+type Fused = {
+  baseName: string;
+  baseSprite: string | null;
+  fodder: FlyingFodder[];
+  result: FusionResultView;
+};
 
 /**
  * The Fuse Units stage (M4-01B/C, restyled in M4-06D; ART_GUIDE → UI → Fusion stage): the base's
@@ -47,7 +57,9 @@ type Mode = "stage" | "base" | "fodder";
  * bottom centre, Change Base and Display Status in the title bar, and a Fuse pill that opens the
  * confirm. The empty base opens the multi-select picker (M4-06N); each fodder pedestal is one slot
  * (sprite and ×N, RESOLVED-90) and any of them opens the tap/hold fodder picker (M4-01F) with the
- * current slots. The `fuse` RPC re-checks everything server-side.
+ * current slots. The `fuse` RPC re-checks everything server-side. A successful fusion plays the
+ * fly-in animation and the result screen (M4-06E, `FusionResult`); Skip returns to this stage with
+ * the refreshed base.
  */
 export function FusionEditor({
   rows,
@@ -78,6 +90,7 @@ export function FusionEditor({
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  const [fused, setFused] = useState<Fused | null>(null);
 
   const target = rows.find((r) => r.id === draft.targetId);
   const targetView = target ? toOwnedUnitView(target) : null;
@@ -98,12 +111,29 @@ export function FusionEditor({
   }
 
   function fuse(): void {
+    // Snapshot the stage before the draft clears: the base row and the fodder sprites per spot.
+    const before = target;
+    const imps = preview?.imps;
+    const flying: FlyingFodder[] = pedestals.flatMap((pedestal, index) => {
+      const unit = byId.get(pedestal.id);
+      const spot = FODDER_SPOTS[index];
+      return unit && spot ? [{ spot, name: unit.name, sprite: unit.sprite }] : [];
+    });
     startTransition(async () => {
       try {
         const result = await fuseUnits(draft.targetId, fodderIds, draftStacks(draft));
         setMessage({ ok: result.ok, text: result.message });
         setConfirming(false);
         if (result.ok) {
+          if (before && result.response) {
+            const view = toOwnedUnitView(before);
+            setFused({
+              baseName: view.name,
+              baseSprite: view.sprite,
+              fodder: flying,
+              result: fusionResultView(before, result.response, imps),
+            });
+          }
           setDraft(clearFodder(draft));
           router.refresh();
         }
@@ -115,6 +145,18 @@ export function FusionEditor({
         setConfirming(false);
       }
     });
+  }
+
+  if (fused) {
+    return (
+      <FusionResult
+        baseName={fused.baseName}
+        baseSprite={fused.baseSprite}
+        fodder={fused.fodder}
+        result={fused.result}
+        onSkip={() => setFused(null)}
+      />
+    );
   }
 
   if (mode === "base") {

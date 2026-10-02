@@ -112,3 +112,47 @@ describe("first-clear unit rewards (M4-04G)", () => {
     }
   });
 });
+
+describe("dropped items and captured units (M2-07H)", () => {
+  async function submit(rewards: Record<string, unknown>) {
+    return submitSession(SESSION, LOG, async () =>
+      Response.json({
+        ok: true,
+        result: "win",
+        turns: 2,
+        rewards: { first_clear: false, gems: 0, zel: 10, ...rewards },
+      }),
+    );
+  }
+
+  it("passes through the settled item counts and captured units", async () => {
+    expect(
+      await submit({
+        items: { "crown-shard": 2, "dew-tonic": 0 },
+        units: [
+          { stacked: true, owned_unit_id: null, unit_id: "cinder-mote", form_id: "cinder-mote-1" },
+          { owned_unit_id: SESSION, unit_id: "maren", form_id: "maren-4" },
+          { unit_id: "missing-unit", form_id: "missing-1" },
+          "bad",
+        ],
+      }),
+    ).toMatchObject({
+      ok: true,
+      rewards: {
+        items: [{ itemId: "crown-shard", count: 2 }],
+        captured: [
+          { unitId: "cinder-mote", formId: "cinder-mote-1", ownedUnitId: null },
+          { unitId: "maren", formId: "maren-4", ownedUnitId: SESSION },
+        ],
+      },
+    });
+  });
+
+  it("omits empty or malformed item and unit lists", async () => {
+    const result = await submit({ items: {}, units: [] });
+    expect(result.ok && result.rewards.items).toBeUndefined();
+    expect(result.ok && result.rewards.captured).toBeUndefined();
+    const malformed = await submit({ items: ["crown-shard"], units: { a: 1 } });
+    expect(malformed.ok && malformed.rewards.items).toBeUndefined();
+  });
+});
