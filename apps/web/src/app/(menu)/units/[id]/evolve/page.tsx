@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { itemIcon } from "../../../../../components/menu/item-icon.ts";
 import menu from "../../../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
@@ -76,6 +77,7 @@ function FormSprite({
 /** One material: the element-framed thumb (a gold CSS frame for items), ×N, and "Have N". */
 function MaterialIcon({ need }: { need: MaterialUnitNeed | MaterialItemNeed }): ReactNode {
   const unit = "unitId" in need ? need : null;
+  const icon = "itemId" in need ? itemIcon(need.itemId) : null;
   const short = need.owned < need.count;
   return (
     <li className={evolve.material} data-short={short || undefined}>
@@ -97,6 +99,8 @@ function MaterialIcon({ need }: { need: MaterialUnitNeed | MaterialItemNeed }): 
               unoptimized
               draggable={false}
             />
+          ) : icon ? (
+            <UiImage name={icon} className={evolve.itemArt} />
           ) : (
             <span className={units.iconInitial}>{need.name.charAt(0)}</span>
           )}

@@ -66,7 +66,7 @@ describe("evolutionPlan (M4-02C)", () => {
         unitId: "cinder-effigy",
         name: "Cinder Effigy",
         element: "fire",
-        thumb: null, // no exported effigy art in the web content map yet
+        thumb: "/assets/ui/cards/thumb/cinder-effigy-3star.webp",
         count: 1,
         owned: 1,
         stacked: 0,

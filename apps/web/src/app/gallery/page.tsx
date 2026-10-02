@@ -220,6 +220,29 @@ const GROWTH_FODDER: SingleFormUnit[] = [
   { id: "grand-hob", name: "Grand Hob", element: "Light", file: "3star", label: "3★" },
 ];
 
+const MATERIAL_FAMILIES = [
+  ["effigy", "Effigy", 3],
+  ["cairn", "Cairn", 4],
+  ["colossus", "Colossus", 5],
+] as const;
+
+/** Evolution materials (RESOLVED-67) with a locked splash and sprite; the Motes are M6-08E. */
+const EVOLUTION_MATERIALS: SingleFormUnit[] = [
+  ...MATERIAL_FAMILIES.flatMap(([family, familyName, stars]) =>
+    VESSEL_ELEMENTS.map(([prefix, prefixName, element]) => ({
+      id: `${prefix}-${family}`,
+      name: `${prefixName} ${familyName}`,
+      element,
+      file: `${stars}star`,
+      label: `${stars}★`,
+    })),
+  ),
+  { id: "prism-cairn", name: "Prism Cairn", element: "Light", file: "5star", label: "5★" },
+  { id: "glint-urn", name: "Glint Urn", element: "Light", file: "3star", label: "3★" },
+  { id: "dusk-urn", name: "Dusk Urn", element: "Dark", file: "3star", label: "3★" },
+  { id: "wyrm-coffer", name: "Wyrm Coffer", element: "Dark", file: "5star", label: "5★" },
+];
+
 function SingleFormSection({
   eyebrow,
   title,
@@ -379,6 +402,13 @@ export default function GalleryPage(): ReactNode {
         title="Vessels, toads, and hobs"
         intro="EXP vessels in four tiers per element, the lantern toads, and the stat hobs."
         units={GROWTH_FODDER}
+      />
+
+      <SingleFormSection
+        eyebrow="Evolution materials"
+        title="Effigies, Cairns, Colossi, and rare treasures"
+        intro="The Sprite line's evolution materials in three tiers per element, the Prism Cairn, the Urns, and the Wyrm Coffer."
+        units={EVOLUTION_MATERIALS}
       />
 
       <p className="mt-8 text-center text-xs leading-5 text-stone-500">

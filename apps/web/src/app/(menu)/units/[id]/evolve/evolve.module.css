@@ -160,9 +160,14 @@
   width: 100%;
 }
 
-/* Items have no element frame or art yet: a gold CSS frame around the initial. */
+/* Items have no element frame: a gold CSS frame around the item's icon (M6-10B), or its initial. */
 .material .materialIcon[data-item] > span:first-child {
   border-color: #c99a3a;
+}
+
+.itemArt {
+  width: 82%;
+  height: auto;
 }
 
 .have {

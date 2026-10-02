@@ -74,6 +74,13 @@ export const BATTLE_UI_PIECES = [
   "cutin-ribbon-sbb",
   "cutin-ribbon-ubb",
   "cutin-streaks",
+  // Battle item icons in the item bar (M6-10B).
+  "item-dew-tonic",
+  "item-bright-tonic",
+  "item-grand-tonic",
+  "item-rekindle-ash",
+  "item-valor-draught",
+  "item-bitterleaf",
 ] as const satisfies readonly UiAsset[];
 
 export type BattleUiPiece = (typeof BATTLE_UI_PIECES)[number];
@@ -90,6 +97,14 @@ export function uiPiece(name: BattleUiPiece): UiTexture {
 /** Pixel size of a piece's 2× export. */
 export function uiPieceSize(name: BattleUiPiece): { width: number; height: number } {
   return UI_ASSETS[name];
+}
+
+/** A battle item's icon piece, or undefined for an item without one (its name still shows). */
+export function itemIconPiece(itemId: string): BattleUiPiece | undefined {
+  const name = `item-${itemId}`;
+  return (BATTLE_UI_PIECES as readonly string[]).includes(name)
+    ? (name as BattleUiPiece)
+    : undefined;
 }
 
 export function elementOrb(element: Element): BattleUiPiece {

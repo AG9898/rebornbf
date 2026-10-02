@@ -1,5 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { CHAPTER_1_DUNGEON_MOBS, StageSchema } from "@bfr/data";
 import { describe, expect, it } from "vitest";
 import { STORY_STAGES } from "../../lib/quests/quest-map.ts";
 import { trialStage } from "../../lib/quests/trials.ts";
@@ -11,7 +12,10 @@ const backgroundsPath = join(artDir, "backgrounds", "backgrounds.json");
 const enemiesPath = join(artDir, "enemies", "enemies.json");
 
 interface BackgroundManifest {
-  backgrounds: Record<string, { chapters: number[]; stages: string[]; fallback?: string }>;
+  backgrounds: Record<
+    string,
+    { chapters: number[]; stages: string[]; series?: string[]; fallback?: string }
+  >;
 }
 interface EnemyManifest {
   enemies: Record<string, { canvas: number }>;
@@ -24,9 +28,9 @@ describe.skipIf(!existsSync(backgroundsPath) || !existsSync(enemiesPath))(
     it("has each background's chapters and stages", () => {
       const manifest = JSON.parse(readFileSync(backgroundsPath, "utf8")) as BackgroundManifest;
       const expected = Object.fromEntries(
-        Object.entries(manifest.backgrounds).map(([id, { chapters, stages, fallback }]) => [
+        Object.entries(manifest.backgrounds).map(([id, { chapters, stages, series, fallback }]) => [
           id,
-          { chapters, stages, ...(fallback ? { fallback } : {}) },
+          { chapters, stages, ...(series ? { series } : {}), ...(fallback ? { fallback } : {}) },
         ]),
       );
       expect(stageArt.backgrounds).toEqual(expected);
@@ -43,7 +47,7 @@ describe.skipIf(!existsSync(backgroundsPath) || !existsSync(enemiesPath))(
 );
 
 describe("chapter 2 art", () => {
-  it("fights on the coast and resolves temporary sprites for every coast wave", () => {
+  it("fights on the coast with each coast enemy's own sprite", () => {
     expect(stageArt.backgrounds["saltglass-coast"]).toEqual({ chapters: [2], stages: [] });
     expect(
       existsSync(
@@ -54,6 +58,9 @@ describe("chapter 2 art", () => {
       expect(stageBackground(stage)).toBe("saltglass-coast");
       const waves = stageEnemyArt(stage);
       expect(waves.map((w) => w.length)).toEqual(stage.waves.map((w) => w.enemies.length));
+      expect(waves.map((w) => w.map((sprite) => sprite.id))).toEqual(
+        stage.waves.map((w) => w.enemies.map((enemy) => enemy.enemy)),
+      );
       for (const sprite of waves.flat()) {
         expect(sprite.size).toBeGreaterThan(0);
         expect(
@@ -67,6 +74,40 @@ describe("chapter 2 art", () => {
           ),
         ).toBe(true);
       }
+    }
+  });
+});
+
+describe("dungeon art", () => {
+  const stagesDir = join(import.meta.dirname, "../../../../../packages/data/content/stages");
+  const dungeonStages = readdirSync(stagesDir)
+    .filter((file) => file.startsWith("dungeon-"))
+    .map((file) => StageSchema.parse(JSON.parse(readFileSync(join(stagesDir, file), "utf8"))));
+  const companions = new Set(Object.values(CHAPTER_1_DUNGEON_MOBS));
+
+  it("fights every chapter 1 dungeon series in the fairy meadow (M6-07M)", () => {
+    expect(dungeonStages.length).toBeGreaterThan(0);
+    expect(
+      existsSync(join(import.meta.dirname, "../../../public/assets/backgrounds/fairy-meadow.webp")),
+    ).toBe(true);
+    for (const stage of dungeonStages) expect(stageBackground(stage)).toBe("fairy-meadow");
+  });
+
+  it("has a locked sprite for every companion mob a dungeon fields", () => {
+    const fielded = new Set(
+      dungeonStages.flatMap((stage) =>
+        stage.waves.flatMap((wave) => wave.enemies.map((slot) => slot.enemy)),
+      ),
+    );
+    const enemies: Record<string, { canvas: number }> = stageArt.enemies;
+    for (const mob of companions) {
+      expect(fielded.has(mob)).toBe(true);
+      expect(enemies[mob]?.canvas).toBe(128);
+      expect(
+        existsSync(
+          join(import.meta.dirname, "../../../public/assets/enemies", mob, "battle-idle.png"),
+        ),
+      ).toBe(true);
     }
   });
 });

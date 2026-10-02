@@ -139,6 +139,13 @@
   width: 100%;
   height: auto;
 }
+/* The item's icon (M6-10B) at 70% of the slot, like a sphere in its socket. */
+.items img.itemIcon {
+  position: absolute;
+  top: 9%;
+  left: 15%;
+  width: 70%;
+}
 .manageItems {
   color: #eee0be;
   background: #142027;

@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { itemIcon } from "../../../../../components/menu/item-icon.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
 import {
   BATTLE_ITEMS,
@@ -76,6 +77,7 @@ export function ItemLoadout({
         {["first", "second", "third", "fourth", "fifth"].map((key, index) => {
           const entry = slots[index];
           const item = BATTLE_ITEMS.find((item) => item.id === entry?.item);
+          const icon = item ? itemIcon(item.id) : null;
           return (
             <button
               type="button"
@@ -90,6 +92,7 @@ export function ItemLoadout({
               onClick={() => setEditing(index)}
             >
               <UiImage name="item-slot" />
+              {icon ? <UiImage name={icon} className={styles.itemIcon} /> : null}
               <span>
                 {item?.name ?? "Empty"}
                 {entry ? ` ×${entry.count}` : ""}

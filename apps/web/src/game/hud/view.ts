@@ -4,6 +4,7 @@ import { type Box, fitScale, pieceTextBox } from "../../components/menu/text-box
 import {
   type BattleUiPiece,
   elementOrb,
+  itemIconPiece,
   PORTRAIT_ART,
   uiPiece,
   uiPieceSize,
@@ -27,6 +28,8 @@ import { bossEnemy, gaugeView, type HudState, type HudUnit, resultTitle } from "
 export const OUTLINE = "#2a1606";
 /** Used until the Lilita One webfont is known to be loaded (it always is by `mountBattle`). */
 export const FALLBACK_FONT = "sans-serif";
+/** Item icons fill 70% of the slot's width, like sphere icons in their sockets (ART_GUIDE → UI). */
+const ITEM_ICON_SCALE = 0.7;
 
 export const HUD_COLORS = {
   window: 0x10152a,
@@ -108,6 +111,7 @@ interface CardView {
 
 interface ItemSlotView {
   readonly slot: Phaser.GameObjects.Image;
+  readonly icon: Phaser.GameObjects.Image | undefined;
   readonly name: Phaser.GameObjects.Text;
   readonly count: Phaser.GameObjects.Text;
 }
@@ -248,6 +252,7 @@ export class HudView {
   private paintItems(): void {
     this.items.forEach((view, i) => {
       const empty = (this.itemCounts[i] ?? 0) <= 0;
+      view.icon?.setAlpha(empty ? 0.4 : 1);
       view.name.setAlpha(empty ? 0.5 : 1);
       view.count.setAlpha(empty ? 0.5 : 1);
       if (empty) view.slot.setTint(HUD_COLORS.itemEmpty);
@@ -363,7 +368,8 @@ export class HudView {
 
   /**
    * The item panel and its five slots (M2-02D): the first five inventory items in setup order,
-   * each with its name and count; slots past the inventory stay empty.
+   * each with its icon (M6-10B), name, and count; slots past the inventory stay empty. An item
+   * without an icon shows its name in the middle of the slot instead.
    */
   private buildItems(hud: HudState): void {
     this.piece("item-panel", HUD.itemPanel);
@@ -372,11 +378,23 @@ export class HudView {
     for (let i = 0; i < ITEM_SLOTS; i++) {
       const r = itemSlotRect(i);
       const slot = this.piece("item-slot", r);
-      if (i >= this.itemIds.length) continue;
-      const name = this.text(r.x + r.width / 2, r.y + r.height * 0.42, "", 16).setOrigin(0.5);
+      const id = this.itemIds[i];
+      if (id === undefined) continue;
+      const iconPiece = itemIconPiece(id);
+      const size = r.width * ITEM_ICON_SCALE;
+      const icon = iconPiece
+        ? this.scene.add
+            .image(r.x + r.width / 2, r.y + r.height * 0.42, uiPiece(iconPiece).key)
+            .setDisplaySize(size, size)
+        : undefined;
+      const name = icon
+        ? this.text(r.x + r.width / 2, r.y + r.height * 0.84, "", 14).setOrigin(0.5)
+        : this.text(r.x + r.width / 2, r.y + r.height * 0.42, "", 16).setOrigin(0.5);
       name.setAlign("center").setWordWrapWidth(r.width - 12);
-      const count = this.text(r.x + r.width - 10, r.y + r.height - 10, "", 18).setOrigin(1, 1);
-      this.items.push({ slot, name, count });
+      const count = icon
+        ? this.text(r.x + r.width - 10, r.y + 12, "", 18).setOrigin(1, 0)
+        : this.text(r.x + r.width - 10, r.y + r.height - 10, "", 18).setOrigin(1, 1);
+      this.items.push({ slot, icon, name, count });
     }
   }
 

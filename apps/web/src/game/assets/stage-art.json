@@ -12,6 +12,28 @@
     "saltglass-coast": {
       "chapters": [2],
       "stages": []
+    },
+    "fairy-meadow": {
+      "chapters": [],
+      "stages": [],
+      "series": [
+        "alembic",
+        "athanor",
+        "cairn",
+        "colossus",
+        "dusk-urn",
+        "effigy",
+        "flask",
+        "glint-urn",
+        "grail",
+        "hobs",
+        "items",
+        "mote",
+        "prism-cairn",
+        "sprite",
+        "wyrm-coffer",
+        "zenith-core"
+      ]
     }
   },
   "enemies": {
@@ -62,14 +84,42 @@
     },
     "trial2-ozric-p2": {
       "canvas": 256
+    },
+    "ch2-saltfin": {
+      "canvas": 128
+    },
+    "ch2-kiln-crab": {
+      "canvas": 128
+    },
+    "ch2-reed-stalker": {
+      "canvas": 128
+    },
+    "ch2-storm-ray": {
+      "canvas": 128
+    },
+    "ch2-glassward": {
+      "canvas": 128
+    },
+    "ch2-tidewright": {
+      "canvas": 256
+    },
+    "dg1-ember-mite": {
+      "canvas": 128
+    },
+    "dg1-drip-newt": {
+      "canvas": 128
+    },
+    "dg1-root-crawler": {
+      "canvas": 128
+    },
+    "dg1-static-eel": {
+      "canvas": 128
+    },
+    "dg1-gleam-crab": {
+      "canvas": 128
+    },
+    "dg1-gloom-bat": {
+      "canvas": 128
     }
-  },
-  "enemyFallbacks": {
-    "ch2-saltfin": "ch1-puddle-wisp",
-    "ch2-kiln-crab": "ch1-cinder-moth",
-    "ch2-reed-stalker": "ch1-bramble-pup",
-    "ch2-storm-ray": "ch1-spark-beetle",
-    "ch2-glassward": "ch1-ashbound-sentry",
-    "ch2-tidewright": "ch1-gravemaw"
   }
 }
