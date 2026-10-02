@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { STORY_STAGES } from "../../../lib/quests/quest-map.ts";
@@ -50,6 +51,8 @@ describe("quest preparation integration (M3-04I)", () => {
     expect(html).toContain("No Ally");
     expect(html).toContain("Brand · Yours");
     expect(html).toContain(`ally=${id}`);
+    expect(html).toContain("/assets/ui/title-plate.webp");
+    expect(html).toContain("/assets/ui/unit-frame-fire.webp");
   });
   it("renders the selected squad and six cards, retaining the ally in squad links", async () => {
     const html = renderToStaticMarkup(
@@ -63,6 +66,29 @@ describe("quest preparation integration (M3-04I)", () => {
     expect(html.match(/aria-label="Empty squad slot"/g)).toHaveLength(4);
     expect(html).toContain("slot=8&amp;ally=");
     expect(html.match(/aria-label="Empty item slot/g)).toHaveLength(5);
+    for (const piece of [
+      "title-plate",
+      "skill-tag-red",
+      "skill-tag-blue",
+      "unit-card",
+      "unit-card-empty",
+      "squad-arrow",
+      "dot-on",
+      "dot-off",
+      "item-slot",
+      "btn-hub",
+    ]) {
+      expect(html).toContain(`/assets/ui/${piece}.webp`);
+    }
+    expect(html).toContain("/assets/ui/cards/battle/brand-3star.webp");
+    expect(html).toContain("LEADER");
+    expect(html).toContain("ALLY");
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain("Lv. 1");
+    // Every decorative image wired into this screen must have a real public export.
+    for (const match of html.matchAll(/src="(\/assets\/[^"]+)"/g)) {
+      expect(existsSync(new URL(`../../../../public${match[1]}`, import.meta.url))).toBe(true);
+    }
   });
   it("disables starting an empty squad and renders No Ally", async () => {
     const html = renderToStaticMarkup(
@@ -82,6 +108,25 @@ describe("quest preparation integration (M3-04I)", () => {
         searchParams: Promise.resolve({ ally: "foreign" }),
       }),
     ).rejects.toThrow("not-found");
+  });
+  it("keeps the art-backed start button disabled when preparation fails", async () => {
+    preparation.mockResolvedValue({
+      stage,
+      owned: [],
+      squads: [],
+      items: [],
+      userId: "player-one",
+      failed: true,
+    });
+    const html = renderToStaticMarkup(
+      await BeginQuestPage({
+        params: Promise.resolve({ stage: stageId }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(html).toContain("Your squad could not be loaded");
+    expect(html).toContain("/assets/ui/btn-hub.webp");
+    expect(html).toMatch(/<button type="submit"[^>]*disabled=""/);
   });
   it("sends the selected squad and duplicate ally to start_battle and opens the battle", async () => {
     await expect(beginQuest(stageId, 7, id)).rejects.toThrow("redirect:/battle?session=session-id");

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { textBoxStyle } from "../../../../components/menu/text-box.ts";
+import { UiImage } from "../../../../components/menu/UiImage.tsx";
 import { UnitIconFace } from "../../../../components/units/UnitIconFace.tsx";
 import { beginQuestHref, reinforcements } from "../../../../lib/quests/reinforcement.ts";
 import {
@@ -23,14 +25,28 @@ export default async function ReinforcementPage({
   const preparation = await questPreparation(stage);
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link href="/quests">Back</Link>
-        <h1>Reinforcement</h1>
-        <Link href={`/start/${stage}?sort=${nextUnitSort(sort)}`}>Sort</Link>
+      <header className={unitStyles.titleBar}>
+        <Link href="/quests" className={`${unitStyles.pill} ${unitStyles.backButton}`}>
+          Back
+        </Link>
+        <div className={`${unitStyles.titlePlate} ${styles.titlePlate}`}>
+          <UiImage name="title-plate" className={unitStyles.titlePlateArt} />
+          <div className={unitStyles.titleText} style={textBoxStyle("title-plate")}>
+            <h1 className={unitStyles.outline}>Reinforcement</h1>
+          </div>
+        </div>
+        <Link
+          className={`${unitStyles.pill} ${unitStyles.sortButton}`}
+          href={`/start/${stage}?sort=${nextUnitSort(sort)}`}
+        >
+          Sort
+        </Link>
       </header>
       <div className={styles.toolbar}>
         <span>Sort: {UNIT_SORT_LABELS[sort]}</span>
-        <Link href={beginQuestHref(stage, null)}>No Ally</Link>
+        <Link className={styles.pill} href={beginQuestHref(stage, null)}>
+          No Ally
+        </Link>
       </div>
       {preparation.failed ? (
         <p role="alert">Your units could not be loaded. Try again shortly.</p>

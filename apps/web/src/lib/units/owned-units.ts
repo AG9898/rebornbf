@@ -268,6 +268,12 @@ const UNITS_WITH_ART: ReadonlySet<string> = new Set([
   "volt-grail",
   "glint-grail",
   "dusk-grail",
+  // Stat hobs (M4-04B, M6-08C): locked splash, idle sprite, and figure thumb for each 3★ form.
+  "vital-hob",
+  "might-hob",
+  "ward-hob",
+  "mend-hob",
+  "grand-hob",
   // Evolution materials (RESOLVED-67, M6-08D): one 3★–5★ form each; the Motes are M6-08E.
   "cinder-effigy",
   "rill-effigy",

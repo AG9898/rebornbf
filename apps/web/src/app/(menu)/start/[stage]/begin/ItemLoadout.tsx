@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { itemIcon } from "../../../../../components/menu/item-icon.ts";
+import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
 import {
   BATTLE_ITEMS,
@@ -16,7 +17,10 @@ function BeginButton({ disabled }: { disabled: boolean }): ReactNode {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className={styles.begin} disabled={disabled || pending}>
-      {pending ? "Starting…" : "Begin Quest"}
+      <UiImage name="btn-hub" className={styles.beginArt} />
+      <span className={styles.beginText} style={textBoxStyle("btn-hub")}>
+        {pending ? "Starting…" : "Begin Quest"}
+      </span>
     </button>
   );
 }

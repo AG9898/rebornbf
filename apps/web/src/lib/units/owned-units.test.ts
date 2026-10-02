@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Form } from "@bfr/data";
 import { TYPE_GAIN_RANGES } from "@bfr/engine";
@@ -119,6 +119,24 @@ describe("toOwnedUnitView", () => {
     expect(view.sprite).toBe("/assets/units/volt-athanor/battle-idle-5star.png");
     expect(view.thumb).toBe("/assets/ui/cards/thumb/volt-athanor-5star.webp");
   });
+
+  it.each(["vital-hob", "might-hob", "ward-hob", "mend-hob", "grand-hob"])(
+    "uses the locked splash, sprite and thumbnail for %s in collection and detail views",
+    (unitId) => {
+      const owned = row({ unit_id: unitId, form_id: `${unitId}-3` });
+      const paths = {
+        illustration: `/assets/units/${unitId}/illustration-3star.png`,
+        sprite: `/assets/units/${unitId}/battle-idle-3star.png`,
+        thumb: `/assets/ui/cards/thumb/${unitId}-3star.webp`,
+      };
+      expect(formArtFile(unitId, 3)).toBe("3star");
+      expect(toOwnedUnitView(owned)).toMatchObject(paths);
+      expect(toUnitDetailView(owned)).toMatchObject(paths);
+      for (const path of Object.values(paths)) {
+        expect(existsSync(new URL(`../../../public${path}`, import.meta.url)), path).toBe(true);
+      }
+    },
+  );
 
   it("degrades to the raw ids when the content is missing", () => {
     const view = toOwnedUnitView(row({ unit_id: "retired-unit", form_id: "retired-unit-5" }));

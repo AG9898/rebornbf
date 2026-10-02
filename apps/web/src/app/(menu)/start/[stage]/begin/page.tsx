@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
+import { PORTRAIT_ART, UI_ASSETS } from "../../../../../components/menu/ui-assets.ts";
 import { itemLoadoutKey } from "../../../../../lib/quests/item-loadout.ts";
 import { beginQuestHref, reinforcements } from "../../../../../lib/quests/reinforcement.ts";
 import { cardArtPath } from "../../../../../lib/squad/home-showcase.ts";
@@ -14,6 +16,7 @@ import {
 } from "../../../../../lib/squad/squad-editor.ts";
 import { formLeaderSkill, toOwnedUnitView } from "../../../../../lib/units/owned-units.ts";
 import { questPreparation } from "../../../../../server/quest-preparation.ts";
+import unitStyles from "../../../units/units.module.css";
 import styles from "../../start.module.css";
 import { beginQuest } from "./actions.ts";
 import { ItemLoadout } from "./ItemLoadout.tsx";
@@ -52,19 +55,52 @@ export default async function BeginQuestPage({
   ];
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link href={`/start/${stage}`}>Back</Link>
-        <h1>{preparation.stage.name}</h1>
-        <Link href="/home">Home</Link>
+      <header className={unitStyles.titleBar}>
+        <Link href={`/start/${stage}`} className={`${unitStyles.pill} ${unitStyles.backButton}`}>
+          Back
+        </Link>
+        <div className={`${unitStyles.titlePlate} ${styles.titlePlate}`}>
+          <UiImage name="title-plate" className={unitStyles.titlePlateArt} />
+          <div className={unitStyles.titleText} style={textBoxStyle("title-plate")}>
+            <h1 className={unitStyles.outline}>{preparation.stage.name}</h1>
+          </div>
+        </div>
+        <Link href="/home" className={`${unitStyles.pill} ${unitStyles.sortButton}`}>
+          Home
+        </Link>
       </header>
       <div className={styles.toolbar}>
-        <Link href={`/squad?slot=${slot}`}>Manage Squad</Link>
-        <h2>Squad {slot + 1}</h2>
+        <Link className={styles.pill} href={`/squad?slot=${slot}`}>
+          Manage Squad
+        </Link>
+        <h2 className={styles.pill}>Squad {slot + 1}</h2>
       </div>
-      <p className={styles.skill}>
-        Leader Skill: {leader ? (formLeaderSkill(leader.unitId, leader.formId) ?? "None") : "None"}
-      </p>
-      <p className={styles.skill}>Ally Skill: {ally?.leaderSkill ?? "None"}</p>
+      <div className={unitStyles.skillRow}>
+        <span className={unitStyles.skillTag} data-tag="skill-tag-red">
+          <UiImage name="skill-tag-red" className={unitStyles.titlePlateArt} />
+          <span
+            className={`${unitStyles.skillTagText} ${unitStyles.outline}`}
+            style={textBoxStyle("skill-tag-red")}
+          >
+            Leader Skill
+          </span>
+        </span>
+        <span className={unitStyles.skillName}>
+          {leader ? (formLeaderSkill(leader.unitId, leader.formId) ?? "None") : "None"}
+        </span>
+      </div>
+      <div className={unitStyles.skillRow}>
+        <span className={unitStyles.skillTag} data-tag="skill-tag-blue">
+          <UiImage name="skill-tag-blue" className={unitStyles.titlePlateArt} />
+          <span
+            className={`${unitStyles.skillTagText} ${unitStyles.outline}`}
+            style={textBoxStyle("skill-tag-blue")}
+          >
+            Ally Skill
+          </span>
+        </span>
+        <span className={unitStyles.skillName}>{ally?.leaderSkill ?? "None"}</span>
+      </div>
       <div className={styles.cards}>
         {cards.map((unit, i) => {
           const art = unit ? cardArtPath(unit.unitId, unit.formId) : null;
@@ -82,19 +118,26 @@ export default async function BeginQuestPage({
             >
               {art ? (
                 <Image
-                  src={art}
+                  src={art.replace("/cards/", "/cards/battle/")}
                   alt=""
-                  width={180}
-                  height={300}
+                  width={PORTRAIT_ART.width}
+                  height={PORTRAIT_ART.height}
                   unoptimized
-                  className={styles.cardArt}
+                  className={styles.portrait}
+                  style={{
+                    left: `${(PORTRAIT_ART.x / UI_ASSETS["unit-card"].width) * 100}%`,
+                    top: `${(PORTRAIT_ART.y / UI_ASSETS["unit-card"].height) * 100}%`,
+                    width: `${(PORTRAIT_ART.width / UI_ASSETS["unit-card"].width) * 100}%`,
+                    height: `${(PORTRAIT_ART.height / UI_ASSETS["unit-card"].height) * 100}%`,
+                  }}
                 />
               ) : null}
-              <UiImage name="card-frame" className={styles.cardArt} />
+              <UiImage name={unit ? "unit-card" : "unit-card-empty"} className={styles.cardArt} />
               <span className={styles.cardLabel}>
                 {i === 5 ? "ALLY" : i === draft.leaderIndex ? "LEADER" : ""}
               </span>
               <span className={styles.cardName}>{unit?.name ?? "Empty"}</span>
+              {unit ? <span className={styles.cardLevel}>Lv. {unit.level}</span> : null}
             </section>
           );
         })}
@@ -102,9 +145,10 @@ export default async function BeginQuestPage({
       <nav className={styles.squads} aria-label="Choose squad">
         <Link
           aria-label="Previous squad"
+          className={styles.arrow}
           href={beginQuestHref(stage, allyId, stepSquadSlot(slot, -1))}
         >
-          ◀
+          <UiImage name="squad-arrow" />
         </Link>
         {Array.from({ length: SQUAD_SLOTS }, (_, i) => i).map((i) => (
           <Link
@@ -112,12 +156,17 @@ export default async function BeginQuestPage({
             href={beginQuestHref(stage, allyId, i)}
             aria-label={`Squad ${i + 1}`}
             aria-current={i === slot ? "page" : undefined}
+            className={styles.dot}
           >
-            ●
+            <UiImage name={i === slot ? "dot-on" : "dot-off"} />
           </Link>
         ))}
-        <Link aria-label="Next squad" href={beginQuestHref(stage, allyId, stepSquadSlot(slot, 1))}>
-          ▶
+        <Link
+          className={`${styles.arrow} ${styles.next}`}
+          aria-label="Next squad"
+          href={beginQuestHref(stage, allyId, stepSquadSlot(slot, 1))}
+        >
+          <UiImage name="squad-arrow" />
         </Link>
       </nav>
       {preparation.failed ? (
