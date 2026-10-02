@@ -123,6 +123,21 @@ export interface BattleSetup {
    * (every unit Auto, every toggle off). Part of the setup so replays use the same settings.
    */
   readonly autoSettings?: AutoSettings;
+  /**
+   * Turn-triggered form changes (GAME_DESIGN §2 → Form changes, M6-01B_1): after `afterTurns`
+   * turns in wave `wave`, its surviving enemy changes into the next wave's enemy through the wave
+   * transition, keeping its HP fraction. Each wave at most once; omitted means none.
+   */
+  readonly formChanges?: readonly FormChangeSetup[];
+}
+
+/**
+ * One turn-triggered form change: wave `wave` (0-based, not the last) and the next wave each hold
+ * exactly one enemy; after `afterTurns` turns in that wave the wave advances without a kill.
+ */
+export interface FormChangeSetup {
+  readonly wave: number;
+  readonly afterTurns: number;
 }
 
 /** Auto Battle Advance Settings per-unit modes, in the original menu's order. */
@@ -242,6 +257,10 @@ export interface BattleState {
   readonly waves: readonly (readonly EnemySetup[])[];
   /** 0-based index of the current wave. */
   readonly waveIndex: number;
+  /** The turn on which the current wave started (1 for the first wave). */
+  readonly waveStartTurn: number;
+  /** The setup's turn-triggered form changes (see `BattleSetup.formChanges`). */
+  readonly formChanges: readonly FormChangeSetup[];
   /** The current wave's enemies. */
   readonly enemies: readonly BattleEnemy[];
   /** Pending hits in resolution order (see `compareHits`). */

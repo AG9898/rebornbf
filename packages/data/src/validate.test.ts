@@ -90,6 +90,32 @@ describe("validateUnitFile", () => {
     ]);
   });
 
+  it("gives every launch unit a valid quote and no other unit one (M4-06G)", () => {
+    const launch = ["aurelle", "brand", "garrick", "maren", "morrick", "rook", "solen", "vespera"];
+    for (const name of unitFiles) {
+      const unit = UnitSchema.parse(loadUnit(name));
+      if (launch.includes(unit.id)) {
+        expect(unit.quote, unit.id).toEqual(expect.any(String));
+      } else {
+        expect(unit.quote, unit.id).toBeUndefined();
+      }
+    }
+  });
+
+  it("rejects an over-long, multi-line, untrimmed, or fodder quote", () => {
+    const quoted = (quote: string) => ({ ...ember(), quote });
+    expect(validateUnitFile("units/placeholder-ember.json", quoted("A short line."))).toEqual([]);
+    for (const bad of ["x".repeat(81), "One line.\nTwo lines.", " Padded.", ""]) {
+      expect(validateUnitFile("units/placeholder-ember.json", quoted(bad))[0]).toContain(
+        "units/placeholder-ember.json: quote: ",
+      );
+    }
+    const fodder = { ...loadUnit("cinder-sprite.json"), quote: "Pick me." };
+    expect(validateUnitFile("units/cinder-sprite.json", fodder)).toEqual([
+      "units/cinder-sprite.json: quote: fodder and material units have no quote",
+    ]);
+  });
+
   it("accepts a unit without a source (the public mirror strips it, RESOLVED-61)", () => {
     const unit = ember();
     delete unit.source;

@@ -385,11 +385,25 @@ export interface WaveClearedEvent {
   readonly wave: number;
 }
 
-/** Wave `wave` (0-based) spawned; its enemies are at full HP. */
+/**
+ * Wave `wave`'s enemy changed form after its turn count (GAME_DESIGN §2 → Form changes) without
+ * being defeated; takes the place of `WaveCleared`, and `WaveStarted` for the next wave follows.
+ */
+export interface FormChangedEvent {
+  readonly type: "FormChanged";
+  readonly tick: number;
+  readonly wave: number;
+}
+
+/**
+ * Wave `wave` (0-based) spawned. Its enemies are at full HP, except after a form change, when
+ * `enemyHp` gives each slot's carried-over HP in slot order.
+ */
 export interface WaveStartedEvent {
   readonly type: "WaveStarted";
   readonly tick: number;
   readonly wave: number;
+  readonly enemyHp?: readonly number[];
 }
 
 /** A new player phase began. */
@@ -460,6 +474,7 @@ export type BattleEvent =
   | CounterDamagedEvent
   | OverdriveEndedEvent
   | WaveClearedEvent
+  | FormChangedEvent
   | WaveStartedEvent
   | TurnStartedEvent
   | BattleEndedEvent

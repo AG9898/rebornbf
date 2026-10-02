@@ -32,15 +32,33 @@ function sessionSpec(battle: SessionBattle): BattleSpec {
   };
 }
 
-/** Plays `battle` when the page started from a session, else the offline demo. */
+/** The player's saved presentation settings the scene applies (M7-01_2). */
+export type BattlePreferences = Pick<BattleSpec, "initialSpeed" | "reducedMotion">;
+
+/**
+ * Plays `battle` when the page started from a session, else the offline demo, with the player's
+ * saved default speed and reduced-motion setting. Spark assist is not here: it is part of the
+ * session's engine setup, so the server replay uses the same value.
+ */
 export default function BattleClient({
   battle,
   sessionId,
+  preferences,
 }: {
   battle?: SessionBattle;
   sessionId?: string;
+  preferences?: BattlePreferences;
 }): ReactNode {
-  const spec = useMemo(() => (battle ? sessionSpec(battle) : DEMO_BATTLE_SPEC), [battle]);
+  const speed = preferences?.initialSpeed;
+  const reducedMotion = preferences?.reducedMotion;
+  const spec = useMemo(
+    (): BattleSpec => ({
+      ...(battle ? sessionSpec(battle) : DEMO_BATTLE_SPEC),
+      ...(speed ? { initialSpeed: speed } : {}),
+      ...(reducedMotion ? { reducedMotion } : {}),
+    }),
+    [battle, speed, reducedMotion],
+  );
   const back = battle?.stage.trial ? TRIALS_BACK : undefined;
   return <PhaserBattle spec={spec} sessionId={sessionId} back={back} />;
 }

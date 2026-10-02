@@ -12,8 +12,9 @@ const units = readdirSync(unitsDir)
 
 describe("stackable units", () => {
   it("flags every single-form fodder and material unit, and no multi-form or placeholder unit", () => {
+    // Placeholders are matched by id, not `source`: the public export strips `source` (M6-04).
     const expected = units
-      .filter((unit) => unit.forms.length === 1 && !("placeholder" in (unit.source ?? {})))
+      .filter((unit) => unit.forms.length === 1 && !unit.id.startsWith("placeholder-"))
       .map((unit) => unit.id);
     const stackable = units.filter((unit) => unit.stackable).map((unit) => unit.id);
     expect(stackable).toEqual(expected);

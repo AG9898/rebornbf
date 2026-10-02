@@ -58,6 +58,15 @@ export const AiRuleSchema = z.discriminatedUnion("when", [
     offset: z.int().nonnegative().optional(),
     ...aiAction,
   }),
+  /**
+   * Fires only on the enemy's own turn `turn` (counted from 1; a turn lost to Paralysis still
+   * counts): an opening move or other one-off scripted turn (M6-01B_2).
+   */
+  z.strictObject({
+    when: z.literal("on_turn"),
+    turn: PositiveIntSchema,
+    ...aiAction,
+  }),
   /** Fires once, the first enemy turn the enemy's HP is at or below `hpPercent` of max. */
   z.strictObject({
     when: z.literal("hp_threshold_once"),

@@ -223,7 +223,7 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
           slot: `e${i}`,
           name: enemy.name,
           element: enemy.element,
-          hp: enemy.hp,
+          hp: event.enemyHp?.[i] ?? enemy.hp,
           maxHp: enemy.hp,
           effects: [],
         })),
@@ -255,6 +255,7 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
     case "Sparked":
     case "EnemyActionStarted":
     case "WaveCleared":
+    case "FormChanged":
     case "ContinueRejected":
       return hud;
     case "ItemUsed":

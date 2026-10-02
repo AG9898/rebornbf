@@ -2,6 +2,7 @@
   "id": "rook",
   "name": "Rook",
   "element": "thunder",
+  "quote": "Strike together and the sky answers twice.",
   "forms": [
     {
       "id": "rook-2",

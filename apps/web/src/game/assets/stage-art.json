@@ -7,7 +7,7 @@
     },
     "trial-hall": {
       "chapters": [],
-      "stages": ["trial-01-captain-locke"]
+      "stages": ["trial-01-captain-locke", "trial-02-master-ozric"]
     },
     "saltglass-coast": {
       "chapters": [2],

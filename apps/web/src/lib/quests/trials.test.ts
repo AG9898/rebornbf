@@ -26,6 +26,18 @@ describe("trials list (M6-01A_1)", () => {
     ).toBe("cleared");
   });
 
+  it("lists Trial 2 after Trial 1, locked until story stage 16 is cleared (M6-01B_2)", () => {
+    expect(TRIAL_STAGES.map((stage) => stage.trial?.number)).toEqual([1, 2]);
+    const second = (cleared: string[]) => buildTrialList(new Set(cleared))[1];
+    expect(second(storyIds.slice(0, 15))).toMatchObject({
+      id: "trial-02-master-ozric",
+      number: 2,
+      gateNumber: 16,
+      state: "locked",
+    });
+    expect(second(storyIds.slice(0, 16))?.state).toBe("open");
+  });
+
   it("finds trials by ID and nothing else", () => {
     expect(trialStage("trial-01-captain-locke")?.trial?.number).toBe(1);
     expect(trialStage(storyIds[0] ?? "")).toBeUndefined();

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { MenuMusic } from "./MenuMusic.tsx";
 import styles from "./menu.module.css";
 import { NavBar } from "./NavBar.tsx";
 import { TopBar } from "./TopBar.tsx";
@@ -19,6 +20,7 @@ export function MenuFrame({
   return (
     <div className={styles.backdrop}>
       <div className={styles.frame}>
+        <MenuMusic />
         <WalletGemsProvider initialGems={wallet?.gems ?? null}>
           <div className={styles.screen}>
             <TopBar playerName={playerName} zel={wallet?.zel ?? null} />

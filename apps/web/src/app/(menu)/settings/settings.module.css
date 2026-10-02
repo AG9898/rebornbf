@@ -1,0 +1,110 @@
+/* Settings screen (M7-01_2): rows inside the menu panel, sized in the frame's --u units. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: calc(var(--u) * 18);
+  margin-top: calc(var(--u) * 24);
+  text-align: left;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 20);
+  margin: 0;
+  padding: calc(var(--u) * 16) calc(var(--u) * 20);
+  border: calc(var(--u) * 2) solid #5a4220;
+  border-radius: calc(var(--u) * 12);
+  background: rgb(20 26 44 / 0.75);
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 6);
+  float: left;
+  padding: 0;
+  color: #fbe39a;
+  font-size: calc(var(--u) * 26);
+}
+
+.hint {
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  line-height: 1.4;
+  color: #d8d0bc;
+}
+
+.toggle {
+  flex-shrink: 0;
+  width: calc(var(--u) * 36);
+  height: calc(var(--u) * 36);
+  accent-color: #d49a2a;
+}
+
+.choices {
+  display: flex;
+  flex-shrink: 0;
+  gap: calc(var(--u) * 16);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  color: #fff4d6;
+  font-size: calc(var(--u) * 24);
+}
+
+.choice input {
+  width: calc(var(--u) * 26);
+  height: calc(var(--u) * 26);
+  accent-color: #d49a2a;
+}
+
+.form button:disabled {
+  opacity: 0.55;
+}
+
+.form button {
+  align-self: center;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* The two panels (battle settings, auto battle) stack and scroll inside the menu frame (M7-01_3). */
+.stack {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: calc(var(--u) * 24);
+  overflow-y: auto;
+}
+
+.unitName {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 4);
+  color: #fbe39a;
+  font-size: calc(var(--u) * 24);
+}
+
+.select {
+  flex-shrink: 0;
+  padding: calc(var(--u) * 6) calc(var(--u) * 10);
+  border: calc(var(--u) * 2) solid #c99a3a;
+  border-radius: calc(var(--u) * 8);
+  background: #141a2c;
+  color: #fff4d6;
+  font-family: inherit;
+  font-size: calc(var(--u) * 22);
+}
+
+.subheading {
+  margin: 0;
+  color: #fbe39a;
+  font-size: calc(var(--u) * 24);
+}

@@ -15,8 +15,19 @@ export const WaveEnemySchema = z.strictObject({
 });
 export type WaveEnemy = z.infer<typeof WaveEnemySchema>;
 
-/** One wave: its enemies in slot order (`e0`…). */
-export const WaveSchema = z.strictObject({ enemies: z.array(WaveEnemySchema).min(1) });
+/**
+ * A turn-triggered form change (GAME_DESIGN §2 → Form changes, M6-01B_1): after `afterTurns` turns
+ * in this wave, its one enemy changes into the next wave's one enemy without being defeated,
+ * keeping its HP fraction; the change is a wave transition. Never on the last wave.
+ */
+export const FormChangeSchema = z.strictObject({ afterTurns: PositiveIntSchema });
+export type FormChange = z.infer<typeof FormChangeSchema>;
+
+/** One wave: its enemies in slot order (`e0`…), and an optional turn-triggered form change. */
+export const WaveSchema = z.strictObject({
+  enemies: z.array(WaveEnemySchema).min(1),
+  formChange: FormChangeSchema.optional(),
+});
 export type Wave = z.infer<typeof WaveSchema>;
 
 /**
@@ -227,6 +238,22 @@ export const StageSchema = z
       });
     }
     stage.waves.forEach((wave, w) => {
+      if (wave.formChange) {
+        const next = stage.waves[w + 1];
+        if (!next) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["waves", w, "formChange"],
+            message: "the last wave has no next form to change into",
+          });
+        } else if (wave.enemies.length !== 1 || next.enemies.length !== 1) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["waves", w, "formChange"],
+            message: "a form change needs one enemy in this wave and one in the next",
+          });
+        }
+      }
       if (
         stage.dungeon?.rareSpawn &&
         !wave.enemies.some((slot) => slot.enemy === stage.dungeon?.rareSpawn?.replaces)
@@ -253,4 +280,13 @@ export type Stage = z.infer<typeof StageSchema>;
 /** Whether the stage has a boss (a `boss: true` enemy, which may only be in the last wave). */
 export function isBossStage(stage: Pick<Stage, "waves">): boolean {
   return stage.waves.some((wave) => wave.enemies.some((slot) => slot.boss === true));
+}
+
+/** The stage's turn-triggered form changes as engine setup entries (`BattleSetup.formChanges`). */
+export function stageFormChanges(
+  stage: Pick<Stage, "waves">,
+): { wave: number; afterTurns: number }[] {
+  return stage.waves.flatMap((wave, w) =>
+    wave.formChange ? [{ wave: w, afterTurns: wave.formChange.afterTurns }] : [],
+  );
 }

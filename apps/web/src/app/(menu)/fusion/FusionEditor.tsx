@@ -8,6 +8,7 @@ import menu from "../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
+import { gameAudio } from "../../../game/audio/index.ts";
 import { FUSION_MINIMUM_NOTE, fusionPreview } from "../../../lib/units/fusion.ts";
 import {
   addFodderPicks,
@@ -266,7 +267,10 @@ export function FusionEditor({
                 type="button"
                 className={`${units.pill} ${units.pillButton} ${styles.panelPill} ${squad.barButtonLit}`}
                 disabled={pending || !canFuse}
-                onClick={fuse}
+                onClick={() => {
+                  gameAudio().playSfx("ui-confirm");
+                  fuse();
+                }}
               >
                 <span className={units.outline}>{pending ? "Fusing" : "Confirm"}</span>
               </button>
@@ -274,7 +278,10 @@ export function FusionEditor({
                 type="button"
                 className={`${units.pill} ${units.pillButton} ${styles.panelPill}`}
                 disabled={pending}
-                onClick={() => setConfirming(false)}
+                onClick={() => {
+                  gameAudio().playSfx("ui-cancel");
+                  setConfirming(false);
+                }}
               >
                 <span className={units.outline}>Cancel</span>
               </button>

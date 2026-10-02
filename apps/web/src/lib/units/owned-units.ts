@@ -128,6 +128,8 @@ export type OwnedUnitView = {
   name: string;
   /** The form's title, e.g. "Ember Knight"; null when the content is missing. */
   formName: string | null;
+  /** The unit's quote (launch units only, M4-06G); null for fodder, materials, or missing content. */
+  quote: string | null;
   element: Element | null;
   rarity: Rarity | null;
   rarityLabel: string;
@@ -360,6 +362,7 @@ export function toOwnedUnitView(row: OwnedUnitRow): OwnedUnitView {
     formId: row.form_id,
     name: unit?.name ?? row.unit_id,
     formName: form?.name ?? null,
+    quote: unit?.quote ?? null,
     element: unit?.element ?? null,
     rarity: form?.rarity ?? null,
     rarityLabel: rarityLabel(form?.rarity ?? null),

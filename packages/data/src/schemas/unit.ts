@@ -105,6 +105,12 @@ export const FormSchema = z
       ])
       .optional(),
     /**
+     * Zel this form sells for, per copy (GAME_DESIGN §8 → Selling units, RESOLVED-79). Set only on
+     * sale units, which exist to be sold; every other form omits it and `sell_units` refuses it.
+     * No launch content sets it.
+     */
+    sellZel: PositiveIntSchema.optional(),
+    /**
      * What evolving this form into the next form in `forms` costs. Omitted when the step is not
      * transcribed yet or does not exist; never set on a unit's last form.
      */
@@ -138,12 +144,29 @@ export const UnitSourceSchema = z.union([
 ]);
 export type UnitSource = z.infer<typeof UnitSourceSchema>;
 
+/** The longest unit quote, in characters: two short lines on the fusion result screen. */
+export const UNIT_QUOTE_MAX_LENGTH = 80;
+
+/**
+ * A unit's quote (ART_GUIDE → UI → Fusion result): one original line in the unit's voice, never
+ * original game text (IP_POLICY rule 1). Trimmed, one line (the screen wraps it to at most two),
+ * and at most `UNIT_QUOTE_MAX_LENGTH` characters.
+ */
+export const UnitQuoteSchema = z
+  .string()
+  .min(1)
+  .max(UNIT_QUOTE_MAX_LENGTH)
+  .refine((quote) => quote === quote.trim(), "must not start or end with whitespace")
+  .refine((quote) => !/[\r\n]/.test(quote), "must be one line");
+
 export const UnitSchema = z
   .strictObject({
     id: ContentIdSchema,
     name: z.string().min(1),
     element: ElementSchema,
     source: UnitSourceSchema.optional(),
+    /** The unit's quote; launch units only, never fodder or material units (`stackable`). */
+    quote: UnitQuoteSchema.optional(),
     /**
      * Level EXP curve every form of this line uses, named by its level-1 "Next Lv" value
      * (GAME_DESIGN §6 → Level EXP and fusion, RESOLVED-57). Omitted means base 10.
@@ -164,6 +187,13 @@ export const UnitSchema = z
         code: "custom",
         path: ["stackable"],
         message: "only a single-form unit can be stackable",
+      });
+    }
+    if (unit.stackable && unit.quote !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["quote"],
+        message: "fodder and material units have no quote",
       });
     }
     const seen = new Set<string>();

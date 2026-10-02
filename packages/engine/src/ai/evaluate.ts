@@ -59,6 +59,8 @@ function ruleFires(rule: AiRule, index: number, ctx: AiTurnContext): boolean {
   switch (rule.when) {
     case "every_n_turns":
       return everyNTurnsFires(ctx.enemyTurn, rule.n, rule.offset);
+    case "on_turn":
+      return ctx.enemyTurn === rule.turn;
     case "hp_threshold_once":
       return !ctx.memory.firedOnce.includes(index) && hpAtOrBelow(ctx.enemy, rule.hpPercent);
     case "condition":

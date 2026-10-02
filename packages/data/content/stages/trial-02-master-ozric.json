@@ -1,0 +1,31 @@
+{
+  "id": "trial-02-master-ozric",
+  "name": "Trial 2: Master Ozric",
+  "trial": {
+    "number": 2,
+    "gate": "story-16-tidewright-spire"
+  },
+  "firstClear": {
+    "gems": 0
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "trial2-ozric"
+        }
+      ],
+      "formChange": {
+        "afterTurns": 5
+      }
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "trial2-ozric-p2",
+          "boss": true
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import { type BattleSessionRow, sessionBattle, sessionProblem } from "./session-
 
 /** `battle_sessions` columns the finish route loads (with the owner, which RLS normally hides). */
 export const FINISH_SESSION_COLUMNS =
-  "id, user_id, stage_id, seed, squad, items, content_version, expires_at, finished_at, continued_turn";
+  "id, user_id, stage_id, seed, squad, items, spark_assist, auto_settings, content_version, expires_at, finished_at, continued_turn";
 
 export type FinishSessionRow = BattleSessionRow & { user_id: string };
 

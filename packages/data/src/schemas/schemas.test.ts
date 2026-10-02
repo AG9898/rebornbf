@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AttackSchema } from "./attack.ts";
 import { BurstSchema } from "./burst.ts";
 import { EFFECT_IDS, EffectSchema } from "./effect.ts";
+import { StageSchema, stageFormChanges } from "./stage.ts";
 import { EvolutionRecipeSchema, UnitSchema } from "./unit.ts";
 
 const attack = {
@@ -376,5 +377,60 @@ describe("EvolutionRecipeSchema (M4-02D)", () => {
     const last = UnitSchema.safeParse(unit([form, { ...withRecipe, id: "test-4" }]));
     expect(last.success).toBe(false);
     expect(last.error?.issues[0]?.path).toEqual(["forms", 1, "evolution"]);
+  });
+});
+
+describe("FormSchema sellZel (M4-06H)", () => {
+  const oneHit = { ...attack, hitFrames: [0], damageDistribution: [100], dropChecks: 1 };
+  const form = {
+    id: "test-3",
+    name: "Test",
+    rarity: 3,
+    maxLevel: 1,
+    stats: { base: { hp: 1, atk: 1, def: 1, rec: 1 }, max: { hp: 1, atk: 1, def: 1, rec: 1 } },
+    normalAttack: oneHit,
+    bursts: {
+      bb: {
+        name: "Test",
+        cost: 10,
+        attacks: [oneHit],
+        effects: [{ id: "attack.aoe", value: 1, target: "enemies" }],
+      },
+    },
+    sphereSlots: 1,
+  };
+  const unit = (patch: object) => ({
+    id: "test",
+    name: "Test",
+    element: "fire",
+    forms: [{ ...form, ...patch }],
+  });
+
+  it("accepts a form with no price or a positive whole price", () => {
+    expect(UnitSchema.safeParse(unit({})).success).toBe(true);
+    expect(UnitSchema.safeParse(unit({ sellZel: 50_000 })).success).toBe(true);
+  });
+
+  it.each([0, -1, 1.5, "100"])("rejects a sellZel of %s", (sellZel) => {
+    expect(UnitSchema.safeParse(unit({ sellZel })).success).toBe(false);
+  });
+});
+
+describe("StageSchema formChange (M6-01B_1)", () => {
+  const stage = (waves: unknown) => StageSchema.safeParse({ id: "form-test", name: "Form", waves });
+  const one = (enemy: string) => ({ enemies: [{ enemy }] });
+
+  it("accepts a turn-triggered form change into a one-enemy next wave", () => {
+    const parsed = stage([{ ...one("dark-form"), formChange: { afterTurns: 5 } }, one("light")]);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(stageFormChanges(parsed.data)).toEqual([{ wave: 0, afterTurns: 5 }]);
+  });
+
+  it("rejects a form change on the last wave, with several enemies, or a bad turn count", () => {
+    expect(stage([one("a"), { ...one("b"), formChange: { afterTurns: 5 } }]).success).toBe(false);
+    const pair = { enemies: [{ enemy: "a" }, { enemy: "b" }], formChange: { afterTurns: 5 } };
+    expect(stage([pair, one("c")]).success).toBe(false);
+    expect(stage([{ ...one("a"), formChange: { afterTurns: 5 } }, pair]).success).toBe(false);
+    expect(stage([{ ...one("a"), formChange: { afterTurns: 0 } }, one("b")]).success).toBe(false);
   });
 });

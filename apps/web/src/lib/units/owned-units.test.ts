@@ -41,6 +41,7 @@ describe("toOwnedUnitView", () => {
       illustration: "/assets/units/brand/illustration-6star.png",
       sprite: "/assets/units/brand/battle-idle-6star.png",
       thumb: "/assets/ui/cards/thumb/brand-6star.webp",
+      quote: "Steel remembers the forge. Stand behind me and watch it burn.",
     });
     expect(view.stats).toEqual({
       base: { hp: 3254, atk: 1227, def: 1106, rec: 973 },
@@ -114,6 +115,7 @@ describe("toOwnedUnitView", () => {
   it("gives growth fodder vessels their single form's art", () => {
     const view = toOwnedUnitView(row({ unit_id: "volt-athanor", form_id: "volt-athanor-5" }));
     expect(view.name).toBe("Volt Athanor");
+    expect(view.quote).toBeNull();
     expect(view.sprite).toBe("/assets/units/volt-athanor/battle-idle-5star.png");
     expect(view.thumb).toBe("/assets/ui/cards/thumb/volt-athanor-5star.webp");
   });
@@ -123,6 +125,7 @@ describe("toOwnedUnitView", () => {
     expect(view).toMatchObject({
       name: "retired-unit",
       formName: null,
+      quote: null,
       rarity: null,
       rarityLabel: "?",
       stats: null,

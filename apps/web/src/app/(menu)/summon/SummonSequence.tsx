@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
+import { gameAudio } from "../../../game/audio/index.ts";
 import { RARITY_WORDS, type SummonTreatment } from "../../../lib/summon/constants.ts";
 import type { SummonPullView } from "../../../lib/summon/summon.ts";
 import styles from "./summon.module.css";
@@ -52,6 +53,10 @@ export function SummonSequence({
   const pull = pulls[current];
 
   useEffect(() => {
+    if (phase === "reveal" && !results) gameAudio().playSfx("summon-reveal");
+  }, [phase, results]);
+
+  useEffect(() => {
     const timed = TIMED[phase];
     if (results || !timed) return;
     const id = window.setTimeout(() => setPhase(timed.next), timed.ms);
@@ -79,7 +84,14 @@ export function SummonSequence({
               </li>
             ))}
           </ul>
-          <button type="button" className={`${styles.pill} ${styles.closeButton}`} onClick={onDone}>
+          <button
+            type="button"
+            className={`${styles.pill} ${styles.closeButton}`}
+            onClick={() => {
+              gameAudio().playSfx("ui-confirm");
+              onDone();
+            }}
+          >
             <span className={styles.outline}>OK</span>
           </button>
         </div>

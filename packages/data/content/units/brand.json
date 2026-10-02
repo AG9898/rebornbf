@@ -2,6 +2,7 @@
   "id": "brand",
   "name": "Brand",
   "element": "fire",
+  "quote": "Steel remembers the forge. Stand behind me and watch it burn.",
   "forms": [
     {
       "id": "brand-2",

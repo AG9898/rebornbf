@@ -184,6 +184,17 @@ describe("HUD model", () => {
     ]);
   });
 
+  it("spawns a form change's roster at its carried-over HP (M6-01B_1)", () => {
+    const hud = applyHudEvents(initHud(start), [
+      { type: "FormChanged", tick: 9, wave: 0 },
+      { type: "WaveStarted", tick: 9, wave: 1, enemyHp: [1200, 900] },
+    ]);
+    expect(hud.enemies.map((enemy) => [enemy.hp, enemy.maxHp])).toEqual([
+      [1200, 3000],
+      [900, 3000],
+    ]);
+  });
+
   it("tracks status effects from apply events until their expiry events", () => {
     const atk = { id: "buff.atk", value: 100, turns: 3, target: "party" } as const;
     const poison = { id: "ailment.inflict.poison", value: 100, turns: 3, target: "enemy" } as const;

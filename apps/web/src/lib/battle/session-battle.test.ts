@@ -234,6 +234,18 @@ describe("session battle (M3-04B)", () => {
     expect(createBattle(story.battle.setup, story.battle.seed).trial).toBe(false);
   });
 
+  it("builds Trial 2 with its turn-triggered form change (M6-01B_2)", () => {
+    const trial = sessionBattle(row({ stage_id: "trial-02-master-ozric" }));
+    if (!trial.ok) throw new Error(trial.message);
+    expect(trial.battle.setup.trial).toBe(true);
+    expect(trial.battle.setup.waves.map((wave) => wave.map((enemy) => enemy.id))).toEqual([
+      ["trial2-ozric"],
+      ["trial2-ozric-p2"],
+    ]);
+    expect(trial.battle.setup.formChanges).toEqual([{ wave: 0, afterTurns: 5 }]);
+    expect(createBattle(trial.battle.setup, trial.battle.seed).formChanges).toHaveLength(1);
+  });
+
   it("omits the ally when the squad has none", () => {
     const result = sessionBattle(
       row({ squad: { leader_index: 0, units: [snap("brand", "brand-3")], ally: null } }),

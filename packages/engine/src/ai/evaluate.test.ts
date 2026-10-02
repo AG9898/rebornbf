@@ -111,6 +111,25 @@ describe("evaluateEnemyAi", () => {
     ]);
   });
 
+  it("on_turn fires only on its own enemy turn (M6-01B_2)", () => {
+    const opener: AiRule[] = AiRuleSchema.array().parse([
+      { when: "on_turn", turn: 1, skill: "verdict", target: "random" },
+      { when: "on_turn", turn: 4, skill: "lesson", target: "random" },
+      { when: "default", skill: "normal", target: "random" },
+    ]);
+    const full = enemy.stats.hp;
+    expect(runTurns(opener, [full, full, full, full, full])).toEqual([
+      "verdict",
+      "normal",
+      "normal",
+      "lesson",
+      "normal",
+    ]);
+    expect(() =>
+      AiRuleSchema.parse({ when: "on_turn", turn: 0, skill: "x", target: "random" }),
+    ).toThrow();
+  });
+
   it("records only fired threshold rules in memory", () => {
     const low = withHp(enemy, 1000);
     const ctx = { enemy: low, rules: SCRIPT, party, memory: createAiMemory(), rng: createRng(1) };

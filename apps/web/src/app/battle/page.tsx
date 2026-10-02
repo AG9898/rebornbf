@@ -11,7 +11,8 @@ import {
 } from "../../lib/battle/session-battle.ts";
 import { SIGN_IN_PATH } from "../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../lib/supabase/server.ts";
-import BattleClient from "./BattleClient.tsx";
+import { loadPlayerSettings } from "../../server/player-settings.ts";
+import BattleClient, { type BattlePreferences } from "./BattleClient.tsx";
 
 export const metadata: Metadata = { title: "Battle · BFR" };
 
@@ -54,7 +55,8 @@ async function loadSession(sessionId: string): Promise<Loaded> {
 /**
  * The battle route. With `?session=<id>` it plays a story battle issued by `start_battle`
  * (M3-04B): the session's stage, squad snapshot, and server-rolled seed. Without one it plays the
- * offline demo (M2-05B): no sign-in, no rewards; the whole battle runs client-side.
+ * offline demo (M2-05B): no sign-in, no rewards; the whole battle runs client-side. Both play at
+ * the player's saved default speed and reduced-motion setting (M7-01_2; defaults when signed out).
  */
 export default async function BattlePage({
   searchParams,
@@ -63,7 +65,14 @@ export default async function BattlePage({
 }): Promise<ReactNode> {
   const { session } = await searchParams;
   const sessionId = typeof session === "string" ? session : undefined;
-  const loaded = sessionId ? await loadSession(sessionId) : undefined;
+  const [loaded, { settings }] = await Promise.all([
+    sessionId ? loadSession(sessionId) : undefined,
+    loadPlayerSettings(),
+  ]);
+  const preferences: BattlePreferences = {
+    initialSpeed: settings.battleSpeed,
+    reducedMotion: settings.reducedMotion,
+  };
   const title =
     loaded === undefined
       ? "Demo · Ashen Pass"
@@ -86,9 +95,9 @@ export default async function BattlePage({
         </Link>
       </header>
       {loaded === undefined ? (
-        <BattleClient />
+        <BattleClient preferences={preferences} />
       ) : "battle" in loaded ? (
-        <BattleClient battle={loaded.battle} sessionId={sessionId} />
+        <BattleClient battle={loaded.battle} sessionId={sessionId} preferences={preferences} />
       ) : (
         <p role="alert" className="m-auto max-w-sm px-4 text-center text-sm">
           {loaded.message}

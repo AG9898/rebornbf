@@ -658,7 +658,7 @@ function enemyPhase(m: TurnMutable, start: number, events: BattleEvent[]): numbe
 /**
  * End-of-turn tick (GAME_DESIGN §2, RESOLVED-38 item 11): poison, then damage over time (each
  * party, then enemies), heal over
- * time, BB fill per turn, OD +500, then effect durations, guard, and the Overdrive countdown.
+ * time (party, then enemies), BB fill per turn, OD +500, then effect durations, guard, and the Overdrive countdown.
  */
 function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): void {
   // 1. Poison.
@@ -771,6 +771,26 @@ function endOfTurnTick(m: TurnMutable, tick: number, events: BattleEvent[]): voi
     });
     return { ...unit, hp };
   });
+  // 2b. Enemy heal over time from an enemy skill (M6-01B_2): the same amount rule, with the
+  // enemy's total REC as the recipient REC.
+  m.enemies = m.enemies.map((enemy) => {
+    if (enemy.hp <= 0 || !enemy.effects.some((effect) => effect.id === "heal.over_time")) {
+      return enemy;
+    }
+    const heal = healOverTimeAmount(enemy.effects, enemyRecTotal(enemy), m.rng);
+    m.rng = heal.rng;
+    const hp = Math.min(enemy.stats.hp, enemy.hp + heal.value);
+    if (hp === enemy.hp) return enemy;
+    events.push({
+      type: "HpRestored",
+      tick,
+      target: enemy.slot,
+      effect: "heal.over_time",
+      amount: hp - enemy.hp,
+      hp,
+    });
+    return { ...enemy, hp };
+  });
   // 3. BB fill per turn.
   m.party = m.party.map((unit) => {
     const fill = bcFillPerTurn(unit.effects);
@@ -846,9 +866,56 @@ function finish(
 }
 
 /**
+ * Whether the current wave's turn-triggered form change fires at this `endTurn`: the wave has a
+ * form change and this is at least its `afterTurns`-th turn (GAME_DESIGN §2 → Form changes; "at
+ * least" because a continue numbers a new turn without an `endTurn`).
+ */
+function formChangeDue(state: BattleState): boolean {
+  const change = state.formChanges.find((c) => c.wave === state.waveIndex);
+  return change !== undefined && state.turn - state.waveStartTurn + 1 >= change.afterTurns;
+}
+
+/**
+ * The wave transition shared by a wave clear and a form change: the next wave spawns and
+ * `WaveStarted` is emitted. The party, OD gauge, and items pass through untouched either way, so a
+ * form change treats the party exactly as a wave change does. With `carry` (a form change), each
+ * new enemy keeps the HP fraction of the outgoing enemy in its slot: ⌊hp × newMax / oldMax⌋, at
+ * least 1. Returns the new wave index.
+ */
+function advanceWave(
+  state: BattleState,
+  m: TurnMutable,
+  tick: number,
+  events: BattleEvent[],
+  carry?: readonly BattleEnemy[],
+): number {
+  const waveIndex = state.waveIndex + 1;
+  const spawned = spawnWave(state.waves[waveIndex] ?? []);
+  if (!carry) {
+    m.enemies = spawned;
+    events.push({ type: "WaveStarted", tick, wave: waveIndex });
+    return waveIndex;
+  }
+  m.enemies = spawned.map((enemy, i) => {
+    const old = carry[i];
+    if (!old) return enemy;
+    const hp = Math.max(1, Math.floor((old.hp * enemy.stats.hp) / old.stats.hp));
+    return { ...enemy, hp: Math.min(enemy.stats.hp, hp) };
+  });
+  events.push({
+    type: "WaveStarted",
+    tick,
+    wave: waveIndex,
+    enemyHp: m.enemies.map((enemy) => enemy.hp),
+  });
+  return waveIndex;
+}
+
+/**
  * Ends the player phase and runs the rest of the turn (GAME_DESIGN §2 Turn loop): if the last wave
  * is already cleared the battle is won at once; otherwise the enemy phase (skipped when the wave
- * is cleared), the end-of-turn tick, then wave advancement and the next turn's start (`acted`
+ * is cleared), the end-of-turn tick, then wave advancement (a clear, or a due turn-triggered form
+ * change) and the next turn's start (`acted`
  * cleared, passives refreshed, `TurnStarted`). A fallen party loses (`BattleEnded` is the last
  * event). The timeline must be empty (`step` without `untilTick` drains it).
  */
@@ -878,14 +945,18 @@ export function endTurn(state: BattleState): StepResult {
   endOfTurnTick(m, tick, events);
   if (allDefeated(m.party)) return finish(state, m, tick, "lose", events);
   let waveIndex = state.waveIndex;
+  const turn = state.turn + 1;
+  let waveStartTurn = state.waveStartTurn;
   if (allDefeated(m.enemies)) {
     if (lastWave) return finish(state, m, tick, "win", events);
     events.push({ type: "WaveCleared", tick, wave: waveIndex });
-    waveIndex += 1;
-    m.enemies = spawnWave(state.waves[waveIndex] ?? []);
-    events.push({ type: "WaveStarted", tick, wave: waveIndex });
+    waveIndex = advanceWave(state, m, tick, events);
+    waveStartTurn = turn;
+  } else if (formChangeDue(state)) {
+    events.push({ type: "FormChanged", tick, wave: waveIndex });
+    waveIndex = advanceWave(state, m, tick, events, m.enemies);
+    waveStartTurn = turn;
   }
-  const turn = state.turn + 1;
   const next = refreshPassives({
     ...state,
     rng: m.rng,
@@ -895,6 +966,7 @@ export function endTurn(state: BattleState): StepResult {
     party: m.party,
     enemies: m.enemies,
     waveIndex,
+    waveStartTurn,
     od: m.od,
     acted: [],
     recentHits: [],

@@ -29,6 +29,7 @@ import {
   type BattleState,
   type BattleUnit,
   type EnemySetup,
+  type FormChangeSetup,
   MAX_SQUAD_UNITS,
   type PlayerSlotId,
   type SquadMemberSetup,
@@ -278,6 +279,37 @@ function checkWaves(waves: BattleSetup["waves"]): void {
   });
 }
 
+/**
+ * Validates turn-triggered form changes (GAME_DESIGN §2 → Form changes): each names a wave that is
+ * not the last, at most once, with a positive integer turn count, and that wave and the next hold
+ * exactly one enemy each (the form and its next form).
+ */
+function checkFormChanges(
+  formChanges: BattleSetup["formChanges"],
+  waves: BattleSetup["waves"],
+): FormChangeSetup[] {
+  const seen = new Set<number>();
+  return (formChanges ?? []).map((change, i) => {
+    const { wave, afterTurns } = change;
+    if (!Number.isInteger(wave) || wave < 0 || wave >= waves.length - 1) {
+      throw new BattleSetupError(`formChanges[${i}].wave: must be a wave index before the last`);
+    }
+    if (seen.has(wave)) {
+      throw new BattleSetupError(`formChanges[${i}].wave: wave ${wave} already changes form`);
+    }
+    seen.add(wave);
+    if (!Number.isInteger(afterTurns) || afterTurns < 1) {
+      throw new BattleSetupError(`formChanges[${i}].afterTurns: must be a positive integer`);
+    }
+    if (waves[wave]?.length !== 1 || waves[wave + 1]?.length !== 1) {
+      throw new BattleSetupError(
+        `formChanges[${i}]: waves ${wave} and ${wave + 1} must each hold exactly one enemy`,
+      );
+    }
+    return { wave, afterTurns };
+  });
+}
+
 /** The per-battle item inventory: valid items, each ID once, with positive integer counts. */
 function checkItems(items: BattleSetup["items"]): BattleItemStack[] {
   const seen = new Set<string>();
@@ -340,6 +372,7 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
     throw new BattleSetupError(`leaderIndex: ${leaderIndex} is not a squad index`);
   }
   checkWaves(waves);
+  const formChanges = checkFormChanges(setup.formChanges, waves);
   if (sparkAssist !== undefined && typeof sparkAssist !== "boolean") {
     throw new BattleSetupError("sparkAssist: must be a boolean");
   }
@@ -372,6 +405,8 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
     },
     waves,
     waveIndex: 0,
+    waveStartTurn: 1,
+    formChanges,
     enemies: spawnWave(firstWave),
     timeline: [],
     sparkWindowTicks: sparkWindowTicks(sparkAssist === true),

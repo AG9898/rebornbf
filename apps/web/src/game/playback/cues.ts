@@ -279,6 +279,8 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     case "TurnDamaged":
     case "OverdriveEnded":
     case "WaveCleared":
+    // A form change plays as the wave change its `WaveStarted` cues.
+    case "FormChanged":
     // Item use has no additional visual cue.
     case "ItemUsed":
     // React owns the paid continue prompt; engine events update the HUD.

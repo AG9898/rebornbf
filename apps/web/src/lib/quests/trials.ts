@@ -1,5 +1,6 @@
 import { type Stage, StageSchema } from "@bfr/data";
 import trial01 from "@bfr/data/content/stages/trial-01-captain-locke.json";
+import trial02 from "@bfr/data/content/stages/trial-02-master-ozric.json";
 import { STORY_STAGES, type StageState } from "./quest-map.ts";
 
 /**
@@ -19,7 +20,7 @@ export type TrialView = {
 };
 
 /** Every trial stage in trial order. */
-export const TRIAL_STAGES: readonly Stage[] = [trial01]
+export const TRIAL_STAGES: readonly Stage[] = [trial01, trial02]
   .map((json) => StageSchema.parse(json))
   .filter((stage) => stage.trial !== undefined)
   .sort((a, b) => (a.trial?.number ?? 0) - (b.trial?.number ?? 0));

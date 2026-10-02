@@ -23,12 +23,14 @@ import {
   unitCutinPortrait,
   unitPortrait,
 } from "../assets/ui.ts";
+import { battleMusic, cueSfx, gameAudio } from "../audio/index.ts";
 import type { BattleBridge } from "../bridge.ts";
 import { BATTLE_HEIGHT, BATTLE_WIDTH, CANVAS_ZOOM } from "../bridge.ts";
 import {
   type BattleControls,
   dueAutoInputs,
   INITIAL_CONTROLS,
+  type PlaybackSpeed,
   playbackSteps,
   toggleAuto,
   toggleSpeed,
@@ -146,6 +148,13 @@ export interface BattleSpec {
    * unit data takes its attack timing from that sheet (the M2-03 test battle).
    */
   readonly sheet?: { readonly art: string; readonly sheet: UnitSpriteSheet };
+  /** The player's saved default playback speed (M7-01_2); the Speed pill still toggles it. */
+  readonly initialSpeed?: PlaybackSpeed;
+  /**
+   * The player's reduced-motion setting (M7-01_2): lunges, bobs, slides, and drifting numbers are
+   * dropped and flashes fade without blooming. Presentation only; cue timing is unchanged.
+   */
+  readonly reducedMotion?: boolean;
 }
 
 interface EnemyView {
@@ -216,7 +225,7 @@ export class BattleScene extends Phaser.Scene {
   private hudView!: HudView;
   private ui: InputUiState = INITIAL_INPUT_UI;
   /** Auto and Speed; kept across replays (`scene.restart`) like a player's setting. */
-  private controls: BattleControls = INITIAL_CONTROLS;
+  private controls: BattleControls;
   private clockMs = 0;
   private playbackMs = 0;
   private cutinRemainingMs = 0;
@@ -240,6 +249,12 @@ export class BattleScene extends Phaser.Scene {
     private readonly fontFamily: string = FALLBACK_FONT,
   ) {
     super("battle");
+    this.controls = { ...INITIAL_CONTROLS, speed: spec.initialSpeed ?? INITIAL_CONTROLS.speed };
+  }
+
+  /** Whether movement effects play (off under the player's reduced-motion setting). */
+  private get motion(): boolean {
+    return this.spec.reducedMotion !== true;
   }
 
   init(data: { seed?: number }): void {
@@ -351,6 +366,10 @@ export class BattleScene extends Phaser.Scene {
     this.overlay.render(this.hud);
     this.status = this.text(BATTLE_WIDTH / 2, 124, "", "#e8ecff", 17).setOrigin(0.5, 0);
     this.banners(waveBanners(this.hud.wave, this.cueContext()));
+    gameAudio().playMusic(battleMusic(this.hud.wave, this.cueContext()));
+    const stopMusic = (): void => gameAudio().stopMusic();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, stopMusic);
+    this.events.once(Phaser.Scenes.Events.DESTROY, stopMusic);
 
     this.setStatus("Tap: attack  Swipe up: burst  Down: guard");
 
@@ -423,6 +442,7 @@ export class BattleScene extends Phaser.Scene {
                 this.live = next.live;
                 this.overAtMs = undefined;
                 this.hudView.hideResult();
+                gameAudio().playMusic(battleMusic(this.hud.wave, this.cueContext()));
                 this.showEvents(next.events);
               }
             : undefined;
@@ -496,6 +516,7 @@ export class BattleScene extends Phaser.Scene {
 
   /** Plays one cue. Every number and flag drawn here was copied from an engine event. */
   private play(cue: Cue): void {
+    for (const sfx of cueSfx(cue)) gameAudio().playSfx(sfx);
     switch (cue.kind) {
       case "action": {
         const view = this.unitView(cue.actor);
@@ -505,7 +526,7 @@ export class BattleScene extends Phaser.Scene {
           // The attack animation's hit frames are the engine's hit ticks (M2-03). Idle-only
           // sheets have no attack and lunge like still sprites.
           view.sprite.play(`${view.sheet.key}-attack`).chain(`${view.sheet.key}-idle`);
-        } else {
+        } else if (this.motion) {
           // The party faces left, toward the enemies.
           this.tweens.add({ targets: view.sprite, x: `-=${LUNGE_PX}`, duration: 90, yoyo: true });
         }
@@ -575,7 +596,9 @@ export class BattleScene extends Phaser.Scene {
           return;
         }
         this.flash(view.body, COLORS.enemyAct, COLORS.enemy, 160);
-        this.tweens.add({ targets: view.body, y: view.body.y + 36, duration: 90, yoyo: true });
+        if (this.motion) {
+          this.tweens.add({ targets: view.body, y: view.body.y + 36, duration: 90, yoyo: true });
+        }
         return;
       }
       case "unit-damage": {
@@ -620,6 +643,7 @@ export class BattleScene extends Phaser.Scene {
         };
         this.showSelection(this.live.state);
         this.banners(cue.banners);
+        gameAudio().playMusic(battleMusic(cue.wave, this.cueContext()));
         return;
       }
       case "turn": {
@@ -631,6 +655,7 @@ export class BattleScene extends Phaser.Scene {
         this.overlay.target(undefined);
         this.setStatus("");
         this.hudView.showResult(cue.result, cue.turn, !this.spec.singleRun);
+        gameAudio().stopMusic();
         return;
       }
     }
@@ -679,10 +704,12 @@ export class BattleScene extends Phaser.Scene {
     const card = this.add
       .container(BATTLE_WIDTH, 0, [streaks, portraitImage, ribbon, label])
       .setDepth(TOP_DEPTH + 3);
-    this.tweens.add({ targets: card, x: 0, duration: 190, ease: "Cubic.Out" });
+    // Reduced motion shows the card in place and fades it out over the same beat.
+    if (this.motion) this.tweens.add({ targets: card, x: 0, duration: 190, ease: "Cubic.Out" });
+    else card.setX(0);
     this.tweens.add({
       targets: card,
-      x: -BATTLE_WIDTH,
+      ...(this.motion ? { x: -BATTLE_WIDTH } : { alpha: 0 }),
       delay: 610,
       duration: 240,
       ease: "Cubic.In",
@@ -869,7 +896,7 @@ export class BattleScene extends Phaser.Scene {
     const label = this.text(x, y, value, color, size);
     this.tweens.add({
       targets: label,
-      y: y - 50,
+      ...(this.motion ? { y: y - 50 } : {}),
       alpha: 0,
       delay: 250,
       duration: 550,
@@ -892,7 +919,7 @@ export class BattleScene extends Phaser.Scene {
       flash.setScale(scale * 0.6);
       this.tweens.add({
         targets: flash,
-        scale: scale * 1.15,
+        scale: this.motion ? scale * 1.15 : scale * 0.6,
         alpha: { from: 1, to: 0 },
         duration: piece === "fx-hit" ? 180 : 260,
         ease: "Quad.easeOut",
@@ -921,7 +948,15 @@ export class BattleScene extends Phaser.Scene {
       .setPosition(x, y)
       .setDisplaySize(width * ART_SCALE, height * ART_SCALE)
       .setAlpha(1);
-    this.tweens.add({ targets: shown, y: y - 6, duration: 140, yoyo: true, ease: "Quad.easeOut" });
+    if (this.motion) {
+      this.tweens.add({
+        targets: shown,
+        y: y - 6,
+        duration: 140,
+        yoyo: true,
+        ease: "Quad.easeOut",
+      });
+    }
     this.tweens.add({
       targets: shown,
       alpha: 0,
@@ -946,17 +981,19 @@ export class BattleScene extends Phaser.Scene {
         .image(0, 0, uiPiece(banner.piece).key)
         .setDisplaySize(width * ART_SCALE, height * ART_SCALE);
       const title = this.text(0, 0, banner.title, "#fff4d6", 44).setOrigin(0.5);
+      // Reduced motion fades the plate in and out at the centre instead of sliding it.
+      const centre = BATTLE_WIDTH / 2;
       const group = this.add
-        .container(BATTLE_WIDTH * 1.5, y, [plate, title])
+        .container(this.motion ? BATTLE_WIDTH * 1.5 : centre, y, [plate, title])
         .setDepth(TOP_DEPTH)
         .setAlpha(0);
       this.tweens.chain({
         targets: group,
         delay: i * BANNER_MS,
         tweens: [
-          { x: BATTLE_WIDTH / 2, alpha: 1, duration: 220, ease: "Cubic.easeOut" },
+          { x: centre, alpha: 1, duration: 220, ease: "Cubic.easeOut" },
           {
-            x: -BATTLE_WIDTH / 2,
+            x: this.motion ? -BATTLE_WIDTH / 2 : centre,
             alpha: 0,
             delay: 650,
             duration: 220,

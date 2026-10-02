@@ -1,0 +1,152 @@
+{
+  "id": "trial2-ozric-p2",
+  "name": "Ozric, Dawn Ascendant",
+  "element": "light",
+  "stats": {
+    "hp": 240000,
+    "atk": 1200,
+    "def": 900,
+    "rec": 400
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 26,
+    "hitFrames": [0, 12],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "dawn-vigil",
+      "name": "Dawn Vigil",
+      "attacks": [],
+      "effects": [
+        {
+          "id": "buff.add_element",
+          "value": 0,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "buff.add_element",
+          "value": 1,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "buff.add_element",
+          "value": 2,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "buff.add_element",
+          "value": 3,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "buff.add_element",
+          "value": 4,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "buff.add_element",
+          "value": 5,
+          "turns": 3,
+          "target": "self"
+        },
+        {
+          "id": "heal.over_time",
+          "value": 6000,
+          "turns": 3,
+          "target": "self"
+        }
+      ]
+    },
+    {
+      "id": "radiant-sentence",
+      "name": "Radiant Sentence",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 48,
+          "hitFrames": [0, 8, 16, 24, 32, 40],
+          "damageDistribution": [15, 15, 15, 15, 15, 25],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 2.3,
+          "target": "enemies"
+        }
+      ]
+    },
+    {
+      "id": "sevenfold-palm",
+      "name": "Sevenfold Palm",
+      "attacks": [
+        {
+          "moveType": "melee",
+          "startDelayFrames": 30,
+          "hitFrames": [0, 6, 12, 18, 24, 30, 36],
+          "damageDistribution": [14, 14, 14, 14, 14, 14, 16],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.2,
+          "target": "enemies"
+        },
+        {
+          "id": "ailment.inflict.curse",
+          "value": 10,
+          "target": "enemies"
+        },
+        {
+          "id": "ailment.inflict.injury",
+          "value": 20,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "on_turn",
+      "turn": 1,
+      "skill": "dawn-vigil",
+      "target": "random"
+    },
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "offset": 1,
+      "skill": "dawn-vigil",
+      "target": "random"
+    },
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "radiant-sentence",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "sevenfold-palm",
+      "target": "random"
+    }
+  ],
+  "drops": {
+    "bcResistance": 0.1,
+    "zel": {
+      "rate": 100,
+      "amount": 6000
+    }
+  }
+}

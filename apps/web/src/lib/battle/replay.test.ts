@@ -1,6 +1,15 @@
 import { CONTENT_VERSION } from "@bfr/data";
-import { type BattleInput, type BattleState, canBurst, createBattle } from "@bfr/engine";
+import {
+  type BattleEvent,
+  type BattleInput,
+  type BattleState,
+  canBurst,
+  createBattle,
+  endTurn,
+  step,
+} from "@bfr/engine";
 import { describe, expect, it } from "vitest";
+import { dueAutoInputs } from "../../game/hud/controls.ts";
 import {
   acceptsInput,
   advanceLive,
@@ -20,7 +29,7 @@ import {
   parseInputLog,
   replayBattle,
 } from "./replay.ts";
-import { sessionBattle } from "./session-battle.ts";
+import { sessionAutoSettings, sessionBattle } from "./session-battle.ts";
 
 const NOW = new Date("2026-09-28T12:00:00Z");
 const USER = "11111111-1111-4111-8111-111111111111";
@@ -72,12 +81,13 @@ function turnInputs(state: BattleState): BattleInput[] {
 function playLive(
   start: BattleState,
   initialInputs: BattleInput[] = [],
-): { live: LiveBattle; lateInputs: BattleInput[] } {
+): { live: LiveBattle; lateInputs: BattleInput[]; events: BattleEvent[] } {
   let live = startLive(start);
   for (const input of initialInputs) live = queueInput(live, input);
   let queuedTurn = -1;
   let late: BattleInput | undefined;
   const lateInputs: BattleInput[] = [];
+  const events: BattleEvent[] = [];
   for (let ms = 0; ms < 3_600_000 && !isOver(live); ms += 50) {
     const { state } = live;
     if (late) {
@@ -90,9 +100,11 @@ function playLive(
       late = inputs.pop();
       for (const input of inputs) live = queueInput(live, input);
     }
-    live = advanceLive(live, ms).live;
+    const advanced = advanceLive(live, ms);
+    live = advanced.live;
+    events.push(...advanced.events);
   }
-  return { live, lateInputs };
+  return { live, lateInputs, events };
 }
 
 function battle() {
@@ -410,5 +422,119 @@ describe("paid continue replay (M3-04E)", () => {
 
   it("rejects malformed continue markers", () => {
     expect(parseInputLog([{ inputs: [], endTick: 1, continued: false }]).ok).toBe(false);
+  });
+});
+
+/** The events a replay of `log` produces, as the finish route drives the engine. */
+function replayEvents(row: FinishSessionRow, log: BattleInputLog): BattleEvent[] {
+  const built = sessionBattle(row);
+  if (!built.ok) throw new Error(built.message);
+  let state = createBattle(built.battle.setup, built.battle.seed);
+  const events: BattleEvent[] = [];
+  for (const { inputs, endTick } of log) {
+    const player = step(state, inputs, { untilTick: endTick });
+    const enemy = endTurn(player.state);
+    events.push(...player.events, ...enemy.events);
+    state = enemy.state;
+  }
+  return events;
+}
+
+describe("session spark assist (M7-01_2)", () => {
+  const assisted = row({ spark_assist: true });
+  const built = sessionBattle(assisted);
+  if (!built.ok) throw new Error(built.message);
+  const { setup, seed } = built.battle;
+  const { live, events } = playLive(createBattle(setup, seed));
+
+  it("puts the session's frozen spark assist into the battle setup", () => {
+    expect(setup.sparkAssist).toBe(true);
+    expect(createBattle(setup, seed).sparkWindowTicks).toBe(2);
+    expect(battle().setup.sparkAssist).toBeUndefined();
+    expect(createBattle(battle().setup, seed).sparkWindowTicks).toBe(1);
+  });
+
+  it("replays on the server with the same spark window and event log", () => {
+    expect(live.state.result).toBe("win");
+    const log = JSON.parse(JSON.stringify(live.log)) as BattleInputLog;
+    expect(verifyFinish(assisted, USER, log, NOW)).toMatchObject({ ok: true, result: "win" });
+    expect(replayEvents(assisted, log)).toEqual(events);
+  });
+});
+
+/** Plays `start` on Auto as the battle page does: 50 ms frames, `dueAutoInputs` queued each frame. */
+function playAuto(start: BattleState): { live: LiveBattle; events: BattleEvent[] } {
+  let live = startLive(start);
+  const events: BattleEvent[] = [];
+  for (let ms = 0; ms < 3_600_000 && !isOver(live); ms += 50) {
+    for (const input of dueAutoInputs({ auto: true, speed: 1 }, live)) {
+      live = queueInput(live, input);
+    }
+    const advanced = advanceLive(live, ms);
+    live = advanced.live;
+    events.push(...advanced.events);
+  }
+  return { live, events };
+}
+
+describe("session auto-battle settings (M7-01_3)", () => {
+  const frozen = {
+    unit_auto_modes: { "owned-maren": "guard", "owned-rook": "attack", "owned-brand": "auto" },
+    sbb_priority: true,
+    forced_bb_priority: false,
+    od_ubb_priority: true,
+  };
+  const configured = row({ auto_settings: frozen });
+
+  it("maps owned-unit modes to party slots and keeps the toggles", () => {
+    expect(sessionAutoSettings(configured)).toEqual({
+      modes: { p1: "guard", p2: "attack" },
+      sbbPriority: true,
+      odUbbPriority: true,
+    });
+  });
+
+  it("leaves a default session's setup without auto settings and ignores bad values", () => {
+    expect(sessionAutoSettings(row())).toBeUndefined();
+    expect(sessionAutoSettings(row({ auto_settings: {} }))).toBeUndefined();
+    expect(battle().setup.autoSettings).toBeUndefined();
+    expect(
+      sessionAutoSettings(
+        row({
+          auto_settings: {
+            unit_auto_modes: { "owned-brand": "nuke", "someone-else": "guard" },
+            sbb_priority: "yes",
+          },
+        }),
+      ),
+    ).toBeUndefined();
+  });
+
+  it("puts the frozen settings into the session's battle setup", () => {
+    const built = sessionBattle(configured);
+    if (!built.ok) throw new Error(built.message);
+    expect(built.battle.setup.autoSettings).toEqual(sessionAutoSettings(configured));
+    expect(createBattle(built.battle.setup, built.battle.seed).autoSettings).toEqual(
+      sessionAutoSettings(configured),
+    );
+  });
+
+  it("replays an auto battle on the server to the client's event log", () => {
+    const built = sessionBattle(configured);
+    if (!built.ok) throw new Error(built.message);
+    const { live, events } = playAuto(createBattle(built.battle.setup, built.battle.seed));
+    expect(isOver(live)).toBe(true);
+    // The frozen modes drove the client: Maren guarded and Rook never burst.
+    const inputs = live.log.flatMap((turn) => turn.inputs);
+    expect(inputs.filter((input) => input.actor === "p1").every((i) => i.type === "guard")).toBe(
+      true,
+    );
+    expect(inputs.some((input) => input.actor === "p2" && input.type === "burst")).toBe(false);
+    const log = JSON.parse(JSON.stringify(live.log)) as BattleInputLog;
+    expect(verifyFinish(configured, USER, log, NOW, "either")).toMatchObject({
+      ok: true,
+      result: live.state.result,
+    });
+    expect(replayEvents(configured, log)).toEqual(events);
   });
 });

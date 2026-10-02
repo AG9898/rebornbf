@@ -874,4 +874,35 @@ describe("enemy skill effects (M1-07C)", () => {
       ["e0", "e1", 1100, 6100],
     ]);
   });
+
+  it("heals itself over time at the end-of-turn tick (M6-01B_2)", () => {
+    const vigil: EnemySkill = {
+      id: "vigil",
+      name: "Vigil",
+      attacks: [],
+      effects: [{ id: "heal.over_time", value: 800, turns: 2, target: "self" }],
+    };
+    const enemy: EnemySetup = {
+      ...makeEnemy("hermit"),
+      skills: [vigil],
+      ai: [
+        { when: "on_turn", turn: 1, skill: "vigil", target: "random" },
+        { when: "default", skill: "normal", target: "random" },
+      ],
+    };
+    const start = createBattle({ ...makeSetup(1), waves: [[enemy]] }, 4);
+    let state: BattleState = { ...start, enemies: start.enemies.map((e) => ({ ...e, hp: 5000 })) };
+    const amounts: number[] = [];
+    for (let turn = 0; turn < 3; turn++) {
+      const result = endTurn(state);
+      const heals = ofType(result.events, "HpRestored").filter(
+        (e) => e.effect === "heal.over_time" && e.target === "e0",
+      );
+      amounts.push(...heals.map((e) => e.amount));
+      state = result.state;
+    }
+    // 800 per tick for its 2 turns (no REC bonus), then it ends.
+    expect(amounts).toEqual([800, 800]);
+    expect(state.enemies[0]?.effects.some((e) => e.id === "heal.over_time")).toBe(false);
+  });
 });

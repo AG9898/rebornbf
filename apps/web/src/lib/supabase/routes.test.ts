@@ -26,6 +26,7 @@ describe("isProtectedPath", () => {
   it("protects the squad editor", () => {
     expect(isProtectedPath("/squad")).toBe(true);
     expect(isProtectedPath("/onboarding/name")).toBe(true);
+    expect(isProtectedPath("/settings")).toBe(true);
   });
 
   it("protects Reinforcement and Begin Quest without matching unrelated prefixes", () => {

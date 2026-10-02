@@ -7,6 +7,7 @@ import { TUTORIAL_REPLAY_PATH } from "../../../lib/onboarding/routing.ts";
 export const metadata: Metadata = { title: "Other · BFR" };
 
 const LINKS = [
+  { href: "/settings", label: "Settings" },
   { href: "/account", label: "Account" },
   { href: "/gallery", label: "Art gallery" },
   { href: "/battle", label: "Demo battle" },
@@ -18,7 +19,7 @@ export default function OtherPage(): ReactNode {
     <div className={styles.placeholder}>
       <section className={styles.panel}>
         <h1 className={`${styles.panelTitle} ${styles.gold}`}>Other</h1>
-        <p className={styles.panelText}>Settings and credits are coming soon.</p>
+        <p className={styles.panelText}>Credits are coming soon.</p>
         {LINKS.map((link) => (
           <div key={link.href}>
             <Link href={link.href} className={styles.panelLink}>

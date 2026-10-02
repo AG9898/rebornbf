@@ -6,6 +6,7 @@ import {
   type Stage,
   type Stats,
   sphereContent,
+  stageFormChanges,
 } from "@bfr/data";
 import ashboundSentry from "@bfr/data/content/enemies/ch1-ashbound-sentry.json";
 import bramblePup from "@bfr/data/content/enemies/ch1-bramble-pup.json";
@@ -21,7 +22,18 @@ import stormRay from "@bfr/data/content/enemies/ch2-storm-ray.json";
 import tidewright from "@bfr/data/content/enemies/ch2-tidewright.json";
 import locke from "@bfr/data/content/enemies/trial1-locke.json";
 import lockeP2 from "@bfr/data/content/enemies/trial1-locke-p2.json";
-import type { BattleSetup, EnemySetup, SquadMemberSetup, UnitTypeRoll } from "@bfr/engine";
+import ozric from "@bfr/data/content/enemies/trial2-ozric.json";
+import ozricP2 from "@bfr/data/content/enemies/trial2-ozric-p2.json";
+import {
+  AUTO_UNIT_MODES,
+  type AutoSettings,
+  type AutoUnitMode,
+  type BattleSetup,
+  type EnemySetup,
+  type PlayerSlotId,
+  type SquadMemberSetup,
+  type UnitTypeRoll,
+} from "@bfr/engine";
 import { BATTLE_ITEMS } from "../quests/item-loadout.ts";
 import { STORY_STAGES } from "../quests/quest-map.ts";
 import { trialStage } from "../quests/trials.ts";
@@ -36,7 +48,7 @@ import { formArtFile, statsAtLevel, unitContent } from "../units/owned-units.ts"
 
 /** The `battle_sessions` columns the battle page selects. */
 export const BATTLE_SESSION_COLUMNS =
-  "id, stage_id, seed, squad, items, content_version, expires_at, finished_at";
+  "id, stage_id, seed, squad, items, spark_assist, auto_settings, content_version, expires_at, finished_at";
 
 export type SnapshotUnit = {
   owned_unit_id: string | null;
@@ -66,10 +78,25 @@ export type BattleSessionRow = {
   seed: number;
   squad: SquadSnapshot;
   items?: { item: string; count: number }[];
+  /** Spark assist frozen from the player's settings when the session was issued (M7-01_2). */
+  spark_assist?: boolean;
+  /**
+   * Auto Battle Advance Settings frozen from the player's settings when the session was issued
+   * (M7-01_3): per-unit modes keyed by owned unit id and the three toggles. `{}` is the default.
+   */
+  auto_settings?: SessionAutoSettingsRow | null;
   content_version: string;
   expires_at: string;
   finished_at: string | null;
   continued_turn?: number | null;
+};
+
+/** `battle_sessions.auto_settings` as the session trigger writes it (M7-01_3). */
+export type SessionAutoSettingsRow = {
+  unit_auto_modes?: unknown;
+  sbb_priority?: unknown;
+  forced_bb_priority?: unknown;
+  od_ubb_priority?: unknown;
 };
 
 export type SessionBattle = {
@@ -102,6 +129,8 @@ const ENEMIES: ReadonlyMap<string, Enemy> = new Map(
     tidewright,
     locke,
     lockeP2,
+    ozric,
+    ozricP2,
   ].map((json) => {
     const enemy = EnemySchema.parse(json);
     return [enemy.id, enemy];
@@ -181,6 +210,41 @@ function member(row: SnapshotUnit): Member | string {
   };
 }
 
+function isAutoMode(value: unknown): value is AutoUnitMode {
+  return typeof value === "string" && (AUTO_UNIT_MODES as readonly string[]).includes(value);
+}
+
+/**
+ * The engine's `autoSettings` for a session (M7-01_3): the frozen per-unit modes move from owned
+ * unit ids to the squad's party slots (`p0`…, by snapshot order), and the toggles carry over. The
+ * ally slot and units no longer in the squad stay Auto; malformed values are ignored. Undefined
+ * when everything is the default, so a default player's setup is unchanged.
+ */
+export function sessionAutoSettings(
+  row: Pick<BattleSessionRow, "auto_settings" | "squad">,
+): AutoSettings | undefined {
+  const frozen = row.auto_settings;
+  if (typeof frozen !== "object" || frozen === null) return undefined;
+  const saved =
+    typeof frozen.unit_auto_modes === "object" &&
+    frozen.unit_auto_modes !== null &&
+    !Array.isArray(frozen.unit_auto_modes)
+      ? (frozen.unit_auto_modes as Record<string, unknown>)
+      : {};
+  const modes: Partial<Record<PlayerSlotId, AutoUnitMode>> = {};
+  row.squad.units.forEach((unit, index) => {
+    const mode = unit.owned_unit_id === null ? undefined : saved[unit.owned_unit_id];
+    if (isAutoMode(mode) && mode !== "auto") modes[`p${index}`] = mode;
+  });
+  const settings: AutoSettings = {
+    ...(Object.keys(modes).length > 0 ? { modes } : {}),
+    ...(frozen.sbb_priority === true ? { sbbPriority: true } : {}),
+    ...(frozen.forced_bb_priority === true ? { forcedBbPriority: true } : {}),
+    ...(frozen.od_ubb_priority === true ? { odUbbPriority: true } : {}),
+  };
+  return Object.keys(settings).length > 0 ? settings : undefined;
+}
+
 /** Why a session cannot be played now, or null when it can. */
 export function sessionProblem(row: BattleSessionRow, now: Date): string | null {
   if (row.finished_at !== null) return "This battle is already finished.";
@@ -235,14 +299,21 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
   }
   if (items.length > 5) return { ok: false, message: "This battle's item loadout is invalid." };
 
-  const setup: BattleSetup = {
+  let setup: BattleSetup = {
     squad: squad.map((m) => m.setup),
     leaderIndex,
     ...(allyMember ? { ally: { ...allyMember.setup, kind: ally?.kind ?? "duplicate" } } : {}),
     waves,
     items,
     ...(stage.trial ? { trial: true } : {}),
+    // The session's frozen copy, so the battle page and the server replay use one spark window.
+    ...(row.spark_assist === true ? { sparkAssist: true } : {}),
   };
+  // Likewise the frozen auto-battle settings, which `autoInputs` reads from the battle state.
+  const autoSettings = sessionAutoSettings(row);
+  if (autoSettings) setup = { ...setup, autoSettings };
+  const formChanges = stageFormChanges(stage);
+  if (formChanges.length > 0) setup = { ...setup, formChanges };
   return {
     ok: true,
     battle: {
