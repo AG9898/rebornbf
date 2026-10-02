@@ -8,6 +8,7 @@ import menu from "../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { THUMB_ART_SIZE } from "../../../components/menu/ui-assets.ts";
+import { SkillRow } from "../../../components/units/SkillRow.tsx";
 import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
 import {
   draftProblem,
@@ -21,6 +22,7 @@ import {
   stepSquadSlot,
   toggleSquadUnit,
 } from "../../../lib/squad/squad-editor.ts";
+import { leaderSkillDisplay } from "../../../lib/units/unit-skills.ts";
 import type { CollectionEntry } from "../../../lib/units/unit-stacks.ts";
 import units from "../units/units.module.css";
 import { saveSquad } from "./actions.ts";
@@ -29,6 +31,8 @@ import squad from "./squad.module.css";
 /** The slice of an owned unit the editor draws. */
 export type EditorUnit = {
   id: string;
+  unitId: string;
+  formId: string;
   name: string;
   rarityLabel: string;
   level: number;
@@ -233,18 +237,7 @@ export function SquadEditor({
           </div>
         </section>
 
-        <div className={`${units.skillRow} ${squad.leaderBar}`}>
-          <span className={units.skillTag} data-tag="skill-tag-red">
-            <UiImage name="skill-tag-red" className={units.titlePlateArt} />
-            <span
-              className={`${units.skillTagText} ${units.outline}`}
-              style={textBoxStyle("skill-tag-red")}
-            >
-              Leader Skill
-            </span>
-          </span>
-          <span className={units.skillName}>{leader?.leaderSkill ?? "None"}</span>
-        </div>
+        <SkillRow skill={leaderSkillDisplay(leader)} className={squad.leaderBar} />
 
         <p
           className={`${squad.plate} ${squad.strip} ${status && !status.ok ? squad.stripError : ""}`}

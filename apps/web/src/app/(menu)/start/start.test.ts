@@ -83,6 +83,8 @@ describe("quest preparation integration (M3-04I)", () => {
     expect(html).toContain("/assets/ui/cards/battle/brand-3star.webp");
     expect(html).toContain("LEADER");
     expect(html).toContain("ALLY");
+    expect(html).toContain("ATK +25% (Fire allies)");
+    expect(html.match(/aria-haspopup="dialog"/g)).toHaveLength(2);
     expect(html).toContain('aria-current="page"');
     expect(html).toContain("Lv. 1");
     // Every decorative image wired into this screen must have a real public export.

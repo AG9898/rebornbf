@@ -1,4 +1,5 @@
 import { canBeFodder } from "./fusion.ts";
+import { unitContent } from "./owned-units.ts";
 import type { PickResult } from "./unit-picker.ts";
 import { type CollectionEntry, FUSION_FODDER_LIMIT, type StackQuantities } from "./unit-stacks.ts";
 
@@ -58,14 +59,26 @@ export function removeFodderPedestal(draft: FusionDraft, index: number): FusionD
 }
 
 /**
- * The fodder picker's tiles: everything but the base and rows already on a pedestal; a stack shows
- * only its copies not yet on a pedestal, and a stack with none left is hidden.
+ * The fodder picker's tiles: hide dedicated evolution materials, the base, and placed rows; a stack
+ * shows only its unplaced copies. This is UI filtering only, not a change to fuse's server rules.
+ * Material forms are level-1-only stackables without fixed EXP or a fusion effect. Levelable summon
+ * fillers (including Sprites), EXP vessels, stat hobs and toads remain visible, as do heroes.
  */
 export function fodderPickerEntries<T extends CollectionEntry>(
   entries: readonly T[],
   draft: FusionDraft,
 ): T[] {
   return entries.flatMap((entry) => {
+    const unit = unitContent(entry.unitId);
+    const form = unit?.forms.find((f) => f.id === entry.formId);
+    if (
+      unit?.stackable &&
+      form?.maxLevel === 1 &&
+      form.fusionExp === undefined &&
+      form.fusionEffect === undefined
+    ) {
+      return [];
+    }
     if (entry.stackCount === null) {
       return entry.id === draft.targetId || draft.fodderIds.includes(entry.id) ? [] : [entry];
     }

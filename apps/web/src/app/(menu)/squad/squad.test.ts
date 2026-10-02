@@ -51,6 +51,8 @@ describe("squad multi-pick integration (M4-06F)", () => {
     );
     expect(html.match(/aria-label="Add units to the squad"/g)).toHaveLength(3);
     expect(html).toContain('aria-label="Remove Brand from the squad"');
+    expect(html).toContain("ATK +25% (Water allies)");
+    expect(html).toContain('aria-haspopup="dialog"');
     expect(html).toContain('aria-label="Remove Maren from the squad"');
     expect(html).not.toContain("ally slot");
     expect(html).not.toContain("Guests");

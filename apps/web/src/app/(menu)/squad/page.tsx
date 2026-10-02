@@ -81,6 +81,8 @@ export default async function SquadPage({
 function toEditorUnit(view: OwnedUnitView): EditorUnit {
   return {
     id: view.id,
+    unitId: view.unitId,
+    formId: view.formId,
     name: view.name,
     rarityLabel: view.rarityLabel,
     level: view.level,

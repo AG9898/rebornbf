@@ -4,17 +4,13 @@ import type { ReactNode } from "react";
 import menu from "../../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../components/menu/UiImage.tsx";
+import { SkillRow } from "../../../../components/units/SkillRow.tsx";
 import type { UnitDetailView } from "../../../../lib/units/owned-units.ts";
 import type { SphereSocketView } from "../../../../lib/units/spheres.ts";
+import { unitSkillDisplays } from "../../../../lib/units/unit-skills.ts";
 import { SplitButton } from "../stack/[stackId]/SplitButton.tsx";
 import styles from "../units.module.css";
 import { SphereSocketFace } from "./SphereSocketFace.tsx";
-
-const SKILL_ROWS = [
-  { key: "leader", label: "Leader Skill", tag: "skill-tag-red" },
-  { key: "extra", label: "Extra Skill", tag: "skill-tag-violet" },
-  { key: "burst", label: "Brave Burst", tag: "skill-tag-blue" },
-] as const;
 
 /**
  * One owned unit as the original's Unit Info (M3-03G, ART_GUIDE → UI → Units, Squad, and Unit
@@ -125,24 +121,9 @@ export function UnitDetail({
         ) : null}
 
         <section className={styles.skills} aria-label="Skills">
-          {SKILL_ROWS.map(({ key, label, tag }) => {
-            const name = unit.skills[key];
-            if (!name) return null;
-            return (
-              <div key={key} className={styles.skillRow}>
-                <span className={styles.skillTag} data-tag={tag}>
-                  <UiImage name={tag} className={styles.titlePlateArt} />
-                  <span
-                    className={`${styles.skillTagText} ${styles.outline}`}
-                    style={textBoxStyle(tag)}
-                  >
-                    {label}
-                  </span>
-                </span>
-                <span className={styles.skillName}>{name}</span>
-              </div>
-            );
-          })}
+          {unitSkillDisplays(unit).map((skill) => (
+            <SkillRow key={skill.key} skill={skill} />
+          ))}
         </section>
 
         {stats ? null : (

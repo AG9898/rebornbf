@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
 import { PORTRAIT_ART, UI_ASSETS } from "../../../../../components/menu/ui-assets.ts";
+import { SkillRow } from "../../../../../components/units/SkillRow.tsx";
 import { itemLoadoutKey } from "../../../../../lib/quests/item-loadout.ts";
 import { beginQuestHref, reinforcements } from "../../../../../lib/quests/reinforcement.ts";
 import { cardArtPath } from "../../../../../lib/squad/home-showcase.ts";
@@ -14,7 +15,8 @@ import {
   SQUAD_SLOTS,
   stepSquadSlot,
 } from "../../../../../lib/squad/squad-editor.ts";
-import { formLeaderSkill, toOwnedUnitView } from "../../../../../lib/units/owned-units.ts";
+import { toOwnedUnitView } from "../../../../../lib/units/owned-units.ts";
+import { leaderSkillDisplay } from "../../../../../lib/units/unit-skills.ts";
 import { questPreparation } from "../../../../../server/quest-preparation.ts";
 import unitStyles from "../../../units/units.module.css";
 import styles from "../../start.module.css";
@@ -75,32 +77,8 @@ export default async function BeginQuestPage({
         </Link>
         <h2 className={styles.pill}>Squad {slot + 1}</h2>
       </div>
-      <div className={unitStyles.skillRow}>
-        <span className={unitStyles.skillTag} data-tag="skill-tag-red">
-          <UiImage name="skill-tag-red" className={unitStyles.titlePlateArt} />
-          <span
-            className={`${unitStyles.skillTagText} ${unitStyles.outline}`}
-            style={textBoxStyle("skill-tag-red")}
-          >
-            Leader Skill
-          </span>
-        </span>
-        <span className={unitStyles.skillName}>
-          {leader ? (formLeaderSkill(leader.unitId, leader.formId) ?? "None") : "None"}
-        </span>
-      </div>
-      <div className={unitStyles.skillRow}>
-        <span className={unitStyles.skillTag} data-tag="skill-tag-blue">
-          <UiImage name="skill-tag-blue" className={unitStyles.titlePlateArt} />
-          <span
-            className={`${unitStyles.skillTagText} ${unitStyles.outline}`}
-            style={textBoxStyle("skill-tag-blue")}
-          >
-            Ally Skill
-          </span>
-        </span>
-        <span className={unitStyles.skillName}>{ally?.leaderSkill ?? "None"}</span>
-      </div>
+      <SkillRow skill={leaderSkillDisplay(leader)} />
+      <SkillRow skill={leaderSkillDisplay(ally)} label="Ally Skill" />
       <div className={styles.cards}>
         {cards.map((unit, i) => {
           const art = unit ? cardArtPath(unit.unitId, unit.formId) : null;

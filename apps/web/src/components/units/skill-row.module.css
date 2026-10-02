@@ -1,0 +1,173 @@
+.row {
+  flex: none;
+  min-width: 0;
+}
+
+.trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: white;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.trigger:disabled {
+  cursor: default;
+}
+.trigger:focus-visible {
+  outline: 2px solid #f6c342;
+  outline-offset: 2px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  min-width: 0;
+  height: calc(var(--u) * 42);
+  padding-right: calc(var(--u) * 12);
+  background: linear-gradient(#212b30, #10171e);
+}
+
+.tag {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 170);
+  aspect-ratio: 340 / 59;
+}
+.tag[data-tag="skill-tag-red"] {
+  aspect-ratio: 340 / 70;
+}
+.tagArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tagText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 17);
+  white-space: nowrap;
+  text-shadow: 1px 1px 2px #000;
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  color: #f6c342;
+  font-size: calc(var(--u) * 22);
+}
+.level {
+  flex: none;
+  color: #f6c342;
+  font-size: calc(var(--u) * 20);
+}
+.effects {
+  position: relative;
+  display: block;
+  min-width: 0;
+  height: calc(var(--u) * 48);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 20);
+  font-weight: 600;
+  line-height: 1.3;
+  text-shadow: 1px 1px 2px #000;
+}
+.effects::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: calc(var(--u) * 4) solid transparent;
+  border-image: url("/assets/ui/stat-plate.webp") 20 fill / calc(var(--u) * 10) stretch;
+}
+.effectText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+}
+.viewport {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.effectText .viewport {
+  width: 100%;
+}
+.track {
+  display: inline-flex;
+  width: max-content;
+}
+.repeat {
+  padding-left: 32px;
+}
+.viewport[data-scrolling] .track {
+  animation: scroll var(--duration) linear infinite;
+  animation-delay: 1.5s;
+}
+@keyframes scroll {
+  to {
+    transform: translateX(calc(-1 * var(--distance)));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewport[data-scrolling] .track {
+    animation: none;
+  }
+}
+
+.dialog {
+  width: min(92vw, calc(100dvh * 640 / 1136 - 24px));
+  max-height: 80dvh;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #b5b6b8;
+  border-radius: 8px;
+  background: rgb(48 51 55 / 0.93);
+  color: #fff;
+  box-shadow: 0 8px 36px rgb(0 0 0 / 0.6);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  user-select: text;
+}
+.dialog::backdrop {
+  background: rgb(100 104 110 / 0.55);
+}
+.dialogBody {
+  padding: 18px;
+}
+.dialog h2 {
+  color: #f6c342;
+  font-size: 20px;
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+.kind {
+  color: #dadce0;
+  margin: 0 0 4px;
+}
+.dialog ul {
+  padding-left: 20px;
+  margin: 12px 0;
+}
+.dialog li {
+  margin-bottom: 10px;
+}
+.close {
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px 32px;
+  border: 1px solid #c2c5cc;
+  border-radius: 6px;
+  background: #23272e;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}

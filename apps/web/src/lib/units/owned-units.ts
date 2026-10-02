@@ -493,6 +493,8 @@ export const UNIT_TYPE_LABELS: Readonly<Record<UnitType, string>> = {
 
 /** The Unit detail page's extra fields (M3-03G): the type, EXP to the next level, and skill names. */
 export type UnitDetailView = OwnedUnitView & {
+  bbLevel: number;
+  sbbLevel: number;
   /** The persisted type roll's name; a unit without a roll is a Lord. */
   typeLabel: string;
   /** EXP still needed for the next level; null at the form's cap or for an invalid row. */
@@ -535,6 +537,8 @@ export function toUnitDetailView(row: OwnedUnitRow): UnitDetailView {
   const form = unit?.forms.find((f) => f.id === row.form_id);
   return {
     ...view,
+    bbLevel: row.bb_level ?? 1,
+    sbbLevel: row.sbb_level ?? 1,
     typeLabel: UNIT_TYPE_LABELS[row.unit_type?.type ?? "lord"] ?? "Lord",
     ...(unit && form
       ? expProgress(unit, form, view.level, view.exp)

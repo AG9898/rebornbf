@@ -11,6 +11,7 @@ import {
   freePedestals,
   removeFodderPedestal,
 } from "./fusion-stage.ts";
+import { unitContent } from "./owned-units.ts";
 import { collectionEntries } from "./unit-stacks.ts";
 
 const id = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
@@ -73,9 +74,69 @@ describe("fusion stage draft (M4-06D)", () => {
     const shown = fodderPickerEntries(entries, draft).map((e) => [e.id, e.stackCount]);
     expect(shown).not.toContainEqual([id(1), null]);
     expect(shown).not.toContainEqual([id(2), null]);
+    expect(shown.find(([entry]) => entry === moteStack)).toBeUndefined();
     expect(shown.find(([entry]) => entry === stackId)).toBeUndefined();
     const partial = fodderPickerEntries(entries, { ...draft, stacks: { [stackId]: 1 } });
     expect(partial.find((e) => e.id === stackId)?.stackCount).toBe(3);
+  });
+
+  it("hides all 28 dedicated evolution materials as rows and stacks, without changing base eligibility", () => {
+    const materialIds = [
+      ...["cinder", "rill", "moss", "volt", "glint", "dusk"].flatMap((element) =>
+        ["mote", "effigy", "cairn", "colossus"].map((family) => `${element}-${family}`),
+      ),
+      "prism-cairn",
+      "glint-urn",
+      "dusk-urn",
+      "wyrm-coffer",
+    ];
+    for (const unitId of materialIds) {
+      const form = unitContent(unitId)?.forms[0];
+      if (!form) throw new Error(`Missing material fixture: ${unitId}`);
+      const materials = collectionEntries(
+        [{ id: id(5), unit_id: unitId, form_id: form.id, level: 1, exp: 0 }],
+        [{ id: stackId, unit_id: unitId, form_id: form.id, count: 3 }],
+      );
+      expect(fodderPickerEntries(materials, based), unitId).toEqual([]);
+      expect(baseIneligible(materials), unitId).not.toContain(id(5));
+    }
+  });
+
+  it("keeps heroes, summon fillers, EXP vessels, stat hobs and toads in the fodder picker", () => {
+    const visibleIds = [
+      "brand",
+      "maren",
+      "rook",
+      "garrick",
+      "solen",
+      "morrick",
+      "aurelle",
+      "vespera",
+      "brass-crucible",
+      "silver-crucible",
+      ...["cinder", "rill", "moss", "volt", "glint", "dusk"].flatMap((element) =>
+        ["sprite", "flask", "alembic", "athanor", "grail"].map((family) => `${element}-${family}`),
+      ),
+      "vital-hob",
+      "might-hob",
+      "ward-hob",
+      "mend-hob",
+      "grand-hob",
+      "lantern-toad",
+      "regent-toad",
+      "matriarch-toad",
+      "satchel-toad",
+    ];
+    for (const unitId of visibleIds) {
+      const unit = unitContent(unitId);
+      const form = unit?.forms[0];
+      if (!unit || !form) throw new Error(`Missing fusion fixture: ${unitId}`);
+      const candidates = collectionEntries(
+        [{ id: id(5), unit_id: unitId, form_id: form.id, level: 1, exp: 0 }],
+        unit.stackable ? [{ id: stackId, unit_id: unitId, form_id: form.id, count: 3 }] : [],
+      );
+      expect(fodderPickerEntries(candidates, based), unitId).toEqual(candidates);
+    }
   });
 
   it("dims squad members, unknown units, and forms that give no EXP", () => {
