@@ -138,6 +138,23 @@ describe("toOwnedUnitView", () => {
     },
   );
 
+  it.each(["cinder-mote", "rill-mote", "moss-mote", "volt-mote", "glint-mote", "dusk-mote"])(
+    "gives the 1★ Mote %s its locked splash, sprite and thumbnail (M6-08E)",
+    (unitId) => {
+      const owned = row({ unit_id: unitId, form_id: `${unitId}-1` });
+      const paths = {
+        illustration: `/assets/units/${unitId}/illustration-1star.png`,
+        sprite: `/assets/units/${unitId}/battle-idle-1star.png`,
+        thumb: `/assets/ui/cards/thumb/${unitId}-1star.webp`,
+      };
+      expect(formArtFile(unitId, 1)).toBe("1star");
+      expect(toOwnedUnitView(owned)).toMatchObject(paths);
+      for (const path of Object.values(paths)) {
+        expect(existsSync(new URL(`../../../public${path}`, import.meta.url)), path).toBe(true);
+      }
+    },
+  );
+
   it("degrades to the raw ids when the content is missing", () => {
     const view = toOwnedUnitView(row({ unit_id: "retired-unit", form_id: "retired-unit-5" }));
     expect(view).toMatchObject({

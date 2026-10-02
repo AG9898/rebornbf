@@ -8,6 +8,7 @@ import { formArtFile, unitContent } from "../../lib/units/owned-units.ts";
 import { stageBackground, stageEnemyArt } from "../assets/stage-art.ts";
 import type { BattleSpec } from "../playback/battle-scene.ts";
 import { stageBossWaves } from "../playback/cues.ts";
+import { stageNames } from "../playback/stage-names.ts";
 import { tutorialPrompts } from "./prompts.ts";
 
 /**
@@ -50,6 +51,7 @@ export const TUTORIAL_BATTLE_SPEC: BattleSpec = {
   partyArt: PARTY.map((id) => (formArtFile(id, TUTORIAL.rarity) ? id : "")),
   partyArtForms: PARTY.map((id) => formArtFile(id, TUTORIAL.rarity) ?? undefined),
   bossWaves: stageBossWaves(TUTORIAL_STAGE),
+  names: stageNames(TUTORIAL_STAGE),
   background: stageBackground(TUTORIAL_STAGE),
   enemyWaves: stageEnemyArt(TUTORIAL_STAGE),
   seed: TUTORIAL.seed,

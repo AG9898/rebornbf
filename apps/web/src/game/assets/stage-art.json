@@ -120,6 +120,24 @@
     },
     "dg1-gloom-bat": {
       "canvas": 128
+    },
+    "dg-item-rekindle-ash": {
+      "canvas": 128
+    },
+    "dg-item-dew-tonic": {
+      "canvas": 128
+    },
+    "dg-item-bitterleaf": {
+      "canvas": 128
+    },
+    "dg-item-valor-draught": {
+      "canvas": 128
+    },
+    "dg-item-bright-tonic": {
+      "canvas": 128
+    },
+    "dg-item-grand-tonic": {
+      "canvas": 128
     }
   }
 }

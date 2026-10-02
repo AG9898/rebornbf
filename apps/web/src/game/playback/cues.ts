@@ -92,13 +92,17 @@ export function stageBossWaves(stage: {
   return stage.waves.flatMap((wave, i) => (wave.enemies.some((e) => e.boss === true) ? [i] : []));
 }
 
+/** The boss banner before a stage boss wave's enemies appear. */
+export const BOSS_BANNER: Banner = { piece: "banner-boss", title: "Boss Battle" };
+
+/** "WIN!!" over the field after every non-final wave clear (RESOLVED-91). */
+export const WIN_BANNER: Banner = { piece: "banner-wave", title: "WIN!!" };
+
 /** The banners for the start of 0-based `wave`: "Battle n/N", then "Boss" on a boss wave. */
 export function waveBanners(wave: number, context: CueContext): Banner[] {
   return [
     { piece: "banner-wave", title: `Battle ${wave + 1}/${Math.max(context.waveCount, wave + 1)}` },
-    ...(context.bossWaves.includes(wave)
-      ? [{ piece: "banner-boss", title: "Boss Battle" } as const]
-      : []),
+    ...(context.bossWaves.includes(wave) ? [BOSS_BANNER] : []),
   ];
 }
 
@@ -278,8 +282,8 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     case "EffectEnded":
     case "TurnDamaged":
     case "OverdriveEnded":
+    // The battle scene starts the wave transition (`wave-transition.ts`) on these two events.
     case "WaveCleared":
-    // A form change plays as the wave change its `WaveStarted` cues.
     case "FormChanged":
     // Item use has no additional visual cue.
     case "ItemUsed":

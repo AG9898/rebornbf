@@ -81,6 +81,13 @@ export const BATTLE_UI_PIECES = [
   "item-rekindle-ash",
   "item-valor-draught",
   "item-bitterleaf",
+  // Wave transition panel (M6-07Q, RESOLVED-91).
+  "wave-panel",
+  "wave-track",
+  "wave-track-fill",
+  "wave-marker",
+  "emblem-boss",
+  "emblem-start",
 ] as const satisfies readonly UiAsset[];
 
 export type BattleUiPiece = (typeof BATTLE_UI_PIECES)[number];

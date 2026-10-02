@@ -226,8 +226,15 @@ const MATERIAL_FAMILIES = [
   ["colossus", "Colossus", 5],
 ] as const;
 
-/** Evolution materials (RESOLVED-67) with a locked splash and sprite; the Motes are M6-08E. */
+/** Evolution materials (RESOLVED-67) with a locked splash and sprite. */
 const EVOLUTION_MATERIALS: SingleFormUnit[] = [
+  ...VESSEL_ELEMENTS.map(([prefix, prefixName, element]) => ({
+    id: `${prefix}-mote`,
+    name: `${prefixName} Mote`,
+    element,
+    file: "1star",
+    label: "1★",
+  })),
   ...MATERIAL_FAMILIES.flatMap(([family, familyName, stars]) =>
     VESSEL_ELEMENTS.map(([prefix, prefixName, element]) => ({
       id: `${prefix}-${family}`,

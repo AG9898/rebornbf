@@ -47,6 +47,7 @@ import {
 } from "../input/index.ts";
 import {
   type Banner,
+  BOSS_BANNER,
   type Cue,
   type CueContext,
   DAMAGE_STYLES,
@@ -55,6 +56,7 @@ import {
   eventCues,
   type FlashPiece,
   SPARK_POPUP,
+  WIN_BANNER,
   waveBanners,
 } from "./cues.ts";
 import {
@@ -77,6 +79,17 @@ import {
   startLive,
 } from "./live.ts";
 import { FieldOverlay } from "./overlay.ts";
+import type { StageNames } from "./stage-names.ts";
+import {
+  advanceTransition,
+  BEAT_MS,
+  holdsInput,
+  startTransition,
+  type TransitionBeat,
+  transitionFrame,
+  type WaveTransition,
+} from "./wave-transition.ts";
+import { WaveTransitionView } from "./wave-transition-view.ts";
 
 /** Longest frame delta fed to the battle clock, so a backgrounded tab does not skip ahead. */
 const MAX_FRAME_MS = 100;
@@ -99,6 +112,10 @@ const ARROW_FADE_MS = 250;
 const TOP_DEPTH = 20;
 /** How long one banner stays up, and the gap before the next one starts (ms). */
 const BANNER_MS = 1100;
+/** A banner's slide in and out (ms); it holds for the rest of its beat. */
+const BANNER_SLIDE_MS = 220;
+/** How far (logical px) the next wave's enemies slide in from the left as they enter. */
+const ENTER_PX = 60;
 /** The field freezes while this purely visual beat plays; engine hit ticks stay unchanged. */
 const CUTIN_MS = 850;
 const CUTIN_COLORS: Record<BurstTier, number> = {
@@ -136,6 +153,8 @@ export interface BattleSpec {
   readonly partyArtForms?: readonly (string | undefined)[];
   /** 0-based waves holding a stage boss, which get the boss banner (`stageBossWaves`). */
   readonly bossWaves?: readonly number[];
+  /** Area and stage names the wave transition panel shows (`stageNames`); default the title. */
+  readonly names?: StageNames;
   /** First seed (default 1). */
   readonly seed?: number;
   /**
@@ -229,6 +248,18 @@ export class BattleScene extends Phaser.Scene {
   private clockMs = 0;
   private playbackMs = 0;
   private cutinRemainingMs = 0;
+  /** x1 presentation time (every playback step, cut-ins and transitions included). */
+  private presentMs = 0;
+  /** `presentMs` when the last crystal fly-in lands. */
+  private dropsUntilMs = 0;
+  /**
+   * The running wave transition (RESOLVED-91): while set, the battle clock, auto inputs, and player
+   * inputs are held, and `heldEvents` (the next wave's `WaveStarted` onward) wait for its enter beat.
+   */
+  private transition: WaveTransition | undefined;
+  /** Index (in `transition.steps`) of the last beat whose start hook ran. */
+  private transitionBeat = -1;
+  private transitionView!: WaveTransitionView;
   private heldEvents: readonly BattleEvent[] = [];
   private overAtMs: number | undefined;
   private down: PointerSample | undefined;
@@ -265,6 +296,10 @@ export class BattleScene extends Phaser.Scene {
     this.clockMs = 0;
     this.playbackMs = 0;
     this.cutinRemainingMs = 0;
+    this.presentMs = 0;
+    this.dropsUntilMs = 0;
+    this.transition = undefined;
+    this.transitionBeat = -1;
     this.heldEvents = [];
     this.overAtMs = undefined;
     this.down = undefined;
@@ -364,6 +399,7 @@ export class BattleScene extends Phaser.Scene {
     this.overlay = new FieldOverlay(this, (i) => this.enemyBounds(i));
     this.overlay.build(this.hud);
     this.overlay.render(this.hud);
+    this.transitionView = new WaveTransitionView(this, this.fontFamily, this.motion);
     this.status = this.text(BATTLE_WIDTH / 2, 124, "", "#e8ecff", 17).setOrigin(0.5, 0);
     this.banners(waveBanners(this.hud.wave, this.cueContext()));
     gameAudio().playMusic(battleMusic(this.hud.wave, this.cueContext()));
@@ -387,6 +423,11 @@ export class BattleScene extends Phaser.Scene {
     this.clockMs += elapsed;
     // Speed is presentation only: at x2 each frame runs two x1 steps, so engine ticks are unchanged.
     for (const stepMs of playbackSteps(elapsed, this.controls.speed)) {
+      this.presentMs += stepMs;
+      if (this.transition) {
+        this.stepTransition(stepMs);
+        continue;
+      }
       if (this.cutinRemainingMs > 0) {
         this.cutinRemainingMs = Math.max(0, this.cutinRemainingMs - stepMs);
         continue;
@@ -425,6 +466,16 @@ export class BattleScene extends Phaser.Scene {
       if (event.type === "BurstUsed") {
         this.heldEvents = events.slice(index + 1);
         shown = index + 1;
+        break;
+      }
+      if (event.type === "WaveCleared" || event.type === "FormChanged") {
+        // The next wave waits for the transition's enter beat.
+        this.heldEvents = events.slice(index + 1);
+        shown = index + 1;
+        this.startWaveTransition(
+          event.type === "FormChanged" ? "form-change" : "clear",
+          event.wave,
+        );
         break;
       }
     }
@@ -473,6 +524,7 @@ export class BattleScene extends Phaser.Scene {
     }
     if (
       gesture.kind === "none" ||
+      holdsInput(this.transition) ||
       this.cutinRemainingMs > 0 ||
       this.heldEvents.length > 0 ||
       !acceptsInput(this.live)
@@ -642,7 +694,12 @@ export class BattleScene extends Phaser.Scene {
           ...(this.ui.selectedItem === undefined ? {} : { selectedItem: this.ui.selectedItem }),
         };
         this.showSelection(this.live.state);
-        this.banners(cue.banners);
+        // From wave 2 on, the transition already played the boss banner; the panel shows BATTLE n/N.
+        if (this.transition) {
+          for (const view of this.enemies) this.placeEntering(view, 0);
+        } else {
+          this.banners(cue.banners);
+        }
         gameAudio().playMusic(battleMusic(cue.wave, this.cueContext()));
         return;
       }
@@ -807,7 +864,9 @@ export class BattleScene extends Phaser.Scene {
     const cx = enemy.rect.x + enemy.rect.width / 2;
     const cy = enemy.rect.y + enemy.rect.height / 2;
     const { width, height } = uiPieceSize(piece);
-    for (let i = 0; i < Math.min(count, MAX_FLYING_CRYSTALS); i++) {
+    const flying = Math.min(count, MAX_FLYING_CRYSTALS);
+    this.dropsUntilMs = Math.max(this.dropsUntilMs, this.presentMs + 140 + (flying - 1) * 30 + 380);
+    for (let i = 0; i < flying; i++) {
       const crystal = this.add
         .image(cx, cy, uiPiece(piece).key)
         .setDisplaySize(width * ART_SCALE, height * ART_SCALE)
@@ -973,7 +1032,7 @@ export class BattleScene extends Phaser.Scene {
    * Wave and boss banners, one after another: each plate slides in across the field with its
    * outlined title, holds, and slides out.
    */
-  private banners(banners: readonly Banner[]): void {
+  private banners(banners: readonly Banner[], beatMs = BANNER_MS - 10): void {
     banners.forEach((banner, i) => {
       const { width, height } = uiPieceSize(banner.piece);
       const y = 300;
@@ -991,18 +1050,118 @@ export class BattleScene extends Phaser.Scene {
         targets: group,
         delay: i * BANNER_MS,
         tweens: [
-          { x: centre, alpha: 1, duration: 220, ease: "Cubic.easeOut" },
+          { x: centre, alpha: 1, duration: BANNER_SLIDE_MS, ease: "Cubic.easeOut" },
           {
             x: this.motion ? -BATTLE_WIDTH / 2 : centre,
             alpha: 0,
-            delay: 650,
-            duration: 220,
+            delay: beatMs - 2 * BANNER_SLIDE_MS,
+            duration: BANNER_SLIDE_MS,
             ease: "Cubic.easeIn",
             onComplete: () => group.destroy(),
           },
         ],
       });
     });
+  }
+
+  /**
+   * Starts the wave transition after a non-final wave clear or a form change (RESOLVED-91). Input
+   * and the battle clock hold until its enter beat ends.
+   */
+  private startWaveTransition(kind: "clear" | "form-change", fromWave: number): void {
+    this.transition = startTransition({
+      kind,
+      fromWave,
+      waveCount: this.hud.waveCount,
+      boss: (this.spec.bossWaves ?? []).includes(fromWave + 1),
+      dropsMs: Math.max(0, this.dropsUntilMs - this.presentMs),
+    });
+    this.transitionBeat = -1;
+    this.ui = {
+      odArmed: this.ui.odArmed,
+      ...(this.ui.selectedItem === undefined ? {} : { selectedItem: this.ui.selectedItem }),
+    };
+    this.showSelection(this.live.state);
+    this.stepTransition(0);
+  }
+
+  /** Plays `ms` of x1 transition time: runs each beat's start once, then draws the frame. */
+  private stepTransition(ms: number): void {
+    if (!this.transition) return;
+    this.transition = advanceTransition(this.transition, ms);
+    const frame = transitionFrame(this.transition);
+    const reached = frame ? frame.index : this.transition.steps.length - 1;
+    while (this.transitionBeat < reached) {
+      this.transitionBeat += 1;
+      const step = this.transition.steps[this.transitionBeat];
+      if (step) this.beginBeat(step.beat);
+    }
+    if (frame) {
+      this.transitionView.render(frame);
+      if (frame.beat === "enter") {
+        for (const view of this.enemies) this.placeEntering(view, frame.progress);
+      }
+      return;
+    }
+    this.transitionView.clear();
+    for (const view of this.enemies) this.placeEntering(view, 1);
+    this.transition = undefined;
+    this.transitionBeat = -1;
+  }
+
+  private beginBeat(beat: TransitionBeat): void {
+    switch (beat) {
+      case "win":
+        this.banners([WIN_BANNER], BEAT_MS.win);
+        return;
+      case "panel": {
+        // The field is black: the old wave leaves, so the wipe in uncovers the party alone.
+        for (const view of this.enemies) {
+          view.body.setVisible(false);
+          for (const shadow of view.shadows) shadow.setVisible(false);
+        }
+        this.hudView.hideEnemyNames();
+        this.hudView.clearBoss();
+        this.overlay.resetEnemies();
+        this.overlay.target(undefined);
+        if (this.transition) {
+          this.transitionView.panel.show({
+            spec: this.transition.spec,
+            names: this.spec.names ?? { area: this.spec.title, stage: this.spec.title },
+          });
+        }
+        return;
+      }
+      case "wipe-in":
+        this.transitionView.panel.hide();
+        return;
+      case "boss":
+        this.banners([BOSS_BANNER], BEAT_MS.boss);
+        return;
+      case "enter": {
+        // The engine spawned the next wave at the clear; it appears only now.
+        const held = this.heldEvents;
+        this.showEvents(held);
+        return;
+      }
+      default:
+        return;
+    }
+  }
+
+  /** An entering enemy at `progress` 0..1: fading in (and sliding in from the left with motion). */
+  private placeEntering(view: EnemyView, progress: number): void {
+    // Sprites stand on their bottom centre; placeholder boxes sit at their top-left corner.
+    const x =
+      view.body instanceof Phaser.GameObjects.Sprite
+        ? view.rect.x + view.rect.width / 2
+        : view.rect.x;
+    const offset = this.motion ? -ENTER_PX * (1 - progress) : 0;
+    view.body
+      .setVisible(true)
+      .setAlpha(progress)
+      .setX(x + offset);
+    for (const shadow of view.shadows) shadow.setVisible(true).setAlpha(progress);
   }
 
   private flash(target: Body, color: number, restore: number, ms: number): void {

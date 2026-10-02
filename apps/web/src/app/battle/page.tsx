@@ -57,6 +57,7 @@ async function loadSession(sessionId: string): Promise<Loaded> {
  * (M3-04B): the session's stage, squad snapshot, and server-rolled seed. Without one it plays the
  * offline demo (M2-05B): no sign-in, no rewards; the whole battle runs client-side. Both play at
  * the player's saved default speed and reduced-motion setting (M7-01_2; defaults when signed out).
+ * The battle fills the whole screen with no page header; only a load error shows a way back.
  */
 export default async function BattlePage({
   searchParams,
@@ -73,12 +74,6 @@ export default async function BattlePage({
     initialSpeed: settings.battleSpeed,
     reducedMotion: settings.reducedMotion,
   };
-  const title =
-    loaded === undefined
-      ? "Demo · Ashen Pass"
-      : "battle" in loaded
-        ? loaded.battle.stage.name
-        : "Story battle";
   const isTrial = loaded !== undefined && "battle" in loaded && !!loaded.battle.stage.trial;
   const back = !sessionId
     ? { href: "/home", label: "Home" }
@@ -88,20 +83,17 @@ export default async function BattlePage({
 
   return (
     <main className="flex min-h-dvh flex-col bg-[#0b0d17] text-[#e8e6f0]">
-      <header className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between px-4">
-        <h1 className="text-sm font-semibold tracking-[0.18em] uppercase">{title}</h1>
-        <Link href={back.href} className="text-xs font-semibold text-amber-200 hover:underline">
-          {back.label}
-        </Link>
-      </header>
       {loaded === undefined ? (
         <BattleClient preferences={preferences} />
       ) : "battle" in loaded ? (
         <BattleClient battle={loaded.battle} sessionId={sessionId} preferences={preferences} />
       ) : (
-        <p role="alert" className="m-auto max-w-sm px-4 text-center text-sm">
-          {loaded.message}
-        </p>
+        <div role="alert" className="m-auto flex max-w-sm flex-col gap-3 px-4 text-center text-sm">
+          <p>{loaded.message}</p>
+          <Link href={back.href} className="text-xs font-semibold text-amber-200 hover:underline">
+            {back.label}
+          </Link>
+        </div>
       )}
     </main>
   );

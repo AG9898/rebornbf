@@ -195,11 +195,27 @@ export class HudView {
    * HP bar above the cards is the enemy HP indicator, as in the original.
    */
   buildEnemies(hud: HudState): void {
-    for (const name of this.enemyNames) name.destroy();
+    this.hideEnemyNames();
     this.enemyNames = hud.enemies.map((enemy, i) => {
       const r = this.enemyBounds(i);
       return this.text(r.x, r.y + r.height + 7, enemy.name, 18);
     });
+  }
+
+  /** Clears the enemy names while a wave transition shows the party alone (M2-07F). */
+  hideEnemyNames(): void {
+    for (const name of this.enemyNames) name.destroy();
+    this.enemyNames = [];
+  }
+
+  /**
+   * Empties the boss band (name, orb, HP) while a wave transition hides the cleared wave (M2-07G),
+   * so the last wave's boss does not linger over the party alone; the next `render` refills it.
+   */
+  clearBoss(): void {
+    fitTextToBox(this.bossName.setText(""), this.bossNameBox, "left");
+    this.bossOrb.setVisible(false);
+    this.setFill(this.bossHp, 0);
   }
 
   /** Redraws every bar, counter, and label from the HUD state. */

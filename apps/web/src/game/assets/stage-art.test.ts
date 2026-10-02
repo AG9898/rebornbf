@@ -110,6 +110,22 @@ describe("dungeon art", () => {
       ).toBe(true);
     }
   });
+
+  it("has a locked sprite for every item Hoarder (M6-07P)", () => {
+    const enemies: Record<string, { canvas: number }> = stageArt.enemies;
+    const itemStages = dungeonStages.filter((stage) => stage.dungeon?.series === "items");
+    expect(itemStages).toHaveLength(6);
+    for (const stage of itemStages) {
+      expect(stageEnemyArt(stage).flat()).toHaveLength(9);
+      const hoarder = stage.id.replace("dungeon-item-", "dg-item-");
+      expect(enemies[hoarder]?.canvas).toBe(128);
+      expect(
+        existsSync(
+          join(import.meta.dirname, "../../../public/assets/enemies", hoarder, "battle-idle.png"),
+        ),
+      ).toBe(true);
+    }
+  });
 });
 
 describe("trial art", () => {

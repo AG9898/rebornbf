@@ -16,9 +16,9 @@ import styles from "./battle.module.css";
 
 /**
  * Mounts the battle scene for `spec`; the parent keeps `spec` stable for the page's lifetime.
- * `onEvents` and `onResult` let a client-only battle (the tutorial) follow the fight; `fullScreen`
- * drops the page header's height, and `children` draw over the canvas in a layer sized to it (a
- * size container, so they can use `cqw`/`cqh`).
+ * `onEvents` and `onResult` let a client-only battle (the tutorial) follow the fight, and
+ * `children` draw over the canvas in a layer sized to it (a size container, so they can use
+ * `cqw`/`cqh`). The battle always fills the screen; no page header sits above it.
  */
 export default function PhaserBattle({
   spec,
@@ -26,7 +26,6 @@ export default function PhaserBattle({
   back = { href: "/quests", label: "Back to quest map" },
   onEvents,
   onResult,
-  fullScreen = false,
   children,
 }: {
   spec: BattleSpec;
@@ -35,7 +34,6 @@ export default function PhaserBattle({
   back?: { href: string; label: string };
   onEvents?: (events: readonly BattleEvent[]) => void;
   onResult?: (result: "win" | "lose") => void;
-  fullScreen?: boolean;
   children?: ReactNode;
 }): ReactNode {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -167,7 +165,7 @@ export default function PhaserBattle({
     <section
       ref={stageRef}
       aria-label="Battle scene"
-      className={`relative flex min-h-[320px] ${fullScreen ? "h-dvh" : "h-[calc(100dvh-3rem)]"} w-full items-center justify-center overflow-hidden`}
+      className={`relative flex min-h-[320px] h-dvh w-full items-center justify-center overflow-hidden`}
     >
       <div
         aria-hidden="true"

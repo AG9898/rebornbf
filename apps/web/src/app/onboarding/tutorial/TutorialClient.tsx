@@ -146,7 +146,6 @@ export function TutorialClient({ replay }: { replay: boolean }): ReactNode {
         spec={TUTORIAL_BATTLE_SPEC}
         onEvents={onEvents}
         onResult={onResult}
-        fullScreen
       >
         {overlay}
       </PhaserBattle>

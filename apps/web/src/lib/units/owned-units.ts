@@ -243,7 +243,7 @@ const UNIT_CONTENT: ReadonlyMap<string, Unit> = new Map(
   }),
 );
 
-/** Units with exported art under `public/assets/units/<id>/` (3★ through Omni, or one filler form). */
+/** Units with exported art under `public/assets/units/<id>/` (3★ through Omni, or one fodder form). */
 const UNITS_WITH_ART: ReadonlySet<string> = new Set([
   // Growth fodder EXP vessels (RESOLVED-55): one 3★–5★ form each.
   "cinder-flask",
@@ -276,7 +276,13 @@ const UNITS_WITH_ART: ReadonlySet<string> = new Set([
   "ward-hob",
   "mend-hob",
   "grand-hob",
-  // Evolution materials (RESOLVED-67, M6-08D): one 3★–5★ form each; the Motes are M6-08E.
+  // Evolution materials (RESOLVED-67, M6-08D/E): one 1★ (the Motes) or 3★–5★ form each.
+  "cinder-mote",
+  "rill-mote",
+  "moss-mote",
+  "volt-mote",
+  "glint-mote",
+  "dusk-mote",
   "cinder-effigy",
   "rill-effigy",
   "moss-effigy",
@@ -343,12 +349,14 @@ const FILLER_UNITS_2STAR: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * The art file suffix for a form (`2star`…`7star`, `omni`), or null if the unit has none. Main
- * units have no 2★ art; only the summon filler units have a 2★ form with art.
+ * The art file suffix for a form (`1star`…`7star`, `omni`), or null if the unit has none. Main
+ * units have no 2★ art; only the summon filler units have a 2★ form with art, and only the Motes
+ * a 1★ form.
  */
 export function formArtFile(unitId: string, rarity: Rarity): string | null {
   if (!UNITS_WITH_ART.has(unitId)) return null;
   if (rarity === "omni") return "omni";
+  if (rarity === 1) return "1star";
   if (rarity === 2) return FILLER_UNITS_2STAR.has(unitId) ? "2star" : null;
   return rarity >= 3 ? `${rarity}star` : null;
 }

@@ -19,6 +19,7 @@ import {
 import { stageBackground, stageEnemyArt } from "../assets/stage-art.ts";
 import type { BattleSpec } from "./battle-scene.ts";
 import { stageBossWaves } from "./cues.ts";
+import { stageNames } from "./stage-names.ts";
 
 /**
  * The offline demo battle (M2-05B): the demo stage (M2-05A, Ashen Pass) fought by the six B0
@@ -84,6 +85,7 @@ export const DEMO_BATTLE_SPEC: BattleSpec = {
   partyArt: DEMO_PARTY_ART,
   artForm: DEMO_ART_FORM,
   bossWaves: stageBossWaves(DEMO_STAGE),
+  names: stageNames(DEMO_STAGE),
   background: stageBackground(DEMO_STAGE),
   enemyWaves: stageEnemyArt(DEMO_STAGE),
 };
