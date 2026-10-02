@@ -22,8 +22,19 @@ export type UnitStackRow = { id: string; unit_id: string; form_id: string; count
 /** Copies to spend per stack id, as `fuse`'s `p_fodder_stacks` and `evolve`'s `p_material_stacks`. */
 export type StackQuantities = Readonly<Record<string, number>>;
 
-/** The most fodder copies (rows plus stacked copies) one fusion takes (GAME_DESIGN §6). */
+/**
+ * The most fodder slots one fusion takes (GAME_DESIGN §6, RESOLVED-90): an owned row is one slot,
+ * and a stack is one slot whatever its count.
+ */
 export const FUSION_FODDER_LIMIT = 5;
+
+/** The most copies one stack slot carries in a fusion (RESOLVED-90; `fuse` enforces it). */
+export const FUSION_STACK_SLOT_MAX = 99;
+
+/** Fodder slots a draft fills: one per owned row and one per stack with copies. */
+export function fusionSlotCount(rowIds: readonly string[], quantities: StackQuantities): number {
+  return rowIds.length + Object.values(quantities).filter((count) => count > 0).length;
+}
 
 /** Stacks that still hold a copy; a stack spent to 0 keeps its row but is not shown. */
 export function heldStacks(stacks: readonly UnitStackRow[]): UnitStackRow[] {

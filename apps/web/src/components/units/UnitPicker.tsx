@@ -33,8 +33,9 @@ import { UnitIconFace, unitIconLabel } from "./UnitIconFace.tsx";
  * the All Units grid with a context title, Sort and Filter, and the count plate. Pickable icons
  * carry a grey tick circle, picked icons a red badge numbered in pick order, and ineligible icons
  * are dimmed and inert. A picked stack shows a stepper for its copies; every copy counts against
- * `limit`. Confirm hands `onConfirm` the picked row ids and stack copies (`pickResult`). Fusion
- * fodder (M4-06D), squad fill (M4-06F), and sell (M4-06I) adopt it in their own tasks.
+ * `limit`. Confirm hands `onConfirm` the picked row ids and stack copies (`pickResult`). Squad
+ * fill (M4-06F) and the fusion base picker use it, and sell adopts it (M4-06I); fusion fodder has its own
+ * tap/hold slot picker (`FodderPicker`, M4-01F) that shares `PickerTitleBar`.
  */
 export function UnitPicker({
   title,
@@ -85,54 +86,19 @@ export function UnitPicker({
   const shown = useMemo(() => pickerEntries(units, sort, filter), [units, sort, filter]);
   const copies = pickedCopies(picks);
   const total = units.reduce((sum, unit) => sum + (unit.stackCount ?? 1), 0);
-  const filterLabel = filter === null ? "All" : ELEMENT_LABELS[filter];
 
   return (
     <div className={styles.listPage}>
-      <header className={styles.titleBar}>
-        {onBack ? (
-          <button
-            type="button"
-            className={`${styles.pill} ${styles.pillButton} ${styles.backButton}`}
-            onClick={onBack}
-          >
-            <span className={styles.outline}>Back</span>
-          </button>
-        ) : (
-          <Link href={backHref} className={`${styles.pill} ${styles.backButton}`}>
-            <span className={styles.outline}>Back</span>
-          </Link>
-        )}
-        <div className={`${styles.titlePlate} ${styles.pickerTitlePlate}`}>
-          <UiImage name="title-plate" className={styles.titlePlateArt} />
-          <div className={styles.titleText} style={textBoxStyle("title-plate")}>
-            <h1 className={styles.outline}>{title}</h1>
-            <span className={`${styles.sortLine} ${styles.outline}`}>
-              Sort: {UNIT_SORT_LABELS[sort]} · {filterLabel}
-            </span>
-          </div>
-        </div>
-        <button
-          type="button"
-          className={`${styles.pill} ${styles.pillButton} ${styles.sortButton}`}
-          onClick={() => setSort(nextUnitSort(sort))}
-          aria-label={`Sort by ${UNIT_SORT_LABELS[nextUnitSort(sort)]}`}
-        >
-          <span className={styles.outline}>Sort</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.pill} ${styles.pillButton} ${styles.sortButton}`}
-          onClick={() => setFilter(nextPickerFilter(filter))}
-          aria-label={`Show ${filterNextLabel(filter)}`}
-        >
-          <span className={styles.outline}>Filter</span>
-        </button>
-        <div className={`${styles.pill} ${styles.countPlate}`}>
-          <span className={`${styles.countLabel} ${styles.outline}`}>Units</span>
-          <span className={`${styles.countValue} ${styles.outline}`}>{total}</span>
-        </div>
-      </header>
+      <PickerTitleBar
+        title={title}
+        sort={sort}
+        onSort={setSort}
+        filter={filter}
+        onFilter={setFilter}
+        total={total}
+        backHref={backHref}
+        onBack={onBack}
+      />
 
       <div className={styles.list}>
         {shown.length === 0 ? (
@@ -189,6 +155,79 @@ export function UnitPicker({
 
       {ticker ? <p className={menu.ticker}>{ticker}</p> : null}
     </div>
+  );
+}
+
+/**
+ * The picker's title bar (shared with the fusion fodder picker, M4-01F): Back, the title plate with
+ * "Sort: X · element", Sort, Filter cycling All then each element, and the Units count plate.
+ */
+export function PickerTitleBar({
+  title,
+  sort,
+  onSort,
+  filter,
+  onFilter,
+  total,
+  backHref,
+  onBack,
+}: {
+  title: string;
+  sort: UnitSortKey;
+  onSort: (sort: UnitSortKey) => void;
+  filter: Element | null;
+  onFilter: (filter: Element | null) => void;
+  /** Copies owned in all (the count plate). */
+  total: number;
+  backHref: string;
+  onBack?: () => void;
+}): ReactNode {
+  const filterLabel = filter === null ? "All" : ELEMENT_LABELS[filter];
+  return (
+    <header className={styles.titleBar}>
+      {onBack ? (
+        <button
+          type="button"
+          className={`${styles.pill} ${styles.pillButton} ${styles.backButton}`}
+          onClick={onBack}
+        >
+          <span className={styles.outline}>Back</span>
+        </button>
+      ) : (
+        <Link href={backHref} className={`${styles.pill} ${styles.backButton}`}>
+          <span className={styles.outline}>Back</span>
+        </Link>
+      )}
+      <div className={`${styles.titlePlate} ${styles.pickerTitlePlate}`}>
+        <UiImage name="title-plate" className={styles.titlePlateArt} />
+        <div className={styles.titleText} style={textBoxStyle("title-plate")}>
+          <h1 className={styles.outline}>{title}</h1>
+          <span className={`${styles.sortLine} ${styles.outline}`}>
+            Sort: {UNIT_SORT_LABELS[sort]} · {filterLabel}
+          </span>
+        </div>
+      </div>
+      <button
+        type="button"
+        className={`${styles.pill} ${styles.pillButton} ${styles.sortButton}`}
+        onClick={() => onSort(nextUnitSort(sort))}
+        aria-label={`Sort by ${UNIT_SORT_LABELS[nextUnitSort(sort)]}`}
+      >
+        <span className={styles.outline}>Sort</span>
+      </button>
+      <button
+        type="button"
+        className={`${styles.pill} ${styles.pillButton} ${styles.sortButton}`}
+        onClick={() => onFilter(nextPickerFilter(filter))}
+        aria-label={`Show ${filterNextLabel(filter)}`}
+      >
+        <span className={styles.outline}>Filter</span>
+      </button>
+      <div className={`${styles.pill} ${styles.countPlate}`}>
+        <span className={`${styles.countLabel} ${styles.outline}`}>Units</span>
+        <span className={`${styles.countValue} ${styles.outline}`}>{total}</span>
+      </div>
+    </header>
   );
 }
 

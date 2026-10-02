@@ -11,16 +11,16 @@ import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
 import { gameAudio } from "../../../game/audio/index.ts";
 import { FUSION_MINIMUM_NOTE, fusionPreview } from "../../../lib/units/fusion.ts";
 import {
-  addFodderPicks,
   baseIneligible,
   chooseBase,
+  clearFodder,
+  draftCopies,
+  draftFodderIds,
+  draftFodderRows,
+  draftStacks,
+  EMPTY_DRAFT,
   FODDER_SPOTS,
   type FusionDraft,
-  fodderIneligible,
-  fodderPedestals,
-  fodderPickerEntries,
-  freePedestals,
-  removeFodderPedestal,
 } from "../../../lib/units/fusion-stage.ts";
 import {
   type OwnedUnitRow,
@@ -31,13 +31,12 @@ import {
   type CollectionEntry,
   collectionEntries,
   FUSION_FODDER_LIMIT,
-  stackCopies,
-  stackQuantityTotal,
   type UnitStackRow,
 } from "../../../lib/units/unit-stacks.ts";
 import squad from "../squad/squad.module.css";
 import units from "../units/units.module.css";
 import { fuseUnits } from "./actions.ts";
+import { FodderPicker } from "./FodderPicker.tsx";
 import styles from "./fusion.module.css";
 
 type Mode = "stage" | "base" | "fodder";
@@ -46,8 +45,9 @@ type Mode = "stage" | "base" | "fodder";
  * The Fuse Units stage (M4-01B/C, restyled in M4-06D; ART_GUIDE → UI → Fusion stage): the base's
  * idle sprite on the centre pedestal with its stat plate, five fodder pedestals at the corners and
  * bottom centre, Change Base and Display Status in the title bar, and a Fuse pill that opens the
- * confirm. An empty pedestal opens the multi-select picker (M4-06N) for the base or the fodder; a
- * filled fodder pedestal removes that copy. The `fuse` RPC re-checks everything server-side.
+ * confirm. The empty base opens the multi-select picker (M4-06N); each fodder pedestal is one slot
+ * (sprite and ×N, RESOLVED-90) and any of them opens the tap/hold fodder picker (M4-01F) with the
+ * current slots. The `fuse` RPC re-checks everything server-side.
  */
 export function FusionEditor({
   rows,
@@ -65,14 +65,13 @@ export function FusionEditor({
   const router = useRouter();
   const entries = useMemo(() => collectionEntries(rows, stacks), [rows, stacks]);
   const [draft, setDraft] = useState<FusionDraft>(() => ({
+    ...EMPTY_DRAFT,
     targetId:
       initialTarget &&
       rows.some((r) => r.id === initialTarget) &&
-      !baseIneligible(entries).includes(initialTarget)
+      !baseIneligible(entries, rows).includes(initialTarget)
         ? initialTarget
         : "",
-    fodderIds: [],
-    stacks: {},
   }));
   const [mode, setMode] = useState<Mode>("stage");
   const [showStatus, setShowStatus] = useState(false);
@@ -82,22 +81,15 @@ export function FusionEditor({
 
   const target = rows.find((r) => r.id === draft.targetId);
   const targetView = target ? toOwnedUnitView(target) : null;
-  const fodderRows = [
-    ...rows.filter((r) => draft.fodderIds.includes(r.id)),
-    ...stackCopies(stacks, draft.stacks),
-  ];
+  const fodderIds = draftFodderIds(draft);
+  const fodderRows = draftFodderRows(draft, rows, stacks);
   const preview = target ? fusionPreview(target, fodderRows) : null;
-  const pedestals = fodderPedestals(draft);
-  const copies = draft.fodderIds.length + stackQuantityTotal(draft.stacks);
+  const pedestals = draft.slots;
+  const copies = draftCopies(draft);
   const canFuse = preview !== null && preview.problem === null && copies > 0 && zel >= preview.cost;
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
 
-  const baseDimmed = useMemo(() => baseIneligible(entries), [entries]);
-  const fodderEntries = useMemo(() => fodderPickerEntries(entries, draft), [entries, draft]);
-  const fodderDimmed = useMemo(
-    () => fodderIneligible(fodderEntries, blocked),
-    [fodderEntries, blocked],
-  );
+  const baseDimmed = useMemo(() => baseIneligible(entries, rows), [entries, rows]);
 
   function update(next: FusionDraft): void {
     setDraft(next);
@@ -108,11 +100,11 @@ export function FusionEditor({
   function fuse(): void {
     startTransition(async () => {
       try {
-        const result = await fuseUnits(draft.targetId, [...draft.fodderIds], draft.stacks);
+        const result = await fuseUnits(draft.targetId, fodderIds, draftStacks(draft));
         setMessage({ ok: result.ok, text: result.message });
         setConfirming(false);
         if (result.ok) {
-          setDraft({ ...draft, fodderIds: [], stacks: {} });
+          setDraft(clearFodder(draft));
           router.refresh();
         }
       } catch {
@@ -148,17 +140,15 @@ export function FusionEditor({
 
   if (mode === "fodder") {
     return (
-      <UnitPicker
-        title="Select Units"
-        units={fodderEntries}
-        limit={freePedestals(draft)}
-        ineligible={fodderDimmed}
-        party={blocked}
-        backHref="/fusion"
+      <FodderPicker
+        entries={entries}
+        rows={rows}
+        stacks={stacks}
+        blocked={blocked}
+        initialDraft={draft}
         onBack={() => setMode("stage")}
-        ticker="Select units to fuse. Squad and ally units are protected."
-        onConfirm={(result) => {
-          update(addFodderPicks(draft, result));
+        onConfirm={(next) => {
+          update(next);
           setMode("stage");
         }}
       />
@@ -172,9 +162,11 @@ export function FusionEditor({
         ? "You have no units to level yet. Play the story to collect units."
         : "Tap the centre pedestal to choose the unit to level."
       : copies === 0
-        ? "Tap an empty pedestal to add fodder. Fodder is consumed permanently."
+        ? "Tap a fodder pedestal to add fodder. Fodder is consumed permanently."
         : (preview?.problem ??
-          (zel < (preview?.cost ?? 0) ? "Not enough Zel." : "Tap a fodder unit to remove it."));
+          (zel < (preview?.cost ?? 0)
+            ? "Not enough Zel."
+            : "Tap a fodder pedestal to change the fodder."));
 
   return (
     <div className={squad.page}>
@@ -221,11 +213,9 @@ export function FusionEditor({
                 key={spot}
                 spot={spot}
                 unit={unit}
-                disabled={pending || (!pedestal && !targetView)}
-                onTap={() => {
-                  if (pedestal) update(removeFodderPedestal(draft, index));
-                  else setMode("fodder");
-                }}
+                copies={pedestal?.copies ?? 0}
+                disabled={pending || !targetView}
+                onTap={() => setMode("fodder")}
               />
             );
           })}
@@ -244,7 +234,7 @@ export function FusionEditor({
             <span className={units.outline}>{zel.toLocaleString("en-US")}</span>
           </span>
           <span className={`${styles.fodderCount} ${units.outline}`}>
-            Fodder {copies}/{FUSION_FODDER_LIMIT}
+            Slots {pedestals.length}/{FUSION_FODDER_LIMIT} · ×{copies}
           </span>
           <button
             type="button"
@@ -334,7 +324,7 @@ export function FusionEditor({
 
       <p className={menu.ticker}>
         {targetView
-          ? "Tap an empty pedestal to add fodder, or a fodder unit to remove it."
+          ? "Tap a fodder pedestal to pick fodder."
           : "Tap the centre pedestal to choose a base unit."}
       </p>
     </div>
@@ -409,15 +399,17 @@ function BasePedestal({
   );
 }
 
-/** A fodder pedestal: the fodder's sprite and level, or an empty stone with a plus. */
+/** A fodder pedestal (one slot): the fodder's sprite, ×N, and level, or an empty stone with a plus. */
 function FodderPedestal({
   spot,
   unit,
+  copies,
   disabled,
   onTap,
 }: {
   spot: (typeof FODDER_SPOTS)[number];
   unit: CollectionEntry | undefined;
+  copies: number;
   disabled: boolean;
   onTap: () => void;
 }): ReactNode {
@@ -428,12 +420,15 @@ function FodderPedestal({
       data-spot={spot}
       onClick={onTap}
       disabled={disabled}
-      aria-label={unit ? `Remove ${unit.name} from the fodder` : "Add fodder"}
+      aria-label={unit ? `Fodder: ${unit.name} ×${copies}. Change fodder` : "Add fodder"}
     >
       <UiImage name="squad-pedestal" className={`${squad.pedestalArt} ${styles.fodderStone}`} />
       <PedestalSprite unit={unit} className={styles.fodderSprite} />
       {unit ? (
-        <span className={`${styles.fodderLevel} ${units.outline}`}>Lv.{unit.level}</span>
+        <>
+          <span className={`${styles.pedestalCount} ${units.outline}`}>×{copies}</span>
+          <span className={`${styles.fodderLevel} ${units.outline}`}>Lv.{unit.level}</span>
+        </>
       ) : (
         <span className={`${styles.emptyMark} ${units.outline}`} aria-hidden>
           +

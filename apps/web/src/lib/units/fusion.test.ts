@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   canBeFodder,
   FUSION_MINIMUM_NOTE,
+  fodderCopyGrants,
+  fusionBaseMaxed,
   fusionDraftProblem,
   fusionPreview,
   fusionResultMessage,
@@ -182,17 +184,35 @@ describe("stacked fodder (M4-05C)", () => {
   const stack = { id: "00000000-0000-4000-8000-00000000aaaa", count: 4 };
   const flaskStack = { ...stack, unit_id: "cinder-flask", form_id: "cinder-flask-3" };
 
-  it("counts stacked copies toward the 1–5 fodder limit", () => {
+  it("counts each stack as one of the 1–5 fodder slots, with 1–99 copies (RESOLVED-90)", () => {
+    const stackIds = [1, 2, 3, 4, 5, 6].map((n) => `00000000-0000-4000-8000-00000000bbb${n}`);
     expect(fusionDraftProblem(target.id, [], { [stack.id]: 1 })).toBeNull();
-    expect(fusionDraftProblem(target.id, [flask.id], { [stack.id]: 4 })).toBeNull();
-    expect(fusionDraftProblem(target.id, [flask.id], { [stack.id]: 5 })).toBe(
-      "Choose 1–5 fodder units.",
+    expect(fusionDraftProblem(target.id, [flask.id], { [stack.id]: 99 })).toBeNull();
+    expect(
+      fusionDraftProblem(
+        target.id,
+        [],
+        Object.fromEntries(stackIds.slice(0, 5).map((k) => [k, 99])),
+      ),
+    ).toBeNull();
+    expect(fusionDraftProblem(target.id, [flask.id], { [stack.id]: 100 })).toBe(
+      "A stack slot holds 1–99 copies.",
     );
-    expect(fusionDraftProblem(target.id, [], {})).toBe("Choose 1–5 fodder units.");
+    expect(
+      fusionDraftProblem(
+        target.id,
+        [flask.id],
+        Object.fromEntries(stackIds.slice(0, 5).map((k) => [k, 1])),
+      ),
+    ).toBe("Choose 1–5 fodder slots.");
+    expect(fusionDraftProblem(target.id, [], {})).toBe("Choose 1–5 fodder slots.");
     expect(fusionDraftProblem(target.id, [], { "not-a-stack": 1 })).toBe(
       "Choose valid stacked units.",
     );
     expect(fusionDraftProblem(target.id, [], { [stack.id]: 1.5 })).toBe(
+      "Choose valid stacked units.",
+    );
+    expect(fusionDraftProblem(target.id, [], { [stack.id]: 0 })).toBe(
       "Choose valid stacked units.",
     );
   });
@@ -204,6 +224,124 @@ describe("stacked fodder (M4-05C)", () => {
       fusionPreview(target, [flask, { ...flask, id: "00000000-0000-4000-8000-000000000003" }]),
     );
     expect(fusionPreview(target, copies)?.cost).toBe(200);
+  });
+});
+
+const fodderOf = (unit_id: string, form_id: string, n = 9): OwnedUnitRow => ({
+  ...flask,
+  id: `00000000-0000-4000-8000-00000000c00${n}`,
+  unit_id,
+  form_id,
+});
+const mightHob = fodderOf("might-hob", "might-hob-3");
+const vitalHob = fodderOf("vital-hob", "vital-hob-3");
+const grandHob = fodderOf("grand-hob", "grand-hob-3");
+const satchel = fodderOf("satchel-toad", "satchel-toad-3");
+const lantern = fodderOf("lantern-toad", "lantern-toad-3");
+const duplicate = fodderOf("brand", "brand-3");
+/** Brand 3★ at its max level 40 (97,408 EXP on the base-10 curve), BB 10 (no SBB). */
+const maxLevel: OwnedUnitRow = { ...target, level: 40, exp: 97_408, bb_level: 10 };
+
+describe("hob and sphere-slot preview (M4-01E)", () => {
+  it("adds hob gains up to the form's imp caps", () => {
+    expect(
+      fusionPreview({ ...target, imps: { hp: 0, atk: 190, def: 0, rec: 0 } }, [grandHob]),
+    ).toMatchObject({ imps: { hp: 150, atk: 200, def: 60, rec: 60 }, problem: null });
+  });
+  it("flags a hob copy that would grant nothing, as fuse rejects the whole fusion", () => {
+    const capped = { ...target, imps: { hp: 0, atk: 180, def: 0, rec: 0 } };
+    expect(fusionPreview(capped, [mightHob])?.problem).toBeNull();
+    expect(fusionPreview(capped, [mightHob, mightHob])?.problem).toMatch(/grant nothing/);
+  });
+  it("opens the second sphere slot with one Satchel Toad and flags any other", () => {
+    expect(fusionPreview(target, [satchel])).toMatchObject({
+      secondSphereSlot: true,
+      problem: null,
+    });
+    expect(fusionPreview(target, [flask])?.secondSphereSlot).toBe(false);
+    expect(fusionPreview(target, [satchel, satchel])?.problem).toMatch(/one Satchel Toad/);
+    expect(fusionPreview({ ...target, second_sphere_slot: true }, [satchel])?.problem).toMatch(
+      /already open/,
+    );
+  });
+});
+
+describe("no wasted picks at ×1 (RESOLVED-90 item 3)", () => {
+  it("allows the copy that reaches max level and none after (1 EXP below max)", () => {
+    const edge = { ...target, level: 39, exp: 97_407, bb_level: 10 };
+    expect(fodderCopyGrants(edge, [], flask)).toBe(true);
+    expect(fodderCopyGrants(edge, [flask], flask)).toBe(false);
+    expect(fodderCopyGrants(maxLevel, [], flask)).toBe(false);
+  });
+  it("counts matching-element and duplicate bonuses, but not the success roll", () => {
+    // From level 1 a Fire Flask gives 2,259; 43 reach 97,137 and the 44th passes 97,408.
+    const flasks = Array(43).fill(flask);
+    expect(fodderCopyGrants({ ...target, bb_level: 10 }, flasks, flask)).toBe(true);
+    expect(fodderCopyGrants({ ...target, bb_level: 10 }, [...flasks, flask], flask)).toBe(false);
+  });
+  it("keeps duplicates and burst toads while BB or SBB is below 10", () => {
+    const bb9 = { ...maxLevel, bb_level: 9 };
+    expect(fodderCopyGrants(bb9, [], duplicate)).toBe(true);
+    expect(fodderCopyGrants(bb9, [duplicate], duplicate)).toBe(false);
+    expect(fodderCopyGrants(bb9, [], lantern)).toBe(true);
+    expect(fodderCopyGrants(bb9, [lantern], lantern)).toBe(false);
+    const omni = { ...target, form_id: "brand-omni", level: 150, exp: 2_782_165 };
+    expect(fodderCopyGrants({ ...omni, bb_level: 10, sbb_level: 9 }, [], lantern)).toBe(true);
+    expect(fodderCopyGrants({ ...omni, bb_level: 10, sbb_level: 10 }, [], lantern)).toBe(false);
+  });
+  it("keeps a stat hob while one of its stats is below the form's cap", () => {
+    const atk180 = { ...maxLevel, imps: { hp: 500, atk: 180, def: 0, rec: 0 } };
+    expect(fodderCopyGrants(atk180, [], mightHob)).toBe(true);
+    expect(fodderCopyGrants(atk180, [mightHob], mightHob)).toBe(false);
+    expect(fodderCopyGrants(atk180, [mightHob], vitalHob)).toBe(false);
+    // A Grand Hob still has HP/DEF/REC room once ATK is capped...
+    const atk200 = { ...maxLevel, imps: { hp: 0, atk: 200, def: 0, rec: 0 } };
+    expect(fodderCopyGrants(atk200, [], grandHob)).toBe(true);
+    // ...but fuse applies hobs in unit-id order, so a Grand Hob first leaves the Might Hob nothing.
+    expect(fodderCopyGrants(atk180, [mightHob], grandHob)).toBe(false);
+  });
+  it("keeps the Satchel Toad only while the slot is closed and none is picked", () => {
+    expect(fodderCopyGrants(maxLevel, [], satchel)).toBe(true);
+    expect(fodderCopyGrants(maxLevel, [satchel], satchel)).toBe(false);
+    expect(fodderCopyGrants({ ...maxLevel, second_sphere_slot: true }, [], satchel)).toBe(false);
+  });
+  it("never allows a copy fuse would reject, even below max level", () => {
+    const capped = { ...target, bb_level: 10, imps: { hp: 0, atk: 200, def: 0, rec: 0 } };
+    expect(fodderCopyGrants(capped, [], flask)).toBe(true);
+    expect(fodderCopyGrants(capped, [], mightHob)).toBe(false);
+    expect(fodderCopyGrants(capped, [], lantern)).toBe(false);
+  });
+});
+
+describe("fully maxed bases (RESOLVED-90 item 4)", () => {
+  const full: OwnedUnitRow = {
+    ...target,
+    form_id: "brand-omni",
+    level: 150,
+    exp: 2_782_165,
+    bb_level: 10,
+    sbb_level: 10,
+    imps: { hp: 2200, atk: 880, def: 460, rec: 460 },
+    second_sphere_slot: true,
+  };
+  it("reports a base nothing could improve", () => {
+    expect(fusionBaseMaxed(full)).toBe(true);
+    expect(
+      fusionBaseMaxed({
+        ...maxLevel,
+        imps: { hp: 500, atk: 200, def: 120, rec: 120 },
+        second_sphere_slot: true,
+      }),
+    ).toBe(true);
+  });
+  it.each([
+    ["level", { level: 149 }],
+    ["BB", { bb_level: 9 }],
+    ["SBB", { sbb_level: 9 }],
+    ["sphere slot", { second_sphere_slot: false }],
+    ["imps", { imps: { hp: 2200, atk: 880, def: 460, rec: 459 } }],
+  ])("keeps a base missing its %s selectable", (_, change) => {
+    expect(fusionBaseMaxed({ ...full, ...change })).toBe(false);
   });
 });
 

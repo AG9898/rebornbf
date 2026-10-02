@@ -113,6 +113,8 @@ export type OwnedUnitRow = {
   bb_level?: number;
   sbb_level?: number;
   imps?: Stats;
+  /** Whether a Satchel Toad opened the second sphere slot (M4-04D); selected only where needed. */
+  second_sphere_slot?: boolean;
   /**
    * The persisted type roll (GAME_DESIGN §6 → Stat growth and unit types), rolled at acquisition
    * (M3-01D). Null for a unit that never rolls (Omni grants, single-form units): it is Lord.

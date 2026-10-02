@@ -170,3 +170,117 @@
 .panelPill {
   width: calc(var(--u) * 130);
 }
+
+/* ---------- Fodder pedestal slot count (M4-01F, RESOLVED-90) ---------- */
+
+/* A filled fodder pedestal's ×N, white and outlined at the stone's top right. */
+.pedestalCount {
+  --stroke: 4;
+  position: absolute;
+  top: calc(var(--u) * 40);
+  right: calc(var(--u) * 34);
+  font-size: calc(var(--u) * 26);
+  color: #fff;
+  pointer-events: none;
+}
+
+/* ---------- Fodder picker: tap/hold and the slot bar (M4-01F, RESOLVED-90) ---------- */
+
+/* Press-and-hold targets: no text selection, callout, or double-tap zoom on touch. */
+.holdable {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+.holdable[aria-disabled="true"] {
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .holdable:not([aria-disabled="true"]) {
+    transition: transform 80ms ease-out;
+  }
+
+  .holdable:not([aria-disabled="true"]):active {
+    transform: scale(0.94);
+  }
+}
+
+.slotBar {
+  gap: calc(var(--u) * 8);
+  padding: calc(var(--u) * 8) calc(var(--u) * 10);
+}
+
+.slots {
+  display: flex;
+  gap: calc(var(--u) * 6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* One slot: 70 x 70; an empty slot is a dark recessed square. */
+.slot {
+  position: relative;
+  width: calc(var(--u) * 70);
+  height: calc(var(--u) * 70);
+}
+
+.slot[data-empty] {
+  border: calc(var(--u) * 2) solid rgb(201 154 58 / 0.6);
+  border-radius: calc(var(--u) * 8);
+  background: rgb(20 14 4 / 0.55);
+}
+
+.slotIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.slotCount {
+  --stroke: 3;
+  position: absolute;
+  left: calc(var(--u) * 2);
+  top: calc(var(--u) * -2);
+  font-size: calc(var(--u) * 18);
+  color: #fff;
+  pointer-events: none;
+}
+
+/* The round minus badge at the slot's top right: tap −1, hold repeats. */
+.minusBadge {
+  position: absolute;
+  top: calc(var(--u) * -10);
+  right: calc(var(--u) * -10);
+  width: calc(var(--u) * 30);
+  height: calc(var(--u) * 30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  border: calc(var(--u) * 3) solid #f4f1e8;
+  background: #d22a1e;
+  box-shadow: 0 calc(var(--u) * 2) 0 rgb(0 0 0 / 0.45);
+  color: #fff;
+  font: inherit;
+  font-size: calc(var(--u) * 22);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.minusBadge:focus-visible {
+  outline: calc(var(--u) * 3) solid #fbe39a;
+  outline-offset: calc(var(--u) * 1);
+}
+
+.removeAll {
+  width: calc(var(--u) * 104);
+  font-size: calc(var(--u) * 17);
+}
+
+.slotConfirm {
+  width: calc(var(--u) * 112);
+}

@@ -1,68 +1,119 @@
-import { canBeFodder } from "./fusion.ts";
-import { unitContent } from "./owned-units.ts";
-import type { PickResult } from "./unit-picker.ts";
-import { type CollectionEntry, FUSION_FODDER_LIMIT, type StackQuantities } from "./unit-stacks.ts";
+import { canBeFodder, fodderCopyGrants, fusionBaseMaxed } from "./fusion.ts";
+import { type OwnedUnitRow, unitContent } from "./owned-units.ts";
+import {
+  type CollectionEntry,
+  FUSION_FODDER_LIMIT,
+  FUSION_STACK_SLOT_MAX,
+  stackCopies,
+  stackCopyRow,
+  type UnitStackRow,
+} from "./unit-stacks.ts";
 
 /**
  * The Fuse Units stage's draft (M4-06D, RESOLVED-80; ART_GUIDE → UI → Fusion stage). Pure helpers:
- * the base sits on the centre pedestal; the fodder fill five pedestals in pick order, owned rows
- * first and then one pedestal per stacked copy. The multi-select picker (M4-06N) adds fodder up to
- * the free pedestals; tapping a filled pedestal removes that one copy.
+ * the base sits on the centre pedestal; the fodder fill up to five slots in pick order (RESOLVED-90):
+ * an owned row is one slot (×1), a stack is one slot of 1–99 copies. Adding and removing work one
+ * copy at a time; a stack slot that reaches 0 copies empties.
  */
+
+/** One filled fodder slot: an owned row (always ×1) or a stack with its chosen copies. */
+export type FodderSlot = {
+  readonly kind: "row" | "stack";
+  readonly id: string;
+  readonly copies: number;
+};
 
 export type FusionDraft = {
   /** The base unit's `owned_units` id, or "" before one is chosen. */
   readonly targetId: string;
-  /** Owned-row fodder ids in pick order. */
-  readonly fodderIds: readonly string[];
-  /** Stacked copies per stack id, in pick order of the stacks. */
-  readonly stacks: StackQuantities;
+  /** The filled fodder slots in pick order. */
+  readonly slots: readonly FodderSlot[];
 };
 
-/** One filled fodder pedestal: an owned row, or one copy of a stack. */
-export type FodderPedestal = { readonly kind: "row" | "stack"; readonly id: string };
-
-/** The fodder pedestals' screen spots in fill order: the four corners, then bottom centre. */
+/** The fodder pedestals' screen spots in slot order: the four corners, then bottom centre. */
 export const FODDER_SPOTS = ["tl", "tr", "bl", "br", "bc"] as const;
 
-export const EMPTY_DRAFT: FusionDraft = { targetId: "", fodderIds: [], stacks: {} };
+export const EMPTY_DRAFT: FusionDraft = { targetId: "", slots: [] };
 
-/** The filled fodder pedestals in fill order: owned rows, then each stacked copy. */
-export function fodderPedestals(draft: FusionDraft): FodderPedestal[] {
-  return [
-    ...draft.fodderIds.map((id) => ({ kind: "row" as const, id })),
-    ...Object.entries(draft.stacks).flatMap(([id, copies]) =>
-      Array.from({ length: copies }, () => ({ kind: "stack" as const, id })),
-    ),
-  ];
+/** The owned-row fodder ids, in slot order (`fuse`'s `p_fodder`). */
+export function draftFodderIds(draft: FusionDraft): string[] {
+  return draft.slots.filter((slot) => slot.kind === "row").map((slot) => slot.id);
 }
 
-/** Fodder pedestals still empty. */
-export function freePedestals(draft: FusionDraft): number {
-  return Math.max(0, FUSION_FODDER_LIMIT - fodderPedestals(draft).length);
+/** The stacked copies per stack id (`fuse`'s `p_fodder_stacks`). */
+export function draftStacks(draft: FusionDraft): Record<string, number> {
+  return Object.fromEntries(
+    draft.slots.filter((slot) => slot.kind === "stack").map((slot) => [slot.id, slot.copies]),
+  );
+}
+
+/** Every fodder copy in the draft (rows plus stacked copies), as `fuse` prices them. */
+export function draftCopies(draft: FusionDraft): number {
+  return draft.slots.reduce((sum, slot) => sum + slot.copies, 0);
+}
+
+/** Fodder slots still empty. */
+export function freeSlots(draft: FusionDraft): number {
+  return Math.max(0, FUSION_FODDER_LIMIT - draft.slots.length);
 }
 
 /** A new base: chosen from the base picker; the fodder are cleared. */
 export function chooseBase(draft: FusionDraft, targetId: string): FusionDraft {
-  return targetId === draft.targetId ? draft : { targetId, fodderIds: [], stacks: {} };
+  return targetId === draft.targetId ? draft : { targetId, slots: [] };
 }
 
-/** A tap on filled fodder pedestal `index`: an owned row leaves; a stack gives back one copy. */
-export function removeFodderPedestal(draft: FusionDraft, index: number): FusionDraft {
-  const pedestal = fodderPedestals(draft)[index];
-  if (!pedestal) return draft;
-  if (pedestal.kind === "row") {
-    return { ...draft, fodderIds: draft.fodderIds.filter((id) => id !== pedestal.id) };
-  }
-  const { [pedestal.id]: copies = 0, ...rest } = draft.stacks;
-  return { ...draft, stacks: copies > 1 ? { ...draft.stacks, [pedestal.id]: copies - 1 } : rest };
+/** Remove All: every fodder slot is cleared; the base stays. */
+export function clearFodder(draft: FusionDraft): FusionDraft {
+  return draft.slots.length === 0 ? draft : { ...draft, slots: [] };
 }
 
 /**
- * The fodder picker's tiles: hide dedicated evolution materials, the base, and placed rows; a stack
- * shows only its unplaced copies. This is UI filtering only, not a change to fuse's server rules.
- * Material forms are level-1-only stackables without fixed EXP or a fusion effect. Levelable summon
- * fillers (including Sprites), EXP vessels, stat hobs and toads remain visible, as do heroes.
+ * Adds one copy of a picker tile (RESOLVED-90 item 2). A row opens a slot of its own; a stack adds
+ * to its slot, opening one if needed, up to its held copies and 99. Nothing changes when the tile
+ * is the base, a row already placed, a stack at its limit, or no slot is free.
+ */
+export function addFodderCopy(
+  draft: FusionDraft,
+  entry: Pick<CollectionEntry, "id" | "stackCount">,
+): FusionDraft {
+  if (entry.stackCount === null) {
+    if (entry.id === draft.targetId || draft.slots.some((slot) => slot.id === entry.id)) {
+      return draft;
+    }
+    if (freeSlots(draft) === 0) return draft;
+    return { ...draft, slots: [...draft.slots, { kind: "row", id: entry.id, copies: 1 }] };
+  }
+  const index = draft.slots.findIndex((slot) => slot.kind === "stack" && slot.id === entry.id);
+  const max = Math.min(entry.stackCount, FUSION_STACK_SLOT_MAX);
+  if (index < 0) {
+    if (freeSlots(draft) === 0 || max < 1) return draft;
+    return { ...draft, slots: [...draft.slots, { kind: "stack", id: entry.id, copies: 1 }] };
+  }
+  const slot = draft.slots[index] as FodderSlot;
+  if (slot.copies >= max) return draft;
+  const slots = [...draft.slots];
+  slots[index] = { ...slot, copies: slot.copies + 1 };
+  return { ...draft, slots };
+}
+
+/** Removes one copy from fodder slot `index`; a row, or a stack slot at 0, empties its slot. */
+export function removeFodderCopy(draft: FusionDraft, index: number): FusionDraft {
+  const slot = draft.slots[index];
+  if (!slot) return draft;
+  if (slot.copies > 1) {
+    const slots = [...draft.slots];
+    slots[index] = { ...slot, copies: slot.copies - 1 };
+    return { ...draft, slots };
+  }
+  return { ...draft, slots: draft.slots.filter((_, i) => i !== index) };
+}
+
+/**
+ * The fodder picker's tiles: hide dedicated evolution materials and the base. Placed rows stay (the
+ * picker badges and dims them) and a stack shows only its unplaced copies, down to ×0, so the grid
+ * never reflows under a held finger (M4-01F). This is UI filtering only, not a change to fuse's
+ * server rules. Material forms are level-1-only stackables without fixed EXP or a fusion effect.
+ * Levelable summon fillers (including Sprites), EXP vessels, stat hobs and toads remain visible.
  */
 export function fodderPickerEntries<T extends CollectionEntry>(
   entries: readonly T[],
@@ -79,11 +130,9 @@ export function fodderPickerEntries<T extends CollectionEntry>(
     ) {
       return [];
     }
-    if (entry.stackCount === null) {
-      return entry.id === draft.targetId || draft.fodderIds.includes(entry.id) ? [] : [entry];
-    }
-    const left = entry.stackCount - (draft.stacks[entry.id] ?? 0);
-    return left > 0 ? [{ ...entry, stackCount: left }] : [];
+    if (entry.stackCount === null) return entry.id === draft.targetId ? [] : [entry];
+    const placed = draft.slots.find((slot) => slot.kind === "stack" && slot.id === entry.id);
+    return [{ ...entry, stackCount: Math.max(0, entry.stackCount - (placed?.copies ?? 0)) }];
   });
 }
 
@@ -105,32 +154,49 @@ export function fodderIneligible(
     .map((entry) => entry.id);
 }
 
-/** Tiles the base picker dims: stacks (split a copy out first) and units without content. */
-export function baseIneligible(entries: readonly CollectionEntry[]): string[] {
+/**
+ * Tiles the base picker dims: stacks (split a copy out first), units without content, and owned
+ * rows (from `rows`, when given) that nothing could improve (`fusionBaseMaxed`, RESOLVED-90 item 4).
+ */
+export function baseIneligible(
+  entries: readonly CollectionEntry[],
+  rows: readonly OwnedUnitRow[] = [],
+): string[] {
+  const maxed = new Set(rows.filter(fusionBaseMaxed).map((row) => row.id));
   return entries
-    .filter((entry) => entry.stackCount !== null || entry.maxLevel === null)
+    .filter((entry) => entry.stackCount !== null || entry.maxLevel === null || maxed.has(entry.id))
     .map((entry) => entry.id);
 }
 
+/** The draft's fodder as `fusionPreview` takes them: placed rows, then one row per stacked copy. */
+export function draftFodderRows(
+  draft: FusionDraft,
+  rows: readonly OwnedUnitRow[],
+  stacks: readonly UnitStackRow[],
+): OwnedUnitRow[] {
+  const ids = new Set(draftFodderIds(draft));
+  return [...rows.filter((row) => ids.has(row.id)), ...stackCopies(stacks, draftStacks(draft))];
+}
+
 /**
- * The fodder picker's Confirm: picked rows join the pedestals after those already there, then
- * stacked copies; nothing past the free pedestals, the base, or a row already placed is added.
+ * One tap (or one hold repeat) on a fodder picker tile (RESOLVED-90 items 2–3, M4-01F): adds one
+ * copy with `addFodderCopy` only while that copy still grants something to the base at the plain
+ * ×1 rate (`fodderCopyGrants`). Returns `draft` itself when nothing may be added: no base, no free
+ * slot, the row already placed, the stack at its held copies or 99, or the no-wasted-pick cutoff.
+ * `entry` carries the tile's full held count, not the picker's remaining-copies display.
  */
-export function addFodderPicks(draft: FusionDraft, picks: PickResult): FusionDraft {
-  let room = freePedestals(draft);
-  const fodderIds = [...draft.fodderIds];
-  for (const id of picks.unitIds) {
-    if (room <= 0) break;
-    if (id === draft.targetId || fodderIds.includes(id)) continue;
-    fodderIds.push(id);
-    room -= 1;
-  }
-  const stacks: Record<string, number> = { ...draft.stacks };
-  for (const [id, wanted] of Object.entries(picks.stacks)) {
-    const copies = Math.min(Math.max(0, Math.trunc(wanted)), room);
-    if (copies <= 0) continue;
-    stacks[id] = (stacks[id] ?? 0) + copies;
-    room -= copies;
-  }
-  return { ...draft, fodderIds, stacks };
+export function addGrantingFodderCopy(
+  draft: FusionDraft,
+  entry: Pick<CollectionEntry, "id" | "stackCount">,
+  rows: readonly OwnedUnitRow[],
+  stacks: readonly UnitStackRow[],
+): FusionDraft {
+  const target = rows.find((row) => row.id === draft.targetId);
+  if (!target) return draft;
+  const next = addFodderCopy(draft, entry);
+  if (next === draft) return draft;
+  const stack = entry.stackCount === null ? undefined : stacks.find((s) => s.id === entry.id);
+  const candidate = stack ? stackCopyRow(stack) : rows.find((row) => row.id === entry.id);
+  if (!candidate) return draft;
+  return fodderCopyGrants(target, draftFodderRows(draft, rows, stacks), candidate) ? next : draft;
 }

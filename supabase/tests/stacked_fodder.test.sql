@@ -76,9 +76,11 @@ select throws_ok($$select public.fuse('00000000-0000-0000-0000-00000000b011', '{
   '{"00000000-0000-0000-0000-00000000b5c7": 1}')$$, '22023', null, 'a non-stackable unit''s stack is rejected');
 select throws_ok($$select public.fuse('00000000-0000-0000-0000-00000000b011', '{}',
   '{"00000000-0000-0000-0000-00000000b5ff": 1}')$$, '22023', null, 'a missing stack is rejected');
-select throws_ok($$select public.fuse('00000000-0000-0000-0000-00000000b011',
-  array['00000000-0000-0000-0000-00000000b0f1']::uuid[], '{"00000000-0000-0000-0000-00000000b5c1": 5}')$$,
-  '22023', null, 'rows plus stacked copies above five are rejected');
+select throws_ok($$select public.fuse('00000000-0000-0000-0000-00000000b011', array[
+  '00000000-0000-0000-0000-00000000b0f1', '00000000-0000-0000-0000-00000000b0f2',
+  '00000000-0000-0000-0000-00000000b0f3', '00000000-0000-0000-0000-00000000b0f4',
+  '00000000-0000-0000-0000-00000000b0f5']::uuid[], '{"00000000-0000-0000-0000-00000000b5c1": 1}')$$,
+  '22023', 'fuse: feed 1-5 fodder slots', 'five rows plus a stack are six slots and are rejected');
 select throws_ok($$select public.fuse('00000000-0000-0000-0000-00000000b011')$$,
   '22023', null, 'no fodder at all is rejected');
 select throws_ok($$select public.fuse('00000000-0000-0000-0000-00000000b011', '{}',
@@ -122,7 +124,7 @@ select is((select r - 'target_id' from outcome where name = 'stacks'),
   (select r - 'target_id' from outcome where name = 'rows'),
   'three matching and two non-matching Flasks give the same fusion as rows or stacks');
 select is((select r ->> 'zel_spent' || '/' || (r ->> 'fodder_consumed') from outcome where name = 'stacks'),
-  '500/5', 'stacked copies each cost 100 Zel x level and count toward the five');
+  '500/5', 'stacked copies each cost 100 Zel x level');
 
 insert into outcome select 'dup-rows', public.fuse('00000000-0000-0000-0000-00000000b013', array[
   '00000000-0000-0000-0000-00000000b0f7', '00000000-0000-0000-0000-00000000b0f8']::uuid[]);

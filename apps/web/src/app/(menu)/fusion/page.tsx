@@ -21,7 +21,7 @@ export default async function FusionPage({
   const [units, stacks, squads, wallet] = await Promise.all([
     supabase
       .from("owned_units")
-      .select(OWNED_UNIT_COLUMNS)
+      .select(`${OWNED_UNIT_COLUMNS}, second_sphere_slot`)
       .eq("user_id", userId)
       .overrideTypes<OwnedUnitRow[], { merge: false }>(),
     supabase
