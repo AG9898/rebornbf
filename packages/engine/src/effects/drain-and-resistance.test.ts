@@ -18,8 +18,9 @@ import { bcFillOnDamageDealt } from "./gauge.ts";
 import { applyEffect } from "./index.ts";
 import { elementalWeaknessResistance, guardBonus, hpDrainAmount } from "./survival.ts";
 
-// Morrick's defensive effects (M1-06K, GAME_DESIGN §4 Kit additions (M2-04F)). The test unit has
-// ATK 1400, DEF 1100, HP 4000 and is Fire, with a 2-hit (50/50) normal attack and 4 drop checks.
+// Guard mitigation, elemental weakness resistance, HP drain and damage-dealt BC fill
+// (M1-06K, GAME_DESIGN §4). The test unit has ATK 1400, DEF 1100, HP 4000 and is Fire,
+// with a 2-hit (50/50) normal attack and 4 drop checks.
 
 function ofType<T extends BattleEvent["type"]>(
   events: readonly BattleEvent[],

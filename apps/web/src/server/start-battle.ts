@@ -8,7 +8,7 @@ import { createSupabaseServerClient } from "../lib/supabase/server.ts";
  * Starts a stage through `start_battle` (M3-04B) and redirects to the battle page, or back to
  * `returnPath` with a player-facing `?error=`. The RPC derives the player from `auth.uid()` and
  * re-checks the stage, its unlock, and the squad; it records a session with a server-rolled seed
- * and a snapshot of the chosen squad and per-run ally. Trials default to slot 0 without an ally.
+ * and a snapshot of the chosen squad, per-run ally, and items for both story stages and trials.
  */
 export async function startBattleSession(
   stageId: string,

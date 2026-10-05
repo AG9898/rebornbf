@@ -8,6 +8,17 @@
   color: #fff2ce;
   font-size: calc(var(--u) * 24);
 }
+
+.page.vortex {
+  background: #161324 url("/assets/ui/bg-vortex.webp") center / cover no-repeat;
+}
+
+.notice {
+  margin: calc(var(--u) * 12) 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 20);
+  line-height: 1.4;
+}
 /* Begin Quest fills the column like the original: the party panel takes the spare height (its rows
  * spread evenly) and the Begin Quest bar sits on the bottom edge above the nav. */
 .page.fill {
@@ -68,9 +79,7 @@
   background-image: url("/assets/ui/btn-pill-lit.webp");
 }
 .row {
-  background: #142027;
-  border: calc(var(--u) * 2) solid #c99a3a;
-  border-radius: calc(var(--u) * 10);
+  background: url("/assets/ui/reinforcement-row.webp") center / 100% 100% no-repeat;
   padding: calc(var(--u) * 10);
   margin-bottom: calc(var(--u) * 10);
 }

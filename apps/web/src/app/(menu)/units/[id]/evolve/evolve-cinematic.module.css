@@ -1,14 +1,13 @@
 /*
  * Evolve cinematic (M4-06M; ART_GUIDE -> UI -> Evolve cinematic). Covers the menu column like the
- * summon stage. The magic circle, pillars, beam, starburst, halo, and letter fills are CSS stand-ins
- * until M4-06K locks fx-circle, fx-pillar, fx-starburst, and evolve-letters-*. Sizes use --u.
+ * summon stage. Uses the locked M4-06K circle, pillar, starburst, and letter fills. Sizes use --u.
  */
 
 .cinematic {
   --theme-a: #fff6c8;
-  --theme-b: #f6c342;
-  --theme-c: #c9811c;
   --glow: rgb(255 214 110 / 0.9);
+  --letter-fill: url("/assets/ui/evolve-letters-gold.webp");
+  --effect-filter: none;
   position: absolute;
   inset: 0;
   z-index: 50;
@@ -24,13 +23,15 @@
 
 .cinematic[data-theme="red"] {
   --theme-a: #ffe8a0;
-  --theme-b: #ff7a2a;
-  --theme-c: #d01810;
   --glow: rgb(255 120 60 / 0.9);
+  --letter-fill: url("/assets/ui/evolve-letters-red.webp");
+  --effect-filter: hue-rotate(-25deg);
 }
 
 .cinematic[data-theme="rainbow"] {
   --glow: rgb(200 160 255 / 0.9);
+  --letter-fill: url("/assets/ui/evolve-letters-rainbow.webp");
+  --effect-filter: hue-rotate(220deg);
 }
 
 /* ---------- Pedestal stage: 640 x 700 logical ---------- */
@@ -88,18 +89,14 @@
   bottom: calc(var(--u) * 0);
   width: calc(var(--u) * 160);
   height: calc(var(--u) * 54);
-  border-radius: 50%;
-  border: calc(var(--u) * 3) solid rgb(255 255 255 / 0.12);
-  transition:
-    border-color 400ms,
-    box-shadow 400ms;
+  background: url("/assets/ui/fx-circle.webp") center / 100% 100% no-repeat;
+  filter: var(--effect-filter);
+  opacity: 0.12;
+  transition: opacity 400ms;
 }
 
 .circle[data-on] {
-  border-color: var(--theme-a);
-  box-shadow:
-    0 0 calc(var(--u) * 14) var(--glow),
-    inset 0 0 calc(var(--u) * 14) var(--glow);
+  opacity: 1;
   animation: circlePulse 900ms ease-in-out infinite alternate;
 }
 
@@ -147,14 +144,10 @@
   width: calc(var(--u) * 600);
   height: calc(var(--u) * 600);
   translate: -50% -50%;
-  border-radius: 50%;
   opacity: 0;
   scale: 0.3;
-  background:
-    radial-gradient(circle, transparent 46%, var(--glow) 47%, transparent 49%),
-    radial-gradient(circle, transparent 62%, var(--glow) 63%, transparent 65%),
-    repeating-conic-gradient(from 0deg, rgb(255 255 255 / 0.18) 0 4deg, transparent 4deg 22deg);
-  mask-image: radial-gradient(circle, #000 66%, transparent 67%);
+  transform: scaleY(0.35);
+  filter: var(--effect-filter);
   transition:
     opacity 600ms ease-out,
     scale 700ms ease-out;
@@ -163,6 +156,14 @@
 .circleJoined[data-on] {
   opacity: 1;
   scale: 1;
+}
+
+/* Rotate the round art before its parent squashes it into the pedestal plane. */
+.circleJoined::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/ui/fx-circle.webp") center / contain no-repeat;
   animation: spin 8s linear infinite;
 }
 
@@ -170,12 +171,12 @@
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: calc(var(--u) * 70);
+  width: calc(var(--u) * 180);
   height: calc(var(--u) * 900);
   translate: -50% 0;
   transform-origin: bottom;
-  background: linear-gradient(to top, var(--theme-a), var(--glow) 30%, transparent);
-  filter: blur(calc(var(--u) * 4));
+  background: url("/assets/ui/fx-pillar.webp") center bottom / 100% 100% no-repeat;
+  filter: var(--effect-filter);
   mix-blend-mode: screen;
   animation: pillarRise 600ms ease-out both;
 }
@@ -206,8 +207,8 @@
   height: calc(var(--u) * 700);
   translate: -50% 0;
   transform-origin: top;
-  background: linear-gradient(to right, transparent, #fff 40%, #fff 60%, transparent);
-  box-shadow: 0 0 calc(var(--u) * 40) var(--glow);
+  background: url("/assets/ui/fx-pillar.webp") center / 100% 100% no-repeat;
+  filter: var(--effect-filter);
   animation: beamDrop 300ms ease-in both;
 }
 
@@ -218,11 +219,8 @@
   width: calc(var(--u) * 1400);
   height: calc(var(--u) * 1400);
   translate: -50% -50%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, #fff 8%, transparent 40%),
-    repeating-conic-gradient(var(--glow) 0 6deg, transparent 6deg 18deg);
-  mask-image: radial-gradient(circle, #000 20%, transparent 70%);
+  background: url("/assets/ui/fx-starburst.webp") center / contain no-repeat;
+  filter: var(--effect-filter);
   animation: burstOut 650ms ease-out both;
 }
 
@@ -266,24 +264,14 @@
 
 .letter {
   display: inline-block;
-  background-image: linear-gradient(var(--theme-a) 10%, var(--theme-b) 50%, var(--theme-c) 85%);
+  background-image: var(--letter-fill);
+  background-size: 100% 100%;
   background-clip: text;
   color: transparent;
   -webkit-text-stroke: calc(var(--u) * 2) #fff;
   filter: drop-shadow(0 calc(var(--u) * 3) 0 #1a0d02);
   animation: letterDrop 380ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
   animation-delay: calc(300ms + var(--i) * 70ms);
-}
-
-.cinematic[data-theme="rainbow"] .letter {
-  background-image: linear-gradient(
-    #ff4a4a,
-    #ffb400 20%,
-    #f4f03a 35%,
-    #40de62 52%,
-    #2cc6ff 68%,
-    #b05cff 85%
-  );
 }
 
 .haloWrap {
@@ -298,25 +286,28 @@
 .halo {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle,
-      transparent 52%,
-      var(--theme-a) 54%,
-      var(--theme-b) 58%,
-      transparent 63%
-    ),
-    radial-gradient(circle, var(--glow), transparent 55%);
+  background: url("/assets/ui/fx-circle.webp") center / contain no-repeat;
+  filter: var(--effect-filter);
   opacity: 0.85;
   animation: haloIn 500ms ease-out both;
 }
 
 .cinematic[data-theme="rainbow"] .halo {
-  background:
-    radial-gradient(circle, transparent 50%, #fff 52%, transparent 64%),
-    conic-gradient(#ff4a4a, #ffb400, #f4f03a, #40de62, #2cc6ff, #b05cff, #ff4a4a);
-  mask-image: radial-gradient(circle, transparent 46%, #000 50%, #000 62%, transparent 66%);
+  background: var(--letter-fill) center / 100% 100% no-repeat;
+  mask: url("/assets/ui/fx-circle.webp") center / contain no-repeat;
+  filter: none;
+}
+
+/* Rainbow tint follows the circle's painted alpha, including its rune ring. */
+.cinematic[data-theme="rainbow"] .circle,
+.cinematic[data-theme="rainbow"] .circleJoined::before {
+  background: conic-gradient(#ff4a4a, #ffb400, #f4f03a, #40de62, #2cc6ff, #b05cff, #ff4a4a);
+  mask: url("/assets/ui/fx-circle.webp") center / 100% 100% no-repeat;
+  filter: none;
+}
+
+.cinematic[data-theme="rainbow"] .circleJoined {
+  filter: none;
 }
 
 .revealSprite {
@@ -420,9 +411,7 @@
 
 @keyframes circlePulse {
   to {
-    box-shadow:
-      0 0 calc(var(--u) * 26) var(--glow),
-      inset 0 0 calc(var(--u) * 20) var(--glow);
+    opacity: 0.65;
   }
 }
 

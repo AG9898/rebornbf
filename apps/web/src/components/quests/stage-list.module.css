@@ -1,7 +1,7 @@
 /*
  * Stage list (ART_GUIDE.md -> UI -> Stage list): title-plate and pill navigation, one stage-panel
  * per stage with its NEW/CLEAR ribbon on the top-left corner. Story areas draw over their region
- * map darkened (M3-04M); dungeon series keep the CSS purple vortex. Sizes use --u.
+ * map darkened (M3-04M); dungeons and trials use the locked vortex. Sizes use --u.
  */
 .page {
   flex: 1;
@@ -12,9 +12,7 @@
 }
 
 .vortex {
-  background:
-    radial-gradient(ellipse at 70% 30%, #62428080, transparent 65%),
-    radial-gradient(ellipse at 20% 75%, #342e69, #161324);
+  background: #161324 url("/assets/ui/bg-vortex.webp") center / cover no-repeat;
 }
 
 /* The region map stays put while the list scrolls over it. */
@@ -147,6 +145,11 @@ a.panel:hover {
   --stroke: 2;
   font-size: calc(var(--u) * 13);
   color: #f6d88a;
+}
+
+.waves {
+  font-size: calc(var(--u) * 18);
+  overflow: visible;
 }
 
 .name {

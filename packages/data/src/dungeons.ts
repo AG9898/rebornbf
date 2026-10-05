@@ -578,16 +578,16 @@ export function toadEnemy(entry: (typeof TOAD_ENEMIES)[number]): Enemy {
  * Lamp Sting, a 1.3× single hit on the lowest-HP unit). Sprites are M6-07N.
  */
 export function chapter2DungeonMobs(): Enemy[] {
-  const base = {
+  const baseStatsAndDrops = (): Pick<Enemy, "stats" | "drops"> => ({
     stats: { hp: 14000, atk: 3200, def: 600, rec: 100 },
     drops: { bcResistance: 0.05, zel: { rate: 60, amount: 60 } },
-  };
+  });
   return [
     {
       id: "dg2-vent-shrimp",
       name: "Vent Shrimp",
       element: "fire",
-      ...structuredClone(base),
+      ...baseStatsAndDrops(),
       normalAttack: {
         moveType: "melee",
         startDelayFrames: 18,
@@ -620,7 +620,7 @@ export function chapter2DungeonMobs(): Enemy[] {
       id: "dg2-brine-urchin",
       name: "Brine Urchin",
       element: "water",
-      ...structuredClone(base),
+      ...baseStatsAndDrops(),
       normalAttack: {
         moveType: "ranged",
         startDelayFrames: 24,
@@ -645,7 +645,7 @@ export function chapter2DungeonMobs(): Enemy[] {
       id: "dg2-glass-jelly",
       name: "Glass Jelly",
       element: "thunder",
-      ...structuredClone(base),
+      ...baseStatsAndDrops(),
       normalAttack: {
         moveType: "ranged",
         startDelayFrames: 20,

@@ -54,7 +54,10 @@ export default async function BeginQuestPage({
     ally ?? null,
   ];
   return (
-    <div className={`${styles.page} ${styles.fill}`}>
+    <div
+      className={`${styles.page} ${styles.fill} ${preparation.stage.trial ? styles.vortex : ""}`}
+      data-backdrop={preparation.stage.trial ? "vortex" : "olive"}
+    >
       <header className={unitStyles.titleBar}>
         <Link href={`/start/${stage}`} className={`${unitStyles.pill} ${unitStyles.backButton}`}>
           Back
@@ -69,6 +72,9 @@ export default async function BeginQuestPage({
           Home
         </Link>
       </header>
+      {preparation.stage.trial ? (
+        <p className={styles.notice}>Trials cannot be continued after defeat.</p>
+      ) : null}
       <div className={styles.toolbar}>
         <Link className={styles.tab} href={`/squad?slot=${slot}`}>
           <UiImage name="section-tab" className={styles.tabArt} />

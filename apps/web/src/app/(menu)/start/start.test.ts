@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { STORY_STAGES } from "../../../lib/quests/quest-map.ts";
+import { reinforcements } from "../../../lib/quests/reinforcement.ts";
+import { TRIAL_STAGES } from "../../../lib/quests/trials.ts";
 import { beginQuest } from "./[stage]/begin/actions.ts";
 import BeginQuestPage from "./[stage]/begin/page.tsx";
 import ReinforcementPage from "./[stage]/page.tsx";
@@ -41,6 +43,100 @@ beforeEach(() => {
 });
 
 describe("quest preparation integration (M3-04I)", () => {
+  it.each(TRIAL_STAGES)(
+    "prepares $name with an ally, squad and items before starting",
+    async (trial) => {
+      const members = ["brand", "maren", "rook", "garrick", "solen"].map((unit, i) => ({
+        id: `00000000-0000-4000-8000-00000000000${i + 1}`,
+        unit_id: unit,
+        form_id: `${unit}-3`,
+        level: 1,
+        exp: 0,
+      }));
+      preparation.mockResolvedValue({
+        stage: trial,
+        owned: members,
+        squads: [{ slot: 7, unit_ids: members.map((member) => member.id), leader_index: 0 }],
+        items: [{ item_id: "dew-tonic", count: 3 }],
+        userId: "player-one",
+        failed: false,
+      });
+      const picker = renderToStaticMarkup(
+        await ReinforcementPage({
+          params: Promise.resolve({ stage: trial.id }),
+          searchParams: Promise.resolve({}),
+        }),
+      );
+      expect(picker).toMatch(/<a[^>]* href="\/trials"[^>]*>Back<\/a>/);
+      expect(picker).toContain('data-backdrop="vortex"');
+      expect(picker).toContain("No continues");
+      expect(picker).toContain(`/start/${trial.id}/begin?slot=0`);
+      expect(picker).toContain(`ally=${id}`);
+      const guest = reinforcements(members).find((unit) => !unit.yours);
+      if (!guest) throw new Error("Missing guest preview");
+      expect(picker).toContain(`ally=${guest.id}`);
+
+      for (const ally of [guest.id, id, null]) {
+        const preview = renderToStaticMarkup(
+          await BeginQuestPage({
+            params: Promise.resolve({ stage: trial.id }),
+            searchParams: Promise.resolve({ slot: "7", ...(ally ? { ally } : {}) }),
+          }),
+        );
+        expect(preview).toContain(trial.name);
+        expect(preview).toContain('data-backdrop="vortex"');
+        expect(preview).toContain("Trials cannot be continued");
+        expect(preview).toContain(`href="/start/${trial.id}"`);
+        expect(preview).toContain("Squad 8");
+        expect(preview).toContain('aria-label="Brand, Lv.1, leader"');
+        expect(preview).not.toContain('aria-label="Empty squad slot"');
+        expect(preview).toContain(ally ? ', ally"' : 'aria-label="No ally"');
+        expect(preview).toContain(
+          `/start/${trial.id}/begin?slot=8${ally ? `&amp;ally=${ally}` : ""}`,
+        );
+        expect(preview.match(/aria-label="Empty item slot/g)).toHaveLength(5);
+        expect(preview).toContain("Begin Quest");
+        expect(rpc).not.toHaveBeenCalled();
+      }
+      const form = new FormData();
+      const items = [{ item: "dew-tonic", count: 3 }];
+      form.set("items", JSON.stringify(items));
+      await expect(beginQuest(trial.id, 7, guest.id, form)).rejects.toThrow("redirect:/battle");
+      expect(rpc).toHaveBeenCalledWith("start_battle", {
+        p_stage_id: trial.id,
+        p_squad_slot: 7,
+        p_ally: guest.id,
+        p_items: items,
+      });
+    },
+  );
+
+  it("retains trial, ally and squad after a trial gate refusal", async () => {
+    const trial = TRIAL_STAGES[0];
+    if (!trial) throw new Error("Missing trial fixture");
+    rpc.mockResolvedValue({
+      error: { code: "22023", message: "start_battle: this trial is still locked" },
+    });
+    await expect(beginQuest(trial.id, 7, "aurelle")).rejects.toThrow(
+      `redirect:/start/${trial.id}/begin?slot=7&ally=aurelle&error=This+trial+is+still+locked`,
+    );
+    await expect(beginQuest(trial.id, 10, null)).rejects.toThrow("redirect:/trials");
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([1, 2])("returns from Reinforcement to chapter %i's quest list", async (chapter) => {
+    const areaStage = STORY_STAGES.find((entry) => entry.story?.chapter === chapter);
+    if (!areaStage) throw new Error(`Missing chapter ${chapter}`);
+    preparation.mockResolvedValue({ stage: areaStage, owned: [], failed: false });
+    const html = renderToStaticMarkup(
+      await ReinforcementPage({
+        params: Promise.resolve({ stage: areaStage.id }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(html).toMatch(new RegExp(`<a[^>]* href="/quests/${chapter}"[^>]*>Back</a>`));
+  });
+
   it("links No Ally and owned duplicate choices to Begin Quest", async () => {
     const html = renderToStaticMarkup(
       await ReinforcementPage({

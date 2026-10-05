@@ -24,9 +24,21 @@ export default async function ReinforcementPage({
   const sort = parseUnitSort((await searchParams).sort);
   const preparation = await questPreparation(stage);
   return (
-    <div className={styles.page}>
+    <div
+      className={`${styles.page} ${preparation.stage.trial ? styles.vortex : ""}`}
+      data-backdrop={preparation.stage.trial ? "vortex" : "olive"}
+    >
       <header className={unitStyles.titleBar}>
-        <Link href="/quests" className={`${unitStyles.pill} ${unitStyles.backButton}`}>
+        <Link
+          href={
+            preparation.stage.trial
+              ? "/trials"
+              : preparation.stage.story
+                ? `/quests/${preparation.stage.story.chapter}`
+                : "/quests"
+          }
+          className={`${unitStyles.pill} ${unitStyles.backButton}`}
+        >
           Back
         </Link>
         <div className={`${unitStyles.titlePlate} ${styles.titlePlate}`}>
@@ -42,6 +54,9 @@ export default async function ReinforcementPage({
           Sort
         </Link>
       </header>
+      {preparation.stage.trial ? (
+        <p className={styles.notice}>{preparation.stage.name} · No continues.</p>
+      ) : null}
       <div className={styles.toolbar}>
         <span>Sort: {UNIT_SORT_LABELS[sort]}</span>
         <Link className={styles.pill} href={beginQuestHref(stage, null)}>

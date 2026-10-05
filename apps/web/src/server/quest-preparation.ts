@@ -1,7 +1,7 @@
 import "server-only";
 import type { Stage } from "@bfr/data";
 import { notFound, redirect } from "next/navigation";
-import { storyStage } from "../lib/battle/session-battle.ts";
+import { sessionStage } from "../lib/battle/session-battle.ts";
 import type { ItemStock } from "../lib/quests/item-loadout.ts";
 import { SQUAD_COLUMNS, type SquadRow } from "../lib/squad/squad-editor.ts";
 import { SIGN_IN_PATH } from "../lib/supabase/routes.ts";
@@ -17,7 +17,7 @@ export async function questPreparation(stageId: string): Promise<{
   userId: string;
   failed: boolean;
 }> {
-  const stage = storyStage(stageId);
+  const stage = sessionStage(stageId);
   if (!stage) notFound();
   const supabase = await createSupabaseServerClient();
   const { data: claims } = supabase ? await supabase.auth.getClaims() : { data: null };

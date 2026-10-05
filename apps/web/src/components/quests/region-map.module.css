@@ -110,10 +110,15 @@
     calc(50cqw + (var(--ax) - 0.5) * var(--map-w)),
     calc(100cqw - var(--plate-w) / 2 - var(--u) * 8)
   );
-  top: calc(50cqh + (var(--ay) - 0.5) * var(--map-h));
+  top: calc(50cqh + (var(--ay) - 0.5 + var(--plate-offset-y, 0)) * var(--map-h));
   width: var(--plate-w);
   aspect-ratio: 600 / 140;
   transform: translate(-50%, -50%);
+}
+
+/* Below the beacon tower: 180 master pixels on the 1536px map, including room for NEW AREA. */
+.anchor[data-area="ember-road"] {
+  --plate-offset-y: 0.1171875;
 }
 
 .areaPlate {

@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { storyStage } from "../../../../../lib/battle/session-battle.ts";
+import { sessionStage } from "../../../../../lib/battle/session-battle.ts";
 import { parseItemLoadout } from "../../../../../lib/quests/item-loadout.ts";
 import { beginQuestHref } from "../../../../../lib/quests/reinforcement.ts";
 import { SQUAD_SLOTS } from "../../../../../lib/squad/squad-editor.ts";
@@ -12,8 +12,10 @@ export async function beginQuest(
   ally: string | null,
   formData?: FormData,
 ): Promise<void> {
-  if (!storyStage(stage) || !Number.isInteger(slot) || slot < 0 || slot >= SQUAD_SLOTS)
-    redirect("/quests");
+  const content = sessionStage(stage);
+  if (!content) redirect("/quests");
+  if (!Number.isInteger(slot) || slot < 0 || slot >= SQUAD_SLOTS)
+    redirect(content.trial ? "/trials" : "/quests");
   const returnPath = beginQuestHref(stage, ally, slot);
   let value: unknown = [];
   try {

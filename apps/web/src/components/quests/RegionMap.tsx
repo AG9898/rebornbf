@@ -70,6 +70,7 @@ export function RegionMap({
         {plates.map((plate) => (
           <li
             key={plate.id}
+            data-area={plate.id}
             className={styles.anchor}
             style={{ "--ax": plate.anchor.x, "--ay": plate.anchor.y } as CSSProperties}
           >

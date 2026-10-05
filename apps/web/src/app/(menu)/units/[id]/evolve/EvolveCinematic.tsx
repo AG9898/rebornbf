@@ -71,7 +71,7 @@ function useReducedMotion(setting: boolean): boolean | null {
  * lighting and joining into one, pillars and falling sparks, a beam, a starburst, a white flash,
  * then the new form on its halo with the quote and the rarity word dropping in letter by letter.
  * Reduced motion swaps the sequence for one short fade. A tap or Skip at any step calls `onDone`
- * (the new form's unit page). CSS stand-ins draw the circle, pillars, and starburst until M4-06K.
+ * (the new form's unit page). The effects and rarity letters use the locked M4-06K pieces.
  */
 export function EvolveCinematic({
   view,

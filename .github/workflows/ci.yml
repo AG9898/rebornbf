@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   check:
-    name: Fast suite (pnpm check)
+    name: Fast suite and package builds
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -36,3 +36,6 @@ jobs:
 
       - name: Run fast suite
         run: pnpm check
+
+      - name: Build data and engine packages
+        run: pnpm --filter @bfr/data --filter @bfr/engine build

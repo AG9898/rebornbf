@@ -12,8 +12,9 @@ import { addedAilmentChances, rollAddedAilments } from "./ailments.ts";
 import type { ActiveEffect } from "./buffs.ts";
 import { applyEffect } from "./index.ts";
 
-// Aurelle's attack procs (M1-06L, GAME_DESIGN §4 Kit additions (M2-04G)). The test unit has a
-// 2-hit (50/50) normal attack landing at ticks 20 and 30 with 4 drop checks (2 per hit).
+// Added ailments and attack-shape BC drop bonuses (M1-06L, GAME_DESIGN §4).
+// The test unit has a 2-hit (50/50) normal attack landing at ticks 20 and 30
+// with 4 drop checks (2 per hit).
 
 function ofType<T extends BattleEvent["type"]>(
   events: readonly BattleEvent[],

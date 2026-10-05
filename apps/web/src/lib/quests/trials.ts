@@ -13,6 +13,8 @@ export type TrialView = {
   id: string;
   number: number;
   name: string;
+  waves: number;
+  text: string;
   /** The gate story stage's number and name, for the locked hint. */
   gateNumber: number;
   gateName: string;
@@ -48,6 +50,11 @@ export function buildTrialList(
         id: stage.id,
         number: trial.number,
         name: stage.name,
+        waves: stage.waves.length,
+        text:
+          state === "locked"
+            ? `Clear story stage ${gate?.story?.number ?? 0}, ${gate?.name ?? trial.gate}, to open.`
+            : "Guard the boss's telegraphed attacks and time your bursts. No continues.",
         gateNumber: gate?.story?.number ?? 0,
         gateName: gate?.name ?? trial.gate,
         state,
