@@ -162,6 +162,12 @@ export const UI_ASSETS = {
   "ribbon-clear": { width: 220, height: 52 },
   "reinforcement-row": { width: 1280, height: 170 },
   "bg-vortex": { width: 1024, height: 1536 },
+  "bg-conclave": { width: 1024, height: 1536 },
+  "bg-proving-lab": { width: 1024, height: 1536 },
+  "host-pell": { width: 760, height: 1191 },
+  "trial-plate": { width: 560, height: 168 },
+  "dialogue-panel": { width: 1200, height: 354 },
+  "loading-glyph": { width: 192, height: 197 },
   "dungeon-banner-frame": { width: 1280, height: 418 },
   "dungeon-type-plate": { width: 400, height: 68 },
   "bg-result": { width: 1280, height: 1920 },
@@ -199,6 +205,8 @@ export const UI_TEXT_BOXES = {
   "stage-panel": { x: 490, y: 8, width: 298, height: 30 },
   "ribbon-new": { x: 8, y: 7, width: 204, height: 39 },
   "ribbon-clear": { x: 8, y: 7, width: 204, height: 38 },
+  "trial-plate": { x: 28, y: 18, width: 504, height: 132 },
+  "dialogue-panel": { x: 36, y: 30, width: 1128, height: 294 },
   "dungeon-type-plate": { x: 12, y: 10, width: 376, height: 47 },
 } as const satisfies Partial<
   Record<UiAsset, { x: number; y: number; width: number; height: number }>
