@@ -54,7 +54,7 @@ describe("quest preparation integration (M3-04I)", () => {
     expect(html).toContain("/assets/ui/title-plate.webp");
     expect(html).toContain("/assets/ui/unit-frame-fire.webp");
   });
-  it("renders the selected squad and six cards, retaining the ally in squad links", async () => {
+  it("renders the selected squad in one party row, retaining the ally in squad links", async () => {
     const html = renderToStaticMarkup(
       await BeginQuestPage({
         params: Promise.resolve({ stage: stageId }),
@@ -62,16 +62,18 @@ describe("quest preparation integration (M3-04I)", () => {
       }),
     );
     expect(html).toContain("Squad 8");
-    expect(html).toContain('aria-label="Brand, ally"');
+    expect(html).toContain('aria-label="Brand, Lv.1, leader"');
+    expect(html).toContain('aria-label="Brand, Lv.1, ally"');
+    expect(html).toContain("Leader Skill ▸");
+    expect(html).toContain("◂ Ally Skill");
     expect(html.match(/aria-label="Empty squad slot"/g)).toHaveLength(4);
     expect(html).toContain("slot=8&amp;ally=");
     expect(html.match(/aria-label="Empty item slot/g)).toHaveLength(5);
     for (const piece of [
       "title-plate",
-      "skill-tag-red",
-      "skill-tag-blue",
-      "unit-card",
-      "unit-card-empty",
+      "section-tab",
+      "unit-frame-fire",
+      "badge-leader",
       "squad-arrow",
       "dot-on",
       "dot-off",
@@ -80,13 +82,12 @@ describe("quest preparation integration (M3-04I)", () => {
     ]) {
       expect(html).toContain(`/assets/ui/${piece}.webp`);
     }
-    expect(html).toContain("/assets/ui/cards/battle/brand-3star.webp");
-    expect(html).toContain("LEADER");
+    expect(html).toContain("/assets/ui/cards/thumb/brand-3star.webp");
     expect(html).toContain("ALLY");
     expect(html).toContain("ATK +25% (Fire allies)");
     expect(html.match(/aria-haspopup="dialog"/g)).toHaveLength(2);
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain("Lv. 1");
+    expect(html).toContain(">Lv.1<");
     // Every decorative image wired into this screen must have a real public export.
     for (const match of html.matchAll(/src="(\/assets\/[^"]+)"/g)) {
       expect(existsSync(new URL(`../../../../public${match[1]}`, import.meta.url))).toBe(true);

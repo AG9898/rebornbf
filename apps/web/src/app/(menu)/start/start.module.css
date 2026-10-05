@@ -8,6 +8,21 @@
   color: #fff2ce;
   font-size: calc(var(--u) * 24);
 }
+/* Begin Quest fills the column like the original: the party panel takes the spare height (its rows
+ * spread evenly) and the Begin Quest bar sits on the bottom edge above the nav. */
+.page.fill {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+.fill > *,
+.fill form > * {
+  flex-shrink: 0;
+}
+.fill form {
+  display: flex;
+  flex-direction: column;
+}
 .toolbar,
 .row,
 .squads {
@@ -30,7 +45,7 @@
   text-decoration: none;
 }
 .toolbar {
-  margin: calc(var(--u) * 18) 0;
+  margin: calc(var(--u) * 18) 0 0;
 }
 .toolbar h2 {
   font-size: inherit;
@@ -39,8 +54,7 @@
   list-style: none;
   padding: 0;
 }
-.pill,
-.manageItems {
+.pill {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,8 +64,7 @@
   white-space: nowrap;
 }
 .pill:hover,
-.pill:focus-visible,
-.manageItems:not(:disabled):hover {
+.pill:focus-visible {
   background-image: url("/assets/ui/btn-pill-lit.webp");
 }
 .row {
@@ -76,53 +89,115 @@
   height: calc(var(--u) * 90);
   flex: none;
 }
-.cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* Begin Quest's party panel (original layout): the leader skill line, one row of six element-framed
+ * icons (five squad units, then the ally), and the ally skill line mirrored under it. */
+.party {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  justify-content: space-evenly;
   gap: calc(var(--u) * 8);
-  margin: calc(var(--u) * 20) 0;
+  margin: 0 calc(var(--u) * -20) calc(var(--u) * 10);
+  padding: calc(var(--u) * 12) 0;
+  background: linear-gradient(rgb(12 16 26 / 0.82), rgb(8 10 18 / 0.88));
+  border-block: calc(var(--u) * 2) solid rgb(201 154 58 / 0.7);
 }
-.card {
-  position: relative;
-  aspect-ratio: 624 / 186;
+.partyRow {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: calc(var(--u) * 6);
+  margin: calc(var(--u) * 6) 0;
+  padding: 0 calc(var(--u) * 10);
+  list-style: none;
 }
-.cardArt {
+.emptyMember {
   position: absolute;
+  inset: 4%;
+  border: calc(var(--u) * 3) dashed rgb(201 154 58 / 0.45);
+  border-radius: 12%;
+  background: rgb(0 0 0 / 0.35);
+}
+.leaderBadge {
+  position: absolute;
+  top: -9%;
+  left: -6%;
+  width: 46%;
+  height: auto;
+  filter: drop-shadow(0 1px 1px #000);
+}
+.allyTag {
+  --stroke: 4;
+  position: absolute;
+  top: calc(var(--u) * -6);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: calc(var(--u) * 20);
+  color: #6dff6a;
+  -webkit-text-stroke-color: #083006;
+  text-shadow: 0 calc(var(--u) * 2) 0 #083006;
+}
+/* Manage Squad / Squad N / Manage Items: text on the dark section-tab piece. The Squad N tab is
+ * mirrored so its rounded end points inward, like the original's right-hand squad tab. */
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: calc(var(--u) * 50);
+  padding: 0 calc(var(--u) * 34) 0 calc(var(--u) * 14);
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  font-size: calc(var(--u) * 24);
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.tabArt {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: fill;
 }
-.cardLabel,
-.cardName,
-.cardLevel {
-  position: absolute;
-  left: 40%;
-  right: 5%;
-  font-size: calc(var(--u) * 18);
-  text-shadow: 1px 1px #000;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tab > span {
+  position: relative;
 }
-.cardLabel {
-  top: 10%;
-  color: #ffe07c;
-  font-size: calc(var(--u) * 15);
+.squadTab {
+  padding: 0 calc(var(--u) * 14) 0 calc(var(--u) * 34);
 }
-.cardName {
-  top: 40%;
+.squadTab .tabArt {
+  transform: scaleX(-1);
 }
-.cardLevel {
-  top: 66%;
+.toolbar .tab:first-child {
+  margin-left: calc(var(--u) * -20);
 }
-.portrait {
-  position: absolute;
-  object-fit: cover;
+.toolbar .squadTab {
+  margin-right: calc(var(--u) * -20);
+}
+.itemsTab {
+  align-self: flex-start;
+  margin-left: calc(var(--u) * -20);
+}
+.tab:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.tabLabel,
+.items button .itemCount,
+.items button .itemName {
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 3) #1a1006;
+}
+.tab:not(:disabled):hover {
+  filter: brightness(1.25);
 }
 .squads {
   justify-content: center;
   gap: calc(var(--u) * 6);
-  margin-bottom: calc(var(--u) * 20);
+  margin-bottom: calc(var(--u) * 16);
 }
 .arrow {
   width: calc(var(--u) * 44);
@@ -146,7 +221,10 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: calc(var(--u) * 8);
-  margin: calc(var(--u) * 12) 0;
+  margin: 0 calc(var(--u) * -20);
+  padding: calc(var(--u) * 14) calc(var(--u) * 18);
+  border: calc(var(--u) * 4) solid transparent;
+  border-image: url("/assets/ui/item-panel.webp") 110 fill / calc(var(--u) * 24) / 0 stretch;
 }
 .items button {
   position: relative;
@@ -160,11 +238,28 @@
 .items button span {
   display: block;
 }
+/* The stacked count sits in the slot's top-right corner and the name under the icon. */
+.items button .itemCount {
+  position: absolute;
+  top: 4%;
+  right: 8%;
+  font-size: calc(var(--u) * 20);
+}
+.items button .itemName {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6%;
+  font-size: calc(var(--u) * 14);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .items button[aria-pressed="true"] {
   outline: calc(var(--u) * 2) solid #ffdb76;
 }
-.items button:disabled,
-.manageItems:disabled {
+.items button:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -182,12 +277,6 @@
   left: 15%;
   width: 70%;
 }
-.manageItems {
-  color: #eee0be;
-  border: 0;
-  font: inherit;
-  cursor: pointer;
-}
 .itemPicker {
   border: calc(var(--u) * 2) solid #c99a3a;
   background: #142027;
@@ -204,12 +293,19 @@
   background: #142027;
   border: calc(var(--u) * 2) solid #c99a3a;
 }
+/* The original's bottom bar: a dark strip with the Begin Quest button centred on it. */
+.beginBar {
+  margin: calc(var(--u) * 14) calc(var(--u) * -20) 0;
+  padding: calc(var(--u) * 12) 0;
+  background: linear-gradient(rgb(12 16 26 / 0.7), rgb(8 10 18 / 0.9));
+  border-top: calc(var(--u) * 2) solid rgb(201 154 58 / 0.7);
+}
 .begin {
   position: relative;
   display: block;
   width: calc(var(--u) * 300);
   aspect-ratio: 520 / 237;
-  margin: calc(var(--u) * 24) auto;
+  margin: 0 auto;
   border: 0;
   background: none;
   color: white;

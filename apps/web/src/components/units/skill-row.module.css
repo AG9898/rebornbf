@@ -171,3 +171,42 @@
   font: inherit;
   cursor: pointer;
 }
+
+/* Begin Quest's inline variant: plain outlined heading text, no tag art, unframed effects. */
+.row[data-variant="inline"] .heading {
+  height: calc(var(--u) * 34);
+  padding: 0 calc(var(--u) * 10);
+  gap: calc(var(--u) * 6);
+  background: none;
+}
+.row[data-align="end"] .heading {
+  flex-direction: row-reverse;
+}
+.row[data-align="end"] .name {
+  text-align: right;
+}
+.inlineLabel {
+  flex: none;
+  color: #fff;
+  font-size: calc(var(--u) * 24);
+  white-space: nowrap;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 3) #1a1006;
+}
+.row[data-variant="inline"] .name {
+  flex: 0 1 auto;
+  color: #ffb43a;
+  font-size: calc(var(--u) * 22);
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 3) #1a1006;
+}
+.row[data-variant="inline"] .effects {
+  height: calc(var(--u) * 30);
+  font-size: calc(var(--u) * 19);
+}
+.row[data-variant="inline"] .effects::before {
+  content: none;
+}
+.row[data-variant="inline"] .effectText {
+  inset: 0 calc(var(--u) * 10);
+}

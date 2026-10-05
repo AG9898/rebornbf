@@ -50,15 +50,23 @@ export function SkillText({ text }: { text: string }): ReactNode {
   );
 }
 
-/** Original-style skill heading + effect strip; the locked BFR tags and panel remain text-free. */
+/**
+ * Original-style skill heading + effect strip; the locked BFR tags and panel remain text-free.
+ * The `inline` variant is Begin Quest's plain "Leader Skill ▸ Name" line over unframed effect text;
+ * `align="end"` mirrors it ("Name ◂ Ally Skill") for the row under the party.
+ */
 export function SkillRow({
   skill,
   label = skill?.label ?? "Leader Skill",
   className = "",
+  variant = "tagged",
+  align = "start",
 }: {
   skill: SkillDisplay | null;
   label?: string;
   className?: string;
+  variant?: "tagged" | "inline";
+  align?: "start" | "end";
 }): ReactNode {
   const dialog = useRef<HTMLDialogElement>(null);
   const id = useId();
@@ -79,7 +87,11 @@ export function SkillRow({
   const name = skill?.name ?? "None";
   const effects = skill?.effects.join(" · ") ?? "No Leader Skill";
   return (
-    <div className={`${styles.row} ${className}`}>
+    <div
+      className={`${styles.row} ${className}`}
+      data-variant={variant}
+      data-align={align === "end" ? "end" : undefined}
+    >
       <button
         type="button"
         className={styles.trigger}
@@ -89,12 +101,18 @@ export function SkillRow({
         onClick={() => dialog.current?.showModal()}
       >
         <span className={styles.heading}>
-          <span className={styles.tag} data-tag={tag}>
-            <UiImage name={tag} className={styles.tagArt} />
-            <span className={styles.tagText} style={textBoxStyle(tag)}>
-              {tagLabel}
+          {variant === "inline" ? (
+            <span className={styles.inlineLabel}>
+              {align === "end" ? `◂ ${label}` : `${label} ▸`}
             </span>
-          </span>
+          ) : (
+            <span className={styles.tag} data-tag={tag}>
+              <UiImage name={tag} className={styles.tagArt} />
+              <span className={styles.tagText} style={textBoxStyle(tag)}>
+                {tagLabel}
+              </span>
+            </span>
+          )}
           <span className={styles.name}>
             <SkillText text={name} />
           </span>
@@ -103,7 +121,10 @@ export function SkillRow({
           ) : null}
         </span>
         <span className={styles.effects}>
-          <span className={styles.effectText} style={textBoxStyle("stat-plate")}>
+          <span
+            className={styles.effectText}
+            style={variant === "inline" ? undefined : textBoxStyle("stat-plate")}
+          >
             <SkillText text={effects} />
           </span>
         </span>

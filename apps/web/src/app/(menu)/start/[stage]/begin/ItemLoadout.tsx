@@ -70,12 +70,13 @@ export function ItemLoadout({
     <form action={action}>
       <button
         type="button"
-        className={styles.manageItems}
+        className={`${styles.tab} ${styles.itemsTab}`}
         disabled={disabled || !ready}
         aria-expanded={editing !== null}
         onClick={() => setEditing(editing === null ? 0 : null)}
       >
-        Manage Items
+        <UiImage name="section-tab" className={styles.tabArt} />
+        <span className={styles.tabLabel}>Manage Items</span>
       </button>
       <section className={styles.items} aria-label="Battle items">
         {["first", "second", "third", "fourth", "fifth"].map((key, index) => {
@@ -97,10 +98,8 @@ export function ItemLoadout({
             >
               <UiImage name="item-slot" />
               {icon ? <UiImage name={icon} className={styles.itemIcon} /> : null}
-              <span>
-                {item?.name ?? "Empty"}
-                {entry ? ` ×${entry.count}` : ""}
-              </span>
+              {entry ? <span className={styles.itemCount}>×{entry.count}</span> : null}
+              {item ? <span className={styles.itemName}>{item.name}</span> : null}
             </button>
           );
         })}
@@ -152,7 +151,9 @@ export function ItemLoadout({
         name="items"
         value={JSON.stringify(slots.filter((entry) => entry !== null))}
       />
-      <BeginButton disabled={disabled || !ready} />
+      <div className={styles.beginBar}>
+        <BeginButton disabled={disabled || !ready} />
+      </div>
     </form>
   );
 }

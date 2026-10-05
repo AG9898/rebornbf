@@ -1,21 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
-import { PORTRAIT_ART, UI_ASSETS } from "../../../../../components/menu/ui-assets.ts";
 import { SkillRow } from "../../../../../components/units/SkillRow.tsx";
+import { UnitIconFace } from "../../../../../components/units/UnitIconFace.tsx";
 import { itemLoadoutKey } from "../../../../../lib/quests/item-loadout.ts";
 import { beginQuestHref, reinforcements } from "../../../../../lib/quests/reinforcement.ts";
-import { cardArtPath } from "../../../../../lib/squad/home-showcase.ts";
 import {
   draftFromRow,
   parseSquadSlot,
   SQUAD_SLOTS,
   stepSquadSlot,
 } from "../../../../../lib/squad/squad-editor.ts";
-import { toOwnedUnitView } from "../../../../../lib/units/owned-units.ts";
+import { levelLabel, toOwnedUnitView } from "../../../../../lib/units/owned-units.ts";
 import { leaderSkillDisplay } from "../../../../../lib/units/unit-skills.ts";
 import { questPreparation } from "../../../../../server/quest-preparation.ts";
 import unitStyles from "../../../units/units.module.css";
@@ -56,7 +54,7 @@ export default async function BeginQuestPage({
     ally ?? null,
   ];
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.fill}`}>
       <header className={unitStyles.titleBar}>
         <Link href={`/start/${stage}`} className={`${unitStyles.pill} ${unitStyles.backButton}`}>
           Back
@@ -72,54 +70,51 @@ export default async function BeginQuestPage({
         </Link>
       </header>
       <div className={styles.toolbar}>
-        <Link className={styles.pill} href={`/squad?slot=${slot}`}>
-          Manage Squad
+        <Link className={styles.tab} href={`/squad?slot=${slot}`}>
+          <UiImage name="section-tab" className={styles.tabArt} />
+          <span className={unitStyles.outline}>Manage Squad</span>
         </Link>
-        <h2 className={styles.pill}>Squad {slot + 1}</h2>
+        <h2 className={`${styles.tab} ${styles.squadTab}`}>
+          <UiImage name="section-tab" className={styles.tabArt} />
+          <span className={unitStyles.outline}>Squad {slot + 1}</span>
+        </h2>
       </div>
-      <SkillRow skill={leaderSkillDisplay(leader)} />
-      <SkillRow skill={leaderSkillDisplay(ally)} label="Ally Skill" />
-      <div className={styles.cards}>
-        {cards.map((unit, i) => {
-          const art = unit ? cardArtPath(unit.unitId, unit.formId) : null;
-          return (
-            <section
+      <section className={styles.party} aria-label="Party">
+        <SkillRow skill={leaderSkillDisplay(leader)} variant="inline" />
+        <ul className={styles.partyRow}>
+          {cards.map((unit, i) => (
+            <li
               key={i < 5 ? `squad-${i}` : "ally"}
-              className={styles.card}
+              className={`${unitStyles.icon} ${styles.member}`}
+              data-element={unit?.element ?? undefined}
               aria-label={
                 unit
-                  ? `${unit.name}${i === 5 ? ", ally" : ""}`
+                  ? `${unit.name}, ${levelLabel(unit)}${i === 5 ? ", ally" : i === draft.leaderIndex ? ", leader" : ""}`
                   : i === 5
                     ? "No ally"
                     : "Empty squad slot"
               }
             >
-              {art ? (
-                <Image
-                  src={art.replace("/cards/", "/cards/battle/")}
-                  alt=""
-                  width={PORTRAIT_ART.width}
-                  height={PORTRAIT_ART.height}
-                  unoptimized
-                  className={styles.portrait}
-                  style={{
-                    left: `${(PORTRAIT_ART.x / UI_ASSETS["unit-card"].width) * 100}%`,
-                    top: `${(PORTRAIT_ART.y / UI_ASSETS["unit-card"].height) * 100}%`,
-                    width: `${(PORTRAIT_ART.width / UI_ASSETS["unit-card"].width) * 100}%`,
-                    height: `${(PORTRAIT_ART.height / UI_ASSETS["unit-card"].height) * 100}%`,
-                  }}
-                />
+              {unit ? (
+                <UnitIconFace unit={{ ...unit, stackCount: null }} inParty={false} />
+              ) : (
+                <span className={styles.emptyMember} />
+              )}
+              {i === 5 ? (
+                <span className={`${unitStyles.outline} ${styles.allyTag}`}>ALLY</span>
+              ) : i === draft.leaderIndex && unit ? (
+                <UiImage name="badge-leader" className={styles.leaderBadge} />
               ) : null}
-              <UiImage name={unit ? "unit-card" : "unit-card-empty"} className={styles.cardArt} />
-              <span className={styles.cardLabel}>
-                {i === 5 ? "ALLY" : i === draft.leaderIndex ? "LEADER" : ""}
-              </span>
-              <span className={styles.cardName}>{unit?.name ?? "Empty"}</span>
-              {unit ? <span className={styles.cardLevel}>Lv. {unit.level}</span> : null}
-            </section>
-          );
-        })}
-      </div>
+            </li>
+          ))}
+        </ul>
+        <SkillRow
+          skill={leaderSkillDisplay(ally)}
+          label="Ally Skill"
+          variant="inline"
+          align="end"
+        />
+      </section>
       <nav className={styles.squads} aria-label="Choose squad">
         <Link
           aria-label="Previous squad"

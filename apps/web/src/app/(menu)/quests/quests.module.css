@@ -1,29 +1,4 @@
-.page {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: calc(var(--u) * 20) calc(var(--u) * 24) calc(var(--u) * 32);
-  user-select: text;
-}
-
-.header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: calc(var(--u) * 12);
-}
-
-.title {
-  font-size: calc(var(--u) * 48);
-  line-height: 1.1;
-}
-
-.demo {
-  font-size: calc(var(--u) * 24);
-  color: #f6d88a;
-  text-decoration: none;
-}
-
+/* Notices on the region map and the area quest lists. */
 .notice {
   margin: 0 0 calc(var(--u) * 12);
   font-family: system-ui, sans-serif;
@@ -32,33 +7,10 @@
   color: #d8d0bc;
 }
 
+.notice:last-child {
+  margin-bottom: 0;
+}
+
 .notice a {
   color: #f6d88a;
-}
-
-.chapters {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 18);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.chapter {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 10);
-  padding: calc(var(--u) * 20);
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 14);
-  background: rgb(10 14 26 / 0.75);
-  font-size: calc(var(--u) * 24);
-  color: #fff;
-  text-decoration: none;
-}
-
-.chapter strong {
-  font-size: calc(var(--u) * 32);
-  font-weight: normal;
 }

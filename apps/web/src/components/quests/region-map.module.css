@@ -1,0 +1,181 @@
+/*
+ * The region map (M3-04M; ART_GUIDE.md -> UI -> Region map). It covers the whole menu column,
+ * status bar and nav included. The 2:3 map is cover-fitted: --map-w/--map-h are the drawn map's
+ * size, and each plate is placed at its anchor fraction of that same size from the centre.
+ * Sizes use the menu frame's logical pixel, --u.
+ */
+.page {
+  --map-w: max(100cqw, calc(100cqh * var(--map-aspect)));
+  --map-h: calc(var(--map-w) / var(--map-aspect));
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  background: #0b1a10;
+}
+
+.map {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--map-w);
+  height: var(--map-h);
+  max-width: none;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* A text layer over a piece, positioned by the piece's measured box. */
+.boxText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * var(--stroke, 4)) #2a1606;
+  text-shadow: 0 calc(var(--u) * 2) 0 #2a1606;
+}
+
+.pill {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--u) * 48);
+  background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
+  font-size: calc(var(--u) * 24);
+  color: #fff;
+  text-decoration: none;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #2a1606;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
+}
+
+.back {
+  left: calc(var(--u) * 14);
+  top: calc(var(--u) * 14);
+  width: calc(var(--u) * 96);
+}
+
+.notices {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--u) * 20);
+  right: calc(var(--u) * 20);
+  top: calc(var(--u) * 74);
+  padding: calc(var(--u) * 12) calc(var(--u) * 16);
+  border: calc(var(--u) * 2) solid #c99a3a;
+  border-radius: calc(var(--u) * 12);
+  background: rgb(10 14 26 / 0.82);
+  user-select: text;
+}
+
+.notices > * {
+  margin: 0;
+}
+
+/* ---------- Area plates ---------- */
+
+.areas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Centred on the landmark, kept inside the column (the map's sides are cropped). */
+.anchor {
+  --plate-w: calc(var(--u) * 260);
+  position: absolute;
+  left: clamp(
+    calc(var(--plate-w) / 2 + var(--u) * 8),
+    calc(50cqw + (var(--ax) - 0.5) * var(--map-w)),
+    calc(100cqw - var(--plate-w) / 2 - var(--u) * 8)
+  );
+  top: calc(50cqh + (var(--ay) - 0.5) * var(--map-h));
+  width: var(--plate-w);
+  aspect-ratio: 600 / 140;
+  transform: translate(-50%, -50%);
+}
+
+.areaPlate {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+  filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 4) rgb(0 0 0 / 0.6));
+}
+
+.areaPlate:hover,
+.areaPlate:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 calc(var(--u) * 8) #fbe39a) brightness(1.1);
+}
+
+.areaName {
+  --stroke: 4;
+  font-size: calc(var(--u) * 21);
+}
+
+.areaCount {
+  --stroke: 3;
+  font-size: calc(var(--u) * 13);
+  color: #f6d88a;
+}
+
+/* "NEW AREA" sits above the plate, centred. */
+.newArea {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + var(--u) * 2);
+  width: calc(var(--u) * 150);
+  aspect-ratio: 280 / 34;
+  transform: translateX(-50%);
+}
+
+.newAreaText {
+  --stroke: 2;
+  font-size: calc(var(--u) * 12);
+  letter-spacing: 0.06em;
+  color: #fff1c4;
+}
+
+/* ---------- Region plate ---------- */
+
+.regionPlate {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * 14);
+  width: calc(var(--u) * 540);
+  aspect-ratio: 1120 / 248;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.regionName {
+  --stroke: 5;
+  font-size: calc(var(--u) * 36);
+  color: #f3eaff;
+  -webkit-text-stroke-color: #2a1a4a;
+  text-shadow:
+    0 calc(var(--u) * 2) 0 #2a1a4a,
+    0 0 calc(var(--u) * 10) #8f7cff;
+}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { StageList } from "../../../../components/quests/StageList.tsx";
 import { CHAPTER_TITLES } from "../../../../lib/quests/quest-map.ts";
+import { REGION_MAPS } from "../../../../lib/quests/region-maps.ts";
 import { SIGN_IN_PATH } from "../../../../lib/supabase/routes.ts";
 import { questProgress } from "../../../../server/quest-progress.ts";
 import styles from "../quests.module.css";
@@ -23,6 +24,9 @@ export default async function ChapterPage({
       backHref="/quests"
       stages={chapter.stages}
       playable={signedIn && !failed}
+      mapSrc={
+        REGION_MAPS.find((map) => map.areas.some((area) => area.chapter === chapter.number))?.src
+      }
     >
       {!signedIn ? (
         <p className={styles.notice}>

@@ -1,58 +1,114 @@
-/* CSS vortex and gold-rimmed pieces until the quest-flow art is locked. */
+/*
+ * Stage list (ART_GUIDE.md -> UI -> Stage list): title-plate and pill navigation, one stage-panel
+ * per stage with its NEW/CLEAR ribbon on the top-left corner. Story areas draw over their region
+ * map darkened (M3-04M); dungeon series keep the CSS purple vortex. Sizes use --u.
+ */
 .page {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: calc(var(--u) * 20) calc(var(--u) * 24) calc(var(--u) * 32);
+  padding: calc(var(--u) * 14) calc(var(--u) * 16) calc(var(--u) * 32);
+  color: #fff;
+}
+
+.vortex {
   background:
     radial-gradient(ellipse at 70% 30%, #62428080, transparent 65%),
     radial-gradient(ellipse at 20% 75%, #342e69, #161324);
-  color: #fff;
 }
+
+/* The region map stays put while the list scrolls over it. */
+.region {
+  background:
+    linear-gradient(rgb(6 8 16 / 0.62), rgb(6 8 16 / 0.72)),
+    var(--map) center / cover no-repeat,
+    #0b1a10;
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* A text layer over a piece, positioned by a measured box. */
+.boxText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * var(--stroke, 4)) #2a1606;
+  text-shadow: 0 calc(var(--u) * 2) 0 #2a1606;
+}
+
+/* ---------- Header ---------- */
 
 .header {
   display: flex;
   align-items: center;
-  gap: calc(var(--u) * 12);
-  margin-bottom: calc(var(--u) * 20);
+  gap: calc(var(--u) * 6);
+  margin-bottom: calc(var(--u) * 22);
 }
 
-.header h1 {
+.pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--u) * 48);
+  background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
+  font-size: calc(var(--u) * 24);
+  color: #fff;
+  text-decoration: none;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #2a1606;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
+}
+
+.back,
+.home {
+  width: calc(var(--u) * 96);
+}
+
+.titlePlate {
+  position: relative;
   flex: 1;
-  padding: calc(var(--u) * 10);
-  border: calc(var(--u) * 2) solid #c99a3a;
-  border-radius: calc(var(--u) * 12);
-  background: #282030;
-  text-align: center;
-  font-size: calc(var(--u) * 30);
-  color: #f6d88a;
+  min-width: 0;
+  aspect-ratio: 640 / 111;
 }
 
-.header a {
-  padding: calc(var(--u) * 8) calc(var(--u) * 12);
-  border: calc(var(--u) * 2) solid #c99a3a;
-  border-radius: calc(var(--u) * 24);
-  font-size: calc(var(--u) * 22);
-  color: #f6d88a;
+.titlePlate h1 {
+  font-size: calc(var(--u) * 26);
 }
+
+/* ---------- Stage panels ---------- */
 
 .stages {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--u) * 18);
+  gap: calc(var(--u) * 22);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .panel {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 8);
-  padding: calc(var(--u) * 14) calc(var(--u) * 18);
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 14);
-  background: rgb(13 12 24 / 0.85);
+  position: relative;
+  display: block;
+  aspect-ratio: 1280 / 321;
   color: inherit;
   text-decoration: none;
 }
@@ -62,37 +118,60 @@
   outline-offset: calc(var(--u) * 4);
 }
 
+a.panel:hover {
+  filter: brightness(1.12);
+}
+
 .stage[data-state="locked"] {
   opacity: 0.45;
+  filter: grayscale(0.4);
 }
 
+/* On the panel's top-left corner, at the panel's own scale (both pieces are 2x exports). */
 .ribbon {
-  align-self: flex-start;
-  padding: calc(var(--u) * 2) calc(var(--u) * 12);
-  background: #9a2a1a;
-  color: #fff1c4;
-  font-size: calc(var(--u) * 20);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 17.1875%; /* 220 / 1280 */
+  aspect-ratio: 220 / 53;
 }
 
-.stage[data-state="cleared"] .ribbon {
-  background: #365c2b;
+.ribbon .boxText {
+  --stroke: 3;
+  font-size: calc(var(--u) * 17);
+  letter-spacing: 0.04em;
 }
 
-.name {
-  font-size: calc(var(--u) * 30);
-  font-weight: normal;
-}
-
-.details {
-  display: flex;
-  justify-content: space-between;
-  font-size: calc(var(--u) * 22);
+.waves,
+.daily {
+  --stroke: 2;
+  font-size: calc(var(--u) * 13);
   color: #f6d88a;
 }
 
+.name {
+  justify-content: flex-start;
+  font-size: calc(var(--u) * 30);
+}
+
 .flavour {
+  position: absolute;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-family: system-ui, sans-serif;
   font-size: calc(var(--u) * 18);
-  line-height: 1.4;
+  line-height: 1.35;
   color: #d8d0bc;
+  align-content: center;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
