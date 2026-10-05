@@ -74,25 +74,41 @@ export interface HudState {
     readonly element: Element;
     readonly hp: number;
   }[])[];
+  /** 0-based active squad (three-squad trials, M6-01I); 0 in a single-squad battle. */
+  readonly squad: number;
+  /**
+   * Reserve squads' cards still waiting to enter, in order, from the battle-start snapshot (empty
+   * in a single-squad battle). `SquadEntered` swaps the first in (M6-01L).
+   */
+  readonly reserves: readonly (readonly HudUnit[])[];
+}
+
+/** One party unit as the HUD shows it. */
+function hudUnit(unit: BattleState["party"][number], acted: boolean): HudUnit {
+  return {
+    slot: unit.slot,
+    name: unit.name,
+    element: unit.element,
+    form: unit.form,
+    leader: unit.isLeader,
+    hp: unit.hp,
+    maxHp: unit.stats.hp,
+    bc: unit.bc,
+    overdrive: unit.overdrive,
+    guarding: unit.guarding,
+    acted,
+    effects: appliedIds(unit.effects),
+  };
 }
 
 /** The HUD for a battle state (normally a fresh battle). */
 export function initHud(state: BattleState): HudState {
   return {
-    units: state.party.map((unit) => ({
-      slot: unit.slot,
-      name: unit.name,
-      element: unit.element,
-      form: unit.form,
-      leader: unit.isLeader,
-      hp: unit.hp,
-      maxHp: unit.stats.hp,
-      bc: unit.bc,
-      overdrive: unit.overdrive,
-      guarding: unit.guarding,
-      acted: state.acted.includes(unit.slot),
-      effects: appliedIds(unit.effects),
-    })),
+    units: state.party.map((unit) => hudUnit(unit, state.acted.includes(unit.slot))),
+    squad: state.squadIndex ?? 0,
+    reserves: (state.reserveSquads ?? []).map((reserve) =>
+      reserve.party.map((unit) => hudUnit(unit, false)),
+    ),
     enemies: state.enemies.map((enemy) => ({
       slot: enemy.slot,
       name: enemy.name,
@@ -258,6 +274,12 @@ export function applyHudEvent(hud: HudState, event: BattleEvent): HudState {
     case "FormChanged":
     case "ContinueRejected":
       return hud;
+    case "SquadEntered": {
+      // The wiped party's cards give way to the next squad's (its leader and ally included).
+      const [entering, ...rest] = hud.reserves;
+      if (!entering) return hud;
+      return { ...hud, units: entering, squad: event.squad, reserves: rest };
+    }
     case "ItemUsed":
       return {
         ...hud,

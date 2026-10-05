@@ -5,6 +5,7 @@ import { itemIcon } from "../../components/menu/item-icon.ts";
 import type { UiAsset } from "../../components/menu/ui-assets.ts";
 import { BATTLE_ITEMS } from "../quests/item-loadout.ts";
 import { CHAPTER_TITLES } from "../quests/quest-map.ts";
+import { TRIALS_LAB_PATH } from "../quests/trials.ts";
 import { formArtFile, unitContent } from "../units/owned-units.ts";
 import type { Submission } from "./submit-session.ts";
 
@@ -95,12 +96,12 @@ export function areaName(stage: Pick<Stage, "story" | "trial">): string {
   return "Quest";
 }
 
-/** Where the flow returns: the stage's own chapter list, or the Trials page for a trial. */
+/** Where the flow returns: the stage's own chapter list, or the Proving Lab for a trial. */
 export function questReturn(stage: Pick<Stage, "story" | "trial">): {
   href: string;
   label: string;
 } {
-  if (stage.trial) return { href: "/trials", label: "Back to Trials" };
+  if (stage.trial) return { href: TRIALS_LAB_PATH, label: "Back to Trials" };
   if (stage.story) return { href: `/quests/${stage.story.chapter}`, label: "Back to quests" };
   return { href: "/quests", label: "Back to quests" };
 }

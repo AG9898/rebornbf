@@ -32,7 +32,7 @@ function centredSlide(track: HTMLDivElement): number {
   return best;
 }
 
-/** Swipeable mode banners (Trials, Quest, Dungeons) with page dots; opens on Quest. */
+/** Swipeable mode banners (Conclave, Quest, Dungeons) with page dots; opens on Quest. */
 export function ModeCarousel(): ReactNode {
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(START_MODE_INDEX);

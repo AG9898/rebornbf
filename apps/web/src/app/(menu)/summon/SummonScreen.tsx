@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type ReactNode, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { useSetWalletGems } from "../../../components/menu/WalletGems.tsx";
@@ -168,11 +169,7 @@ export function SummonScreen({
         </section>
       </div>
 
-      {pending ? (
-        <div className={styles.connecting} role="status">
-          <span className={styles.outline}>Connecting…</span>
-        </div>
-      ) : null}
+      {pending ? <LoadingGlyph variant="screen" /> : null}
 
       {showRates ? (
         <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Summon rates">

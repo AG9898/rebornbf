@@ -1,7 +1,7 @@
 -- M3-04B: start_battle issues caller-owned, expiring sessions with a server-rolled seed.
 begin;
 
-select plan(36);
+select plan(47);
 
 -- Fixture content: two story stages and one non-story stage, replacing whatever is seeded (all
 -- rolled back), so the test does not depend on the live chapter content.
@@ -9,7 +9,9 @@ delete from public.content_items where kind = 'stage';
 insert into public.content_items (kind, id, data) values
   ('stage', 'test-story-one', '{"id":"test-story-one","story":{"chapter":1,"number":1}}'),
   ('stage', 'test-story-two', '{"id":"test-story-two","story":{"chapter":1,"number":2}}'),
-  ('stage', 'test-side-stage', '{"id":"test-side-stage"}');
+  ('stage', 'test-side-stage', '{"id":"test-side-stage"}'),
+  ('stage', 'test-trial', '{"id":"test-trial","trial":{"number":99,"gate":"test-story-one"}}'),
+  ('stage', 'test-dungeon', '{"id":"test-dungeon","dungeon":{"series":"test","gate":"test-story-one"}}');
 insert into public.content_version (singleton, version, item_count) values (true, '0123456789abcdef', 3)
   on conflict (singleton) do update set version = excluded.version;
 
@@ -33,14 +35,19 @@ insert into public.squads (user_id, slot, unit_ids, leader_index) values
     array['00000000-0000-0000-0000-0000000006a2', '00000000-0000-0000-0000-0000000006a1']::uuid[], 1),
   ('00000000-0000-0000-0000-00000000006a', 1, '{}'::uuid[], 0),
   ('00000000-0000-0000-0000-00000000006b', 0,
-    array['00000000-0000-0000-0000-0000000006b1']::uuid[], 0);
+    array['00000000-0000-0000-0000-0000000006b1']::uuid[], 0),
+  -- M6-01J reserve squads: slot 2 is distinct from slot 0, slot 3 repeats slot 0's Brand.
+  ('00000000-0000-0000-0000-00000000006a', 2,
+    array['00000000-0000-0000-0000-0000000006a3']::uuid[], 0),
+  ('00000000-0000-0000-0000-00000000006a', 3,
+    array['00000000-0000-0000-0000-0000000006a1']::uuid[], 0);
 
 -- Privileges (6) ---------------------------------------------------------------------------------
-select ok(has_function_privilege('authenticated', 'public.start_battle(text, smallint, text, jsonb)', 'execute'),
+select ok(has_function_privilege('authenticated', 'public.start_battle(text, smallint, text, jsonb, jsonb)', 'execute'),
   'authenticated may call start_battle');
-select ok(not has_function_privilege('anon', 'public.start_battle(text, smallint, text, jsonb)', 'execute'),
+select ok(not has_function_privilege('anon', 'public.start_battle(text, smallint, text, jsonb, jsonb)', 'execute'),
   'anon may not call start_battle');
-select ok((select prosecdef from pg_proc where oid = 'public.start_battle(text, smallint, text, jsonb)'::regprocedure),
+select ok((select prosecdef from pg_proc where oid = 'public.start_battle(text, smallint, text, jsonb, jsonb)'::regprocedure),
   'start_battle is security definer');
 select ok(not has_table_privilege('authenticated', 'public.battle_sessions', 'insert'),
   'authenticated may not insert sessions');
@@ -120,6 +127,47 @@ reset role;
 insert into public.quest_progress (user_id, stage_id) values ('00000000-0000-0000-0000-00000000006a', 'test-story-one');
 set local role authenticated;
 select lives_ok($$select public.start_battle('test-story-two')$$, 'the next stage starts once the previous is cleared');
+
+-- Three-squad trials (M6-01J, RESOLVED-95) (11)
+select is((public.start_battle('test-trial', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":2,"ally":"00000000-0000-0000-0000-0000000006a1"}]'::jsonb)).squad -> 'reserves',
+  jsonb_build_array(jsonb_build_object('leader_index', 0,
+    'units', jsonb_build_array(jsonb_build_object('owned_unit_id', '00000000-0000-0000-0000-0000000006a3',
+      'unit_id', 'rook', 'form_id', 'rook-omni', 'level', 1, 'unit_type', null,
+      'bb_level', 1, 'sbb_level', 1)),
+    'ally', jsonb_build_object('owned_unit_id', '00000000-0000-0000-0000-0000000006a1',
+      'unit_id', 'brand', 'form_id', 'brand-3', 'level', 1, 'bb_level', 1, 'sbb_level', 1,
+      'unit_type', '{"type": "lord", "gains": {"hp": 0, "atk": 0, "def": 0, "rec": 0}}'::jsonb))),
+  'a trial freezes a reserve squad and its own ally');
+select is(jsonb_array_length((public.start_battle('test-trial')).squad -> 'units'), 2,
+  'a trial still starts with one squad');
+select ok(not ((public.start_battle('test-trial')).squad ? 'reserves'),
+  'a one-squad trial snapshot has no reserves');
+select throws_ok($$select public.start_battle('test-story-two', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":2,"ally":null}]'::jsonb)$$,
+  '22023', 'start_battle: only trials take more than one squad', 'a story stage refuses extra squads');
+select throws_ok($$select public.start_battle('test-dungeon', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":2}]'::jsonb)$$,
+  '22023', 'start_battle: only trials take more than one squad', 'a dungeon stage refuses extra squads');
+select throws_ok($$select public.start_battle('test-trial', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":3,"ally":null}]'::jsonb)$$,
+  '22023', 'start_battle: no unit may fight in two squads', 'a unit in two squads is refused');
+select throws_ok($$select public.start_battle('test-trial', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":0,"ally":null}]'::jsonb)$$,
+  '22023', 'start_battle: each squad must be a different saved squad', 'a repeated squad slot is refused');
+select throws_ok($$select public.start_battle('test-trial', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":2},{"slot":4},{"slot":5}]'::jsonb)$$,
+  '22023', 'start_battle: a trial takes at most three squads', 'a fourth squad is refused');
+select throws_ok($$select public.start_battle('test-trial', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":1,"ally":null}]'::jsonb)$$,
+  '22023', 'start_battle: save every squad before starting a trial', 'an empty reserve squad is refused');
+select throws_ok($$select public.start_battle('test-trial', 0::smallint, null, '[]'::jsonb,
+    '[{"slot":2,"ally":"00000000-0000-0000-0000-0000000006b1"}]'::jsonb)$$,
+  '22023', 'start_battle: the ally must be one of your own units', 'a reserve ally must be the caller''s');
+select throws_ok($$select public.start_battle('test-trial', 0::smallint,
+    '00000000-0000-0000-0000-0000000006a1', '[]'::jsonb,
+    '[{"slot":2,"ally":"00000000-0000-0000-0000-0000000006A1"}]'::jsonb)$$,
+  '22023', 'start_battle: no ally may serve two squads', 'one ally cannot serve two squads');
 
 -- Player B sees only their own sessions (2) ------------------------------------------------------
 select set_config('request.jwt.claims',

@@ -1,0 +1,232 @@
+/*
+ * The Brightmere Conclave and its Proving Lab (M6-01G, RESOLVED-95; ART_GUIDE.md -> Trials flow).
+ * Both sit inside the menu frame, between the status bar and the nav. Each screen is its own size
+ * container so the cover-fitted 2:3 backdrop and anything anchored on it use the same box; the
+ * Conclave reuses the region map's plate, pill, and notice styles. Sizes use --u.
+ */
+.conclave {
+  --map-aspect: calc(1024 / 1536);
+  --map-w: max(100cqw, calc(100cqh * var(--map-aspect)));
+  --map-h: calc(var(--map-w) / var(--map-aspect));
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+  background: #0b1a10;
+}
+
+.lab {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+  background: #1a0d08 url("/assets/ui/bg-proving-lab.webp") center / cover no-repeat;
+  color: #fff;
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.boxText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 1;
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * var(--stroke, 4)) #2a1606;
+  text-shadow: 0 calc(var(--u) * 2) 0 #2a1606;
+}
+
+/* ---------- Pell ---------- */
+
+/* At the left over the circle, feet behind the top of the dialogue panel. */
+.pell {
+  position: absolute;
+  left: calc(var(--u) * -18);
+  bottom: calc(var(--u) * 120);
+  width: calc(var(--u) * 290);
+  aspect-ratio: 760 / 1191;
+  pointer-events: none;
+  filter: drop-shadow(0 calc(var(--u) * 6) calc(var(--u) * 8) rgb(0 0 0 / 0.55));
+}
+
+.pell img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Trial list ---------- */
+
+.side {
+  position: absolute;
+  z-index: 1;
+  right: calc(var(--u) * 14);
+  top: calc(var(--u) * 80);
+  width: calc(var(--u) * 330);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 14);
+}
+
+.trials {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 18);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plate {
+  position: relative;
+  display: block;
+  aspect-ratio: 560 / 168;
+  color: inherit;
+  text-decoration: none;
+  filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 4) rgb(0 0 0 / 0.6));
+}
+
+a.plate:hover,
+a.plate:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 calc(var(--u) * 8) #fbe39a) brightness(1.1);
+}
+
+.trial[data-state="locked"] {
+  opacity: 0.5;
+  filter: grayscale(0.5);
+}
+
+/* Name over subtitle, inside the plate's measured face. */
+.plateText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 6);
+  padding: 0 calc(var(--u) * 10);
+  overflow: hidden;
+}
+
+.trialName {
+  overflow: hidden;
+  font-size: calc(var(--u) * 21);
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #2a1606;
+}
+
+.trialSub {
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 14);
+  line-height: 1.25;
+  color: #d8d0bc;
+}
+
+/* On the plate's top-left corner, scaled with the plate (both pieces are 2x exports). */
+.ribbon {
+  position: absolute;
+  left: calc(var(--u) * -6);
+  top: calc(var(--u) * -10);
+  width: 30%;
+  aspect-ratio: 220 / 53;
+}
+
+.ribbon .boxText {
+  --stroke: 3;
+  font-size: calc(var(--u) * 13);
+  letter-spacing: 0.04em;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.notices {
+  padding: calc(var(--u) * 10) calc(var(--u) * 14);
+  border: calc(var(--u) * 2) solid #c99a3a;
+  border-radius: calc(var(--u) * 12);
+  background: rgb(10 14 26 / 0.82);
+  user-select: text;
+}
+
+/* ---------- Pell's line ---------- */
+
+.dialogue {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: calc(var(--u) * 8);
+  width: calc(var(--u) * 620);
+  aspect-ratio: 1200 / 354;
+  transform: translateX(-50%);
+  margin: 0;
+}
+
+.dialogueText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 8) calc(var(--u) * 18);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 21);
+  line-height: 1.35;
+  color: #f3ecdc;
+}
+
+.speaker {
+  font-family: var(--font-menu), system-ui, sans-serif;
+  font-size: calc(var(--u) * 22);
+  color: #f6d88a;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 3) #2a1606;
+}
+
+.pill {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--u) * 14);
+  top: calc(var(--u) * 14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 96);
+  height: calc(var(--u) * 48);
+  background: url("/assets/ui/btn-pill.webp") center / 100% 100% no-repeat;
+  font-size: calc(var(--u) * 24);
+  color: #fff;
+  text-decoration: none;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #2a1606;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  background-image: url("/assets/ui/btn-pill-lit.webp");
+}
+
+/* Just below the dome (about 100 master px on the 1536px map), so the landmark stays visible. */
+.conclave [data-area="proving-lab"] {
+  --plate-offset-y: 0.065;
+}

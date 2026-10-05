@@ -285,6 +285,8 @@ export function eventCues(event: BattleEvent, context = NO_CONTEXT, sparkCritica
     // The battle scene starts the wave transition (`wave-transition.ts`) on these two events.
     case "WaveCleared":
     case "FormChanged":
+    // The battle scene plays the trial squad swap (`squad-swap.ts`, M6-01L) on this event.
+    case "SquadEntered":
     // Item use has no additional visual cue.
     case "ItemUsed":
     // React owns the paid continue prompt; engine events update the HUD.

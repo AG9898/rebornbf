@@ -6,8 +6,8 @@ import { getPlayerProfile } from "../../lib/onboarding/state.ts";
 import { menuFont } from "../../styles/fonts.ts";
 
 /**
- * Every menu page shares the portrait frame; the title screen, /battle, and /gallery sit outside
- * it. A signed-in player who has not finished onboarding is sent to their next step (RESOLVED-68);
+ * Every menu page shares the portrait frame; the title screen and /battle sit outside it. A
+ * signed-in player who has not finished onboarding is sent to their next step (RESOLVED-68);
  * nobody is sent back to the title screen. The status bar shows the player's display name and wallet.
  */
 export default async function MenuLayout({

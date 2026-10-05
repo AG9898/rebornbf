@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { LoadingGlyph } from "../../../../../components/loading/LoadingGlyph.tsx";
 import { itemIcon } from "../../../../../components/menu/item-icon.ts";
 import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
@@ -13,15 +14,20 @@ import {
 } from "../../../../../lib/quests/item-loadout.ts";
 import styles from "../../start.module.css";
 
-function BeginButton({ disabled }: { disabled: boolean }): ReactNode {
+function BeginButton({ disabled, label }: { disabled: boolean; label: string }): ReactNode {
   const { pending } = useFormStatus();
+  // The start_battle → /battle handoff: the full-screen glyph covers the menu column until the
+  // battle route's own loading screen takes over (M6-01H).
   return (
-    <button type="submit" className={styles.begin} disabled={disabled || pending}>
-      <UiImage name="btn-hub" className={styles.beginArt} />
-      <span className={styles.beginText} style={textBoxStyle("btn-hub")}>
-        {pending ? "Starting…" : "Begin Quest"}
-      </span>
-    </button>
+    <>
+      <button type="submit" className={styles.begin} disabled={disabled || pending}>
+        <UiImage name="btn-hub" className={styles.beginArt} />
+        <span className={styles.beginText} style={textBoxStyle("btn-hub")}>
+          {label}
+        </span>
+      </button>
+      {pending ? <LoadingGlyph variant="screen" /> : null}
+    </>
   );
 }
 
@@ -30,11 +36,14 @@ export function ItemLoadout({
   storageKey,
   disabled,
   action,
+  submitLabel = "Begin Quest",
 }: {
   stock: readonly ItemStock[];
   storageKey: string;
   disabled: boolean;
   action: (data: FormData) => Promise<void>;
+  /** The start button's text: Begin Quest, or Challenge on a trial (M6-01K). */
+  submitLabel?: string;
 }): ReactNode {
   const [slots, setSlots] = useState<(LoadoutEntry | null)[]>(Array(5).fill(null));
   const [editing, setEditing] = useState<number | null>(null);
@@ -152,7 +161,7 @@ export function ItemLoadout({
         value={JSON.stringify(slots.filter((entry) => entry !== null))}
       />
       <div className={styles.beginBar}>
-        <BeginButton disabled={disabled || !ready} />
+        <BeginButton disabled={disabled || !ready} label={submitLabel} />
       </div>
     </form>
   );

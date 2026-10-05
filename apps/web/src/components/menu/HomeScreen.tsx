@@ -8,7 +8,7 @@ import { UTILITY_TABS } from "./sections.ts";
 import { UiImage } from "./UiImage.tsx";
 import { CARD_ART_SIZE } from "./ui-assets.ts";
 
-/** Left positions (logical px) of the four utility tabs, two each side of the flourish. */
+/** Left positions (logical px) of the four utility-tab slots, two each side of the flourish. */
 const TAB_LEFT = [19, 140, 385, 506];
 
 /** Home: squad slot 0 as five cards (leader first, empty frames for empty slots; M3-03D). */
@@ -61,12 +61,12 @@ export function HomeScreen({ cards }: { cards: readonly ShowcaseCard[] }): React
       </section>
 
       <nav className={styles.utility} aria-label="Shortcuts">
-        {UTILITY_TABS.map((tab, i) => (
+        {UTILITY_TABS.map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
             className={styles.tab}
-            style={{ left: `calc(var(--u) * ${TAB_LEFT[i]})` }}
+            style={{ left: `calc(var(--u) * ${TAB_LEFT[tab.slot]})` }}
             aria-label={tab.label}
             title={tab.label}
           >

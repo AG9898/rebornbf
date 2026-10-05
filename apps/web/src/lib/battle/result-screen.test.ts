@@ -127,7 +127,7 @@ describe("ending stage", () => {
 describe("return destination", () => {
   it("returns story stages to their chapter and trials to the Trials page", () => {
     expect(questReturn(STORY)).toEqual({ href: "/quests/1", label: "Back to quests" });
-    expect(questReturn(TRIAL)).toEqual({ href: "/trials", label: "Back to Trials" });
+    expect(questReturn(TRIAL)).toEqual({ href: "/conclave/lab", label: "Back to Trials" });
     expect(areaName(TRIAL)).toBe("Trial 1");
   });
 });

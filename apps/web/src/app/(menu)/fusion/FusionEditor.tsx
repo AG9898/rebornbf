@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import menu from "../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
@@ -304,7 +305,7 @@ export function FusionEditor({
                   fuse();
                 }}
               >
-                <span className={units.outline}>{pending ? "Fusing" : "Confirm"}</span>
+                <span className={units.outline}>{pending ? <LoadingGlyph /> : "Confirm"}</span>
               </button>
               <button
                 type="button"

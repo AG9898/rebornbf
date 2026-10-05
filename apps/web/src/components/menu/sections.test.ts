@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { activeSection, GAME_MODES, NAV_SECTIONS, START_MODE_INDEX } from "./sections.ts";
+import {
+  activeSection,
+  GAME_MODES,
+  NAV_SECTIONS,
+  START_MODE_INDEX,
+  UTILITY_TABS,
+} from "./sections.ts";
 
 describe("menu sections", () => {
   it("keeps the original's six nav slots with unique routes", () => {
@@ -18,7 +24,6 @@ describe("menu sections", () => {
     expect(activeSection("/home")?.label).toBe("Home");
     expect(activeSection("/")).toBeUndefined();
     expect(activeSection("/homex")).toBeUndefined();
-    expect(activeSection("/gallery")).toBeUndefined();
   });
 
   it("marks a section on its own path and nested paths", () => {
@@ -26,6 +31,14 @@ describe("menu sections", () => {
     expect(activeSection("/units/brand")?.label).toBe("Unit");
     expect(activeSection("/units/list")?.label).toBe("Unit"); // M4-06B: All Units under the hub
     expect(activeSection("/unitsx")).toBeUndefined();
+  });
+
+  it("keeps the utility tabs in their slots with the Gallery slot empty", () => {
+    expect(UTILITY_TABS.map((t) => [t.label, t.slot])).toEqual([
+      ["Menu", 0],
+      ["Info", 2],
+      ["Gifts", 3],
+    ]);
   });
 
   it("opens the carousel on Quest", () => {

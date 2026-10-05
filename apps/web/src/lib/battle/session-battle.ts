@@ -30,7 +30,9 @@ import {
   type AutoUnitMode,
   type BattleSetup,
   type EnemySetup,
+  MAX_RESERVE_SQUADS,
   type PlayerSlotId,
+  type ReserveSquadSetup,
   type SquadMemberSetup,
   type UnitTypeRoll,
 } from "@bfr/engine";
@@ -65,12 +67,18 @@ export type SnapshotUnit = {
   unit_type?: UnitTypeRoll | null;
 };
 
-/** `battle_sessions.squad`: the squad as it stood when the battle started. */
-export type SquadSnapshot = {
+/** One frozen squad: its units in order, leader, and per-run ally. */
+export type SquadSnapshotParty = {
   leader_index: number;
   units: SnapshotUnit[];
   ally: SnapshotUnit | null;
 };
+
+/**
+ * `battle_sessions.squad`: the squad as it stood when the battle started. A three-squad trial
+ * (M6-01J, RESOLVED-95) also freezes its second and third squads, in entry order, as `reserves`.
+ */
+export type SquadSnapshot = SquadSnapshotParty & { reserves?: SquadSnapshotParty[] };
 
 export type BattleSessionRow = {
   id: string;
@@ -107,6 +115,8 @@ export type SessionBattle = {
   partyArt: string[];
   /** Idle form per party slot (`3star`…`omni`). */
   partyArtForms: (string | undefined)[];
+  /** Per reserve squad (trials, M6-01J), the same art per party slot it enters into. */
+  reserveArt: { partyArt: string[]; partyArtForms: (string | undefined)[] }[];
 };
 
 export type SessionBattleResult =
@@ -245,6 +255,34 @@ export function sessionAutoSettings(
   return Object.keys(settings).length > 0 ? settings : undefined;
 }
 
+type SessionParty = {
+  setup: ReserveSquadSetup;
+  partyArt: string[];
+  partyArtForms: (string | undefined)[];
+};
+
+/** One frozen squad as engine setup (squad, leader, ally) and per-slot art, or a message. */
+function sessionParty(snapshot: SquadSnapshotParty): SessionParty | string {
+  const { units, ally, leader_index: leaderIndex } = snapshot;
+  if (!Array.isArray(units)) return "This battle's squads are invalid.";
+  const members: Member[] = [];
+  for (const unit of [...units, ...(ally ? [ally] : [])]) {
+    const result = member(unit);
+    if (typeof result === "string") return result;
+    members.push(result);
+  }
+  const allyMember = ally ? members[units.length] : undefined;
+  return {
+    setup: {
+      squad: members.slice(0, units.length).map((m) => m.setup),
+      leaderIndex,
+      ...(allyMember ? { ally: { ...allyMember.setup, kind: ally?.kind ?? "duplicate" } } : {}),
+    },
+    partyArt: members.map((m) => m.art),
+    partyArtForms: members.map((m) => m.artForm),
+  };
+}
+
 /** Why a session cannot be played now, or null when it can. */
 export function sessionProblem(row: BattleSessionRow, now: Date): string | null {
   if (row.finished_at !== null) return "This battle is already finished.";
@@ -274,15 +312,17 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
     waves.push(enemies);
   }
 
-  const { units, ally, leader_index: leaderIndex } = row.squad;
-  const members: Member[] = [];
-  for (const unit of [...units, ...(ally ? [ally] : [])]) {
-    const result = member(unit);
-    if (typeof result === "string") return { ok: false, message: result };
-    members.push(result);
+  const first = sessionParty(row.squad);
+  if (typeof first === "string") return { ok: false, message: first };
+  const reserveRows = row.squad.reserves ?? [];
+  if (!Array.isArray(reserveRows) || reserveRows.length > MAX_RESERVE_SQUADS)
+    return { ok: false, message: "This battle's squads are invalid." };
+  const reserves: SessionParty[] = [];
+  for (const reserveRow of reserveRows) {
+    const reserve = sessionParty(reserveRow);
+    if (typeof reserve === "string") return { ok: false, message: reserve };
+    reserves.push(reserve);
   }
-  const squad = members.slice(0, units.length);
-  const allyMember = ally ? members[units.length] : undefined;
 
   const items: NonNullable<BattleSetup["items"]>[number][] = [];
   for (const entry of row.items ?? []) {
@@ -300,9 +340,8 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
   if (items.length > 5) return { ok: false, message: "This battle's item loadout is invalid." };
 
   let setup: BattleSetup = {
-    squad: squad.map((m) => m.setup),
-    leaderIndex,
-    ...(allyMember ? { ally: { ...allyMember.setup, kind: ally?.kind ?? "duplicate" } } : {}),
+    ...first.setup,
+    ...(reserves.length > 0 ? { reserveSquads: reserves.map((reserve) => reserve.setup) } : {}),
     waves,
     items,
     ...(stage.trial ? { trial: true } : {}),
@@ -320,8 +359,9 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
       stage,
       setup,
       seed: Number(row.seed),
-      partyArt: members.map((m) => m.art),
-      partyArtForms: members.map((m) => m.artForm),
+      partyArt: first.partyArt,
+      partyArtForms: first.partyArtForms,
+      reserveArt: reserves.map(({ partyArt, partyArtForms }) => ({ partyArt, partyArtForms })),
     },
   };
 }

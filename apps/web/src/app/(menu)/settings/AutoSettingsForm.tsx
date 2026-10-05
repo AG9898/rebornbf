@@ -3,6 +3,7 @@
 import { AUTO_UNIT_MODES, type AutoUnitMode } from "@bfr/engine";
 import type { ReactNode } from "react";
 import { useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import menu from "../../../components/menu/menu.module.css";
 import type { AutoSettingsDraft, AutoSettingsUnit } from "../../../lib/settings/player-settings.ts";
 import { saveAutoSettings } from "./actions.ts";
@@ -143,7 +144,7 @@ export default function AutoSettingsForm({
       ))}
 
       <button type="submit" className={menu.panelLink} disabled={pending || !dirty}>
-        {pending ? "Saving…" : "Save auto battle"}
+        {pending ? <LoadingGlyph /> : "Save auto battle"}
       </button>
       {message && (
         <p role={message.ok ? "status" : "alert"} className={menu.panelText}>

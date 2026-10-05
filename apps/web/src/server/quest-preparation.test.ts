@@ -48,6 +48,8 @@ describe("shared story/trial preparation reads", () => {
       expect(preparation.stage).toEqual(stage);
       expect(preparation.failed).toBe(false);
       expect(preparation.userId).toBe("player-one");
+      // Trials start with three saved squads (M6-01J); story stages with one.
+      expect(preparation.squadCount).toBe(stage.trial ? 3 : 1);
       expect(read.mock.calls.map(([table]) => table)).toEqual([
         "owned_units",
         "squads",

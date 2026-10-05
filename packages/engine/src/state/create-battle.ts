@@ -30,6 +30,7 @@ import {
   type BattleUnit,
   type EnemySetup,
   type FormChangeSetup,
+  MAX_RESERVE_SQUADS,
   MAX_SQUAD_UNITS,
   type PlayerSlotId,
   type SquadMemberSetup,
@@ -359,18 +360,13 @@ function checkAutoSettings(settings: AutoSettings, party: readonly BattleUnit[])
 /**
  * Builds the initial `BattleState` from a squad snapshot and a seed (GAME_DESIGN §2 Battle
  * Structure). Rejects squads outside 1–5 units plus one ally, a missing leader, unknown forms,
- * invalid unit content (including unknown effect IDs), and empty waves. No combat happens here.
+ * invalid unit content (including unknown effect IDs), and empty waves. Up to two reserve squads
+ * (GAME_DESIGN §7 → Trials flow and three squads) are validated the same way and snapshotted into
+ * `reserveSquads`. No combat happens here.
  */
 export function createBattle(setup: BattleSetup, seed: number): BattleState {
-  const { squad, leaderIndex, ally, waves, sparkAssist } = setup;
-  if (squad.length === 0 || squad.length > MAX_SQUAD_UNITS) {
-    throw new BattleSetupError(
-      `squad: must have 1–${MAX_SQUAD_UNITS} units plus an optional ally (got ${squad.length})`,
-    );
-  }
-  if (!Number.isInteger(leaderIndex) || leaderIndex < 0 || leaderIndex >= squad.length) {
-    throw new BattleSetupError(`leaderIndex: ${leaderIndex} is not a squad index`);
-  }
+  const { waves, sparkAssist } = setup;
+  const first = buildSquad(setup, "");
   checkWaves(waves);
   const formChanges = checkFormChanges(setup.formChanges, waves);
   if (sparkAssist !== undefined && typeof sparkAssist !== "boolean") {
@@ -380,16 +376,13 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
   if (setup.trial !== undefined && typeof setup.trial !== "boolean") {
     throw new BattleSetupError("trial: must be a boolean");
   }
-
-  const party: BattleUnit[] = squad.map((member, i) =>
-    toBattleUnit(member, `p${i}`, `squad[${i}]`, i === leaderIndex),
-  );
-  if (ally) {
-    party.push(toBattleUnit(ally, "ally", "ally", false, ally.kind));
+  const reserveSetups = setup.reserveSquads ?? [];
+  if (!Array.isArray(reserveSetups) || reserveSetups.length > MAX_RESERVE_SQUADS) {
+    throw new BattleSetupError(`reserveSquads: at most ${MAX_RESERVE_SQUADS} reserve squads`);
   }
+  const reserves = reserveSetups.map((reserve, r) => buildSquad(reserve, `reserveSquads[${r}].`));
 
-  const leaderSkill = party[leaderIndex]?.form.leaderSkill;
-  const allyLeaderSkill = ally ? party[party.length - 1]?.form.leaderSkill : undefined;
+  const { party, leaderSkills } = first;
   const firstWave = waves[0] ?? [];
 
   const state: BattleState = {
@@ -399,10 +392,7 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
     turn: 1,
     phase: "player",
     party,
-    leaderSkills: {
-      ...(leaderSkill ? { leader: leaderSkill } : {}),
-      ...(allyLeaderSkill ? { ally: allyLeaderSkill } : {}),
-    },
+    leaderSkills,
     waves,
     waveIndex: 0,
     waveStartTurn: 1,
@@ -421,7 +411,52 @@ export function createBattle(setup: BattleSetup, seed: number): BattleState {
       ? {}
       : { autoSettings: checkAutoSettings(setup.autoSettings, party) }),
   };
-  return withPassiveHp(refreshPassives(state));
+  const started = withPassiveHp(refreshPassives(state));
+  if (reserves.length === 0) return started;
+  // Each reserve squad gets its battle-start passive HP now, against its own leader skills, so it
+  // enters at that max HP (GAME_DESIGN §7 → Trials flow and three squads).
+  return {
+    ...started,
+    reserveSquads: reserves.map((reserve) => ({
+      party: withPassiveHp(refreshPassives({ ...state, ...reserve })).party,
+      leaderSkills: reserve.leaderSkills,
+    })),
+    squadIndex: 0,
+  };
+}
+
+/**
+ * Validates and snapshots one squad (the first, or a reserve under `prefix`): 1–5 units plus an
+ * optional ally, a leader index into the squad, and the leader and ally leader skills.
+ */
+function buildSquad(
+  setup: Pick<BattleSetup, "squad" | "leaderIndex" | "ally">,
+  prefix: string,
+): { party: BattleUnit[]; leaderSkills: BattleState["leaderSkills"] } {
+  const { squad, leaderIndex, ally } = setup;
+  if (!Array.isArray(squad) || squad.length === 0 || squad.length > MAX_SQUAD_UNITS) {
+    throw new BattleSetupError(
+      `${prefix}squad: must have 1–${MAX_SQUAD_UNITS} units plus an optional ally (got ${squad?.length})`,
+    );
+  }
+  if (!Number.isInteger(leaderIndex) || leaderIndex < 0 || leaderIndex >= squad.length) {
+    throw new BattleSetupError(`${prefix}leaderIndex: ${leaderIndex} is not a squad index`);
+  }
+  const party: BattleUnit[] = squad.map((member, i) =>
+    toBattleUnit(member, `p${i}`, `${prefix}squad[${i}]`, i === leaderIndex),
+  );
+  if (ally) {
+    party.push(toBattleUnit(ally, "ally", `${prefix}ally`, false, ally.kind));
+  }
+  const leaderSkill = party[leaderIndex]?.form.leaderSkill;
+  const allyLeaderSkill = ally ? party[party.length - 1]?.form.leaderSkill : undefined;
+  return {
+    party,
+    leaderSkills: {
+      ...(leaderSkill ? { leader: leaderSkill } : {}),
+      ...(allyLeaderSkill ? { ally: allyLeaderSkill } : {}),
+    },
+  };
 }
 
 /**

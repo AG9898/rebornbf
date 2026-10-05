@@ -4,6 +4,7 @@ import type { BattleEvent } from "@bfr/engine";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import styles from "../../../components/onboarding/onboarding.module.css";
 import {
   advancePrompts,
@@ -15,7 +16,11 @@ import { finishTutorial } from "./actions.ts";
 
 const PhaserBattle = dynamic(() => import("../../battle/PhaserBattle.tsx"), {
   ssr: false,
-  loading: () => <p className="m-auto text-sm text-white">Loading battle scene…</p>,
+  loading: () => (
+    <div className="fixed inset-0">
+      <LoadingGlyph variant="screen" />
+    </div>
+  ),
 });
 
 /** How long the loss panel shows before the tutorial starts again. */
@@ -91,7 +96,7 @@ export function TutorialClient({ replay }: { replay: boolean }): ReactNode {
           {errorLine}
           <div className={styles.actions}>
             <button type="button" className={styles.button} onClick={finish} disabled={pending}>
-              {pending ? "Saving…" : replay ? "Back" : "Continue"}
+              {pending ? <LoadingGlyph /> : replay ? "Back" : "Continue"}
             </button>
           </div>
         </section>

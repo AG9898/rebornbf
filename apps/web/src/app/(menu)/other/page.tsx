@@ -9,7 +9,6 @@ export const metadata: Metadata = { title: "Other · BFR" };
 const LINKS = [
   { href: "/settings", label: "Settings" },
   { href: "/account", label: "Account" },
-  { href: "/gallery", label: "Art gallery" },
   { href: "/battle", label: "Demo battle" },
   { href: TUTORIAL_REPLAY_PATH, label: "Replay tutorial" },
 ];

@@ -5,38 +5,73 @@ import { UiImage } from "../../../../components/menu/UiImage.tsx";
 import { UnitIconFace } from "../../../../components/units/UnitIconFace.tsx";
 import { beginQuestHref, reinforcements } from "../../../../lib/quests/reinforcement.ts";
 import {
+  editPartySlots,
+  parseAllyParty,
+  parsePlanSlots,
+  parseTrialPlan,
+} from "../../../../lib/quests/trial-parties.ts";
+import { draftFromRow, SQUAD_SLOTS } from "../../../../lib/squad/squad-editor.ts";
+import {
   nextUnitSort,
   parseUnitSort,
+  sortOwnedUnits,
+  toOwnedUnitView,
   UNIT_SORT_LABELS,
 } from "../../../../lib/units/owned-units.ts";
 import { questPreparation } from "../../../../server/quest-preparation.ts";
 import unitStyles from "../../units/units.module.css";
 import styles from "../start.module.css";
+import { TrialEditSquad } from "./TrialEditSquad.tsx";
+import { TrialReinforcement } from "./TrialReinforcement.tsx";
 
 export default async function ReinforcementPage({
   params,
   searchParams,
 }: {
   params: Promise<{ stage: string }>;
-  searchParams: Promise<{ sort?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactNode> {
   const { stage } = await params;
-  const sort = parseUnitSort((await searchParams).sort);
+  const query = await searchParams;
+  const sort = parseUnitSort(query.sort);
   const preparation = await questPreparation(stage);
+  if (preparation.stage.trial) {
+    // Trials (M6-01K): Edit Squad, then Reinforcement once per party (`?party=`).
+    const plan = parseTrialPlan(query);
+    const party = plan ? parseAllyParty(query, plan) : null;
+    if (plan && party !== null) {
+      return (
+        <TrialReinforcement
+          stage={stage}
+          stageName={preparation.stage.name}
+          plan={plan}
+          party={party}
+          sort={sort}
+          choices={reinforcements(preparation.owned, sort)}
+          failed={preparation.failed}
+        />
+      );
+    }
+    const views = sortOwnedUnits(preparation.owned.map(toOwnedUnitView));
+    const ownedIds = new Set(views.map((view) => view.id));
+    return (
+      <TrialEditSquad
+        stage={stage}
+        stageName={preparation.stage.name}
+        initialSlots={editPartySlots(parsePlanSlots(query))}
+        saved={Array.from({ length: SQUAD_SLOTS }, (_, slot) =>
+          draftFromRow(preparation.squads.find((row) => row.slot === slot) ?? null, ownedIds),
+        )}
+        units={views.map((view) => ({ ...view, stackCount: null }))}
+        failed={preparation.failed}
+      />
+    );
+  }
   return (
-    <div
-      className={`${styles.page} ${preparation.stage.trial ? styles.vortex : ""}`}
-      data-backdrop={preparation.stage.trial ? "vortex" : "olive"}
-    >
+    <div className={styles.page} data-backdrop="olive">
       <header className={unitStyles.titleBar}>
         <Link
-          href={
-            preparation.stage.trial
-              ? "/trials"
-              : preparation.stage.story
-                ? `/quests/${preparation.stage.story.chapter}`
-                : "/quests"
-          }
+          href={preparation.stage.story ? `/quests/${preparation.stage.story.chapter}` : "/quests"}
           className={`${unitStyles.pill} ${unitStyles.backButton}`}
         >
           Back
@@ -54,9 +89,6 @@ export default async function ReinforcementPage({
           Sort
         </Link>
       </header>
-      {preparation.stage.trial ? (
-        <p className={styles.notice}>{preparation.stage.name} · No continues.</p>
-      ) : null}
       <div className={styles.toolbar}>
         <span>Sort: {UNIT_SORT_LABELS[sort]}</span>
         <Link className={styles.pill} href={beginQuestHref(stage, null)}>

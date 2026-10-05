@@ -94,6 +94,19 @@ export interface EnemySetup {
   readonly bcResistance?: number;
 }
 
+/** Reserve squads a three-squad trial may carry after the first (GAME_DESIGN §7, RESOLVED-95). */
+export const MAX_RESERVE_SQUADS = 2;
+
+/**
+ * One reserve squad (GAME_DESIGN §7 → Trials flow and three squads): its own 1–5 units, leader,
+ * and optional ally. It enters, in order, when the squad before it is wiped.
+ */
+export interface ReserveSquadSetup {
+  readonly squad: readonly SquadMemberSetup[];
+  readonly leaderIndex: number;
+  readonly ally?: AllySetup;
+}
+
 export interface BattleSetup {
   /** 1–5 squad units in squad order. */
   readonly squad: readonly SquadMemberSetup[];
@@ -129,6 +142,17 @@ export interface BattleSetup {
    * transition, keeping its HP fraction. Each wave at most once; omitted means none.
    */
   readonly formChanges?: readonly FormChangeSetup[];
+  /**
+   * Up to `MAX_RESERVE_SQUADS` squads that enter in order when the active one is wiped (GAME_DESIGN
+   * §7 → Trials flow and three squads, RESOLVED-97). Omitted or empty means one squad.
+   */
+  readonly reserveSquads?: readonly ReserveSquadSetup[];
+}
+
+/** A reserve squad snapshotted at battle start: its party (slots `p0`…, `ally`) and leader skills. */
+export interface ReserveSquad {
+  readonly party: readonly BattleUnit[];
+  readonly leaderSkills: BattleState["leaderSkills"];
 }
 
 /**
@@ -284,6 +308,13 @@ export interface BattleState {
   readonly trial: boolean;
   /** The setup's auto-battle settings; absent means the original default (see `AutoSettings`). */
   readonly autoSettings?: AutoSettings;
+  /**
+   * Reserve squads still waiting to enter, in order (set only when the setup has reserve squads);
+   * the first enters when the active party is wiped (`endTurn`, `SquadEntered`).
+   */
+  readonly reserveSquads?: readonly ReserveSquad[];
+  /** 0-based index of the active squad; set only when the setup has reserve squads. */
+  readonly squadIndex?: number;
   /** Whether the one continue per battle has been used. */
   readonly continued: boolean;
   /**

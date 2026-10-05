@@ -7,6 +7,7 @@ import { SkillRow } from "../../../../../components/units/SkillRow.tsx";
 import { UnitIconFace } from "../../../../../components/units/UnitIconFace.tsx";
 import { itemLoadoutKey } from "../../../../../lib/quests/item-loadout.ts";
 import { beginQuestHref, reinforcements } from "../../../../../lib/quests/reinforcement.ts";
+import { parsePrepSquad, parseTrialPlan } from "../../../../../lib/quests/trial-parties.ts";
 import {
   draftFromRow,
   parseSquadSlot,
@@ -20,22 +21,44 @@ import unitStyles from "../../../units/units.module.css";
 import styles from "../../start.module.css";
 import { beginQuest } from "./actions.ts";
 import { ItemLoadout } from "./ItemLoadout.tsx";
+import { TrialPrep } from "./TrialPrep.tsx";
 
 export default async function BeginQuestPage({
   params,
   searchParams,
 }: {
   params: Promise<{ stage: string }>;
-  searchParams: Promise<{
-    ally?: string | string[];
-    slot?: string | string[];
-    error?: string | string[];
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactNode> {
   const { stage } = await params;
   const query = await searchParams;
   const slot = parseSquadSlot(query.slot);
   const preparation = await questPreparation(stage);
+  if (preparation.stage.trial) {
+    // Trials (M6-01K): the plan from Edit Squad and Reinforcement, one squad shown at a time.
+    const plan = parseTrialPlan(query);
+    if (!plan) notFound();
+    const choices = reinforcements(preparation.owned);
+    const allies = plan.allies.map((id) =>
+      id === null ? null : (choices.find((unit) => unit.id === id) ?? undefined),
+    );
+    if (!preparation.failed && allies.includes(undefined)) notFound();
+    return (
+      <TrialPrep
+        stage={stage}
+        stageName={preparation.stage.name}
+        plan={plan}
+        squad={parsePrepSquad(query, plan)}
+        units={preparation.owned.map(toOwnedUnitView)}
+        squads={preparation.squads}
+        allies={allies.map((ally) => ally ?? null)}
+        items={preparation.items}
+        userId={preparation.userId}
+        failed={preparation.failed}
+        error={typeof query.error === "string" ? query.error : null}
+      />
+    );
+  }
   const allyId = typeof query.ally === "string" ? query.ally : null;
   const ally =
     allyId === null ? null : reinforcements(preparation.owned).find((unit) => unit.id === allyId);
@@ -54,10 +77,7 @@ export default async function BeginQuestPage({
     ally ?? null,
   ];
   return (
-    <div
-      className={`${styles.page} ${styles.fill} ${preparation.stage.trial ? styles.vortex : ""}`}
-      data-backdrop={preparation.stage.trial ? "vortex" : "olive"}
-    >
+    <div className={`${styles.page} ${styles.fill}`} data-backdrop="olive">
       <header className={unitStyles.titleBar}>
         <Link href={`/start/${stage}`} className={`${unitStyles.pill} ${unitStyles.backButton}`}>
           Back
@@ -72,9 +92,6 @@ export default async function BeginQuestPage({
           Home
         </Link>
       </header>
-      {preparation.stage.trial ? (
-        <p className={styles.notice}>Trials cannot be continued after defeat.</p>
-      ) : null}
       <div className={styles.toolbar}>
         <Link className={styles.tab} href={`/squad?slot=${slot}`}>
           <UiImage name="section-tab" className={styles.tabArt} />

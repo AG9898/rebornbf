@@ -9,13 +9,18 @@ import { createSupabaseServerClient } from "../lib/supabase/server.ts";
  * `returnPath` with a player-facing `?error=`. The RPC derives the player from `auth.uid()` and
  * re-checks the stage, its unlock, and the squad; it records a session with a server-rolled seed
  * and a snapshot of the chosen squad, per-run ally, and items for both story stages and trials.
+ * A trial may add up to two reserve squads, each a saved slot with its own ally (M6-01J); the RPC
+ * refuses reserves for story and dungeon stages and any unit in two squads.
  */
+export type ReserveSquadChoice = { slot: number; ally: string | null };
+
 export async function startBattleSession(
   stageId: string,
   returnPath: string,
   squadSlot = 0,
   ally: string | null = null,
   items?: readonly LoadoutEntry[],
+  reserves: readonly ReserveSquadChoice[] = [],
 ): Promise<never> {
   function back(message: string): never {
     const url = new URL(returnPath, "https://bfr.invalid");
@@ -30,6 +35,9 @@ export async function startBattleSession(
     p_squad_slot: squadSlot,
     p_ally: ally,
     ...(items ? { p_items: items } : {}),
+    ...(reserves.length > 0
+      ? { p_reserves: reserves.map(({ slot, ally: reserveAlly }) => ({ slot, ally: reserveAlly })) }
+      : {}),
   });
   if (error) {
     if (error.code === "42501") redirect(`${SIGN_IN_PATH}?next=${encodeURIComponent(returnPath)}`);

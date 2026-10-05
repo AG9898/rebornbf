@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../../../components/loading/LoadingGlyph.tsx";
 import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
 import type { EvolveBlocker } from "../../../../../lib/units/evolution.ts";
@@ -9,12 +10,11 @@ import { evolveUnit } from "./actions.ts";
 import type { EvolveCinematicView } from "./EvolveCinematic.tsx";
 import { usePlayEvolveCinematic } from "./EvolveHost.tsx";
 import evolve from "./evolve.module.css";
-import cinematicStyles from "./evolve-cinematic.module.css";
 
 /**
  * The evolve screen's bottom bar (M4-06L): the blue `btn-hub` Evolve button, the Zel Cost plate,
  * and a red status strip naming what is short (or the RPC's refusal). The button runs the
- * evolution through the `evolveUnit` Server Action behind a "Connecting…" band, then plays the
+ * evolution through the `evolveUnit` Server Action behind the full-screen LoadingGlyph, then plays the
  * evolve cinematic (M4-06M), whose tap or Skip opens the new form's unit page. A refusal shows in
  * the strip instead.
  */
@@ -64,7 +64,7 @@ export function EvolveButton({
         <button type="button" className={evolve.button} onClick={run} disabled={disabled}>
           <UiImage name="btn-hub" className={evolve.buttonArt} />
           <span className={`${evolve.buttonText} ${units.outline}`} style={textBoxStyle("btn-hub")}>
-            {pending ? "Evolving…" : label}
+            {label}
           </span>
         </button>
         <div className={evolve.zelPlate}>
@@ -75,11 +75,7 @@ export function EvolveButton({
           </span>
         </div>
       </div>
-      {pending ? (
-        <div className={cinematicStyles.connecting} role="status">
-          <p className={`${cinematicStyles.connectingBand} ${units.outline}`}>Connecting…</p>
-        </div>
-      ) : null}
+      {pending ? <LoadingGlyph variant="screen" /> : null}
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { STORY_STAGES } from "../../../lib/quests/quest-map.ts";
 import { reinforcements } from "../../../lib/quests/reinforcement.ts";
 import { TRIAL_STAGES } from "../../../lib/quests/trials.ts";
-import { beginQuest } from "./[stage]/begin/actions.ts";
+import { startBattleSession } from "../../../server/start-battle.ts";
+import { beginQuest, beginTrial } from "./[stage]/begin/actions.ts";
 import BeginQuestPage from "./[stage]/begin/page.tsx";
 import ReinforcementPage from "./[stage]/page.tsx";
 
@@ -17,6 +18,7 @@ vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("not-found");
   },
+  useRouter: () => ({ push: vi.fn() }),
 }));
 vi.mock("../../../lib/supabase/server.ts", () => ({
   createSupabaseServerClient: async () => ({ rpc }),
@@ -43,74 +45,6 @@ beforeEach(() => {
 });
 
 describe("quest preparation integration (M3-04I)", () => {
-  it.each(TRIAL_STAGES)(
-    "prepares $name with an ally, squad and items before starting",
-    async (trial) => {
-      const members = ["brand", "maren", "rook", "garrick", "solen"].map((unit, i) => ({
-        id: `00000000-0000-4000-8000-00000000000${i + 1}`,
-        unit_id: unit,
-        form_id: `${unit}-3`,
-        level: 1,
-        exp: 0,
-      }));
-      preparation.mockResolvedValue({
-        stage: trial,
-        owned: members,
-        squads: [{ slot: 7, unit_ids: members.map((member) => member.id), leader_index: 0 }],
-        items: [{ item_id: "dew-tonic", count: 3 }],
-        userId: "player-one",
-        failed: false,
-      });
-      const picker = renderToStaticMarkup(
-        await ReinforcementPage({
-          params: Promise.resolve({ stage: trial.id }),
-          searchParams: Promise.resolve({}),
-        }),
-      );
-      expect(picker).toMatch(/<a[^>]* href="\/trials"[^>]*>Back<\/a>/);
-      expect(picker).toContain('data-backdrop="vortex"');
-      expect(picker).toContain("No continues");
-      expect(picker).toContain(`/start/${trial.id}/begin?slot=0`);
-      expect(picker).toContain(`ally=${id}`);
-      const guest = reinforcements(members).find((unit) => !unit.yours);
-      if (!guest) throw new Error("Missing guest preview");
-      expect(picker).toContain(`ally=${guest.id}`);
-
-      for (const ally of [guest.id, id, null]) {
-        const preview = renderToStaticMarkup(
-          await BeginQuestPage({
-            params: Promise.resolve({ stage: trial.id }),
-            searchParams: Promise.resolve({ slot: "7", ...(ally ? { ally } : {}) }),
-          }),
-        );
-        expect(preview).toContain(trial.name);
-        expect(preview).toContain('data-backdrop="vortex"');
-        expect(preview).toContain("Trials cannot be continued");
-        expect(preview).toContain(`href="/start/${trial.id}"`);
-        expect(preview).toContain("Squad 8");
-        expect(preview).toContain('aria-label="Brand, Lv.1, leader"');
-        expect(preview).not.toContain('aria-label="Empty squad slot"');
-        expect(preview).toContain(ally ? ', ally"' : 'aria-label="No ally"');
-        expect(preview).toContain(
-          `/start/${trial.id}/begin?slot=8${ally ? `&amp;ally=${ally}` : ""}`,
-        );
-        expect(preview.match(/aria-label="Empty item slot/g)).toHaveLength(5);
-        expect(preview).toContain("Begin Quest");
-        expect(rpc).not.toHaveBeenCalled();
-      }
-      const form = new FormData();
-      const items = [{ item: "dew-tonic", count: 3 }];
-      form.set("items", JSON.stringify(items));
-      await expect(beginQuest(trial.id, 7, guest.id, form)).rejects.toThrow("redirect:/battle");
-      expect(rpc).toHaveBeenCalledWith("start_battle", {
-        p_stage_id: trial.id,
-        p_squad_slot: 7,
-        p_ally: guest.id,
-        p_items: items,
-      });
-    },
-  );
-
   it("retains trial, ally and squad after a trial gate refusal", async () => {
     const trial = TRIAL_STAGES[0];
     if (!trial) throw new Error("Missing trial fixture");
@@ -120,7 +54,7 @@ describe("quest preparation integration (M3-04I)", () => {
     await expect(beginQuest(trial.id, 7, "aurelle")).rejects.toThrow(
       `redirect:/start/${trial.id}/begin?slot=7&ally=aurelle&error=This+trial+is+still+locked`,
     );
-    await expect(beginQuest(trial.id, 10, null)).rejects.toThrow("redirect:/trials");
+    await expect(beginQuest(trial.id, 10, null)).rejects.toThrow("redirect:/conclave/lab");
     expect(rpc).toHaveBeenCalledTimes(1);
   });
 
@@ -298,5 +232,174 @@ describe("quest preparation integration (M3-04I)", () => {
     await expect(beginQuest(stageId, 7, id, form)).rejects.toThrow(
       `begin?slot=7&ally=${id}&error=Insufficient+item+stock`,
     );
+  });
+});
+
+describe("three-squad trial start (M6-01J)", () => {
+  it("sends reserve squads and their allies to start_battle only when given", async () => {
+    const trial = TRIAL_STAGES[0];
+    if (!trial) throw new Error("Missing trial fixture");
+    const reserves = [
+      { slot: 2, ally: "aurelle" },
+      { slot: 4, ally: null },
+    ];
+    await expect(
+      startBattleSession(trial.id, "/conclave/lab", 0, id, [], reserves),
+    ).rejects.toThrow("redirect:/battle?session=session-id");
+    expect(rpc).toHaveBeenCalledWith("start_battle", {
+      p_stage_id: trial.id,
+      p_squad_slot: 0,
+      p_ally: id,
+      p_items: [],
+      p_reserves: reserves,
+    });
+  });
+});
+
+describe("three-squad trial preparation (M6-01K)", () => {
+  const members = ["brand", "maren", "rook", "garrick", "solen", "morrick"].map((unit, i) => ({
+    id: `00000000-0000-4000-8000-00000000001${i}`,
+    unit_id: unit,
+    form_id: `${unit}-3`,
+    level: 1,
+    exp: 0,
+  }));
+  const ids = members.map((member) => member.id);
+
+  function prepare(trial: (typeof TRIAL_STAGES)[number]): void {
+    preparation.mockResolvedValue({
+      stage: trial,
+      squadCount: 3,
+      owned: members,
+      squads: [
+        { slot: 0, unit_ids: ids.slice(0, 3), leader_index: 1 },
+        { slot: 1, unit_ids: ids.slice(3, 5), leader_index: 0 },
+        { slot: 4, unit_ids: ids.slice(5), leader_index: 0 },
+      ],
+      items: [{ item_id: "dew-tonic", count: 3 }],
+      userId: "player-one",
+      failed: false,
+    });
+  }
+
+  it.each(TRIAL_STAGES)(
+    "walks $name through Edit Squad, three allies and Challenge",
+    async (trial) => {
+      prepare(trial);
+      const edit = renderToStaticMarkup(
+        await ReinforcementPage({
+          params: Promise.resolve({ stage: trial.id }),
+          searchParams: Promise.resolve({}),
+        }),
+      );
+      expect(edit).toContain('data-backdrop="proving-lab"');
+      expect(edit).toContain("Edit Squad");
+      expect(edit).toMatch(/<a[^>]* href="\/conclave\/lab"[^>]*>Back<\/a>/);
+      for (const party of [1, 2, 3]) expect(edit).toContain(`aria-label="Party ${party}"`);
+      expect(edit).toContain(">Squad 1<");
+      expect(edit).toContain(">Squad 2<");
+      expect(edit).toContain(">Squad 3<");
+      expect(edit).toContain('aria-label="Maren, Lv.1, leader: remove"');
+      expect(edit).toContain(
+        "Pick units for three squads. Up to fifteen, and no unit fights twice!",
+      );
+      expect(edit).toContain("/assets/ui/dialogue-panel.webp");
+      expect(edit).toContain("Select Ally");
+
+      const guest = reinforcements(members).find((unit) => !unit.yours);
+      if (!guest) throw new Error("Missing guest preview");
+      const plan = "s=0%2C1%2C4";
+      const ally1 = renderToStaticMarkup(
+        await ReinforcementPage({
+          params: Promise.resolve({ stage: trial.id }),
+          searchParams: Promise.resolve({ s: "0,1,4", party: "1" }),
+        }),
+      );
+      expect(ally1).toContain("Choose an ally for Party 1 of 3");
+      expect(ally1).toContain(`href="/start/${trial.id}?s=0,1,4"`);
+      expect(ally1).toContain(`/start/${trial.id}?${plan}&amp;a1=${guest.id}&amp;party=2`);
+
+      const ally3 = renderToStaticMarkup(
+        await ReinforcementPage({
+          params: Promise.resolve({ stage: trial.id }),
+          searchParams: Promise.resolve({ s: "0,1,4", a1: guest.id, a2: ids[0], party: "3" }),
+        }),
+      );
+      expect(ally3).toContain(">Party 1<");
+      expect(ally3).toContain(">Party 2<");
+      expect(ally3).toContain(
+        `/start/${trial.id}/begin?${plan}&amp;a1=${guest.id}&amp;a2=${ids[0]}&amp;squad=0`,
+      );
+
+      const prep = renderToStaticMarkup(
+        await BeginQuestPage({
+          params: Promise.resolve({ stage: trial.id }),
+          searchParams: Promise.resolve({ s: "0,1,4", a1: guest.id, a2: ids[0], squad: "1" }),
+        }),
+      );
+      expect(prep).toContain("Trials cannot be continued");
+      expect(prep).toContain(">Squad 2<");
+      expect(prep).toContain('aria-label="Garrick, Lv.1, leader"');
+      expect(prep).toContain('aria-label="Brand, Lv.1, ally"');
+      // The shown squad's panel plus one page dot per party.
+      expect(prep.match(/aria-label="Squad \d"/g)).toHaveLength(4);
+      expect(prep).toContain("Challenge");
+      expect(prep).not.toContain("Begin Quest");
+      expect(prep).toContain(
+        `href="/start/${trial.id}?${plan}&amp;a1=${guest.id}&amp;a2=${ids[0]}&amp;party=3"`,
+      );
+      expect(rpc).not.toHaveBeenCalled();
+
+      const form = new FormData();
+      const items = [{ item: "dew-tonic", count: 3 }];
+      form.set("items", JSON.stringify(items));
+      await expect(
+        beginTrial(trial.id, { slots: [0, 1, 4], allies: [guest.id, ids[0], null] }, form),
+      ).rejects.toThrow("redirect:/battle?session=session-id");
+      expect(rpc).toHaveBeenCalledWith("start_battle", {
+        p_stage_id: trial.id,
+        p_squad_slot: 0,
+        p_ally: guest.id,
+        p_items: items,
+        p_reserves: [
+          { slot: 1, ally: ids[0] },
+          { slot: 4, ally: null },
+        ],
+      });
+    },
+  );
+
+  it("returns trial refusals to the prep screen and refuses bad plans and story stages", async () => {
+    const trial = TRIAL_STAGES[0];
+    if (!trial) throw new Error("Missing trial fixture");
+    rpc.mockResolvedValue({
+      error: { code: "22023", message: "start_battle: no unit may fight in two squads" },
+    });
+    await expect(
+      beginTrial(trial.id, { slots: [2, 3], allies: [null, "aurelle"] }),
+    ).rejects.toThrow(
+      `redirect:/start/${trial.id}/begin?s=2%2C3&a2=aurelle&squad=0&error=No+unit+may+fight+in+two+squads`,
+    );
+    await expect(beginTrial(trial.id, { slots: [1, 1], allies: [null, null] })).rejects.toThrow(
+      "redirect:/conclave/lab",
+    );
+    await expect(beginTrial(stageId, { slots: [0], allies: [null] })).rejects.toThrow(
+      "redirect:/quests",
+    );
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses a prep plan with an unknown ally or no squads", async () => {
+    const trial = TRIAL_STAGES[0];
+    if (!trial) throw new Error("Missing trial fixture");
+    prepare(trial);
+    for (const query of [{ s: "0,1", a2: "foreign" }, {}]) {
+      await expect(
+        BeginQuestPage({
+          params: Promise.resolve({ stage: trial.id }),
+          searchParams: Promise.resolve(query),
+        }),
+      ).rejects.toThrow("not-found");
+    }
   });
 });

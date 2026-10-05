@@ -9,6 +9,7 @@ import {
   sessionBattle,
   sessionProblem,
 } from "../../lib/battle/session-battle.ts";
+import { TRIALS_LAB_PATH } from "../../lib/quests/trials.ts";
 import { SIGN_IN_PATH } from "../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../lib/supabase/server.ts";
 import { loadPlayerSettings } from "../../server/player-settings.ts";
@@ -78,7 +79,7 @@ export default async function BattlePage({
   const back = !sessionId
     ? { href: "/home", label: "Home" }
     : isTrial
-      ? { href: "/trials", label: "Trials" }
+      ? { href: TRIALS_LAB_PATH, label: "Trials" }
       : { href: "/quests", label: "Quest" };
 
   return (

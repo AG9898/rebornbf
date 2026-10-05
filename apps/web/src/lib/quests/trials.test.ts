@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { STORY_STAGES } from "./quest-map.ts";
-import { buildTrialList, TRIAL_STAGES, trialStage } from "./trials.ts";
+import { buildTrialList, PELL_LINES, pellLine, TRIAL_STAGES, trialStage } from "./trials.ts";
 
 const storyIds = STORY_STAGES.map((stage) => stage.id);
 
@@ -41,5 +41,35 @@ describe("trials list (M6-01A_1)", () => {
   it("finds trials by ID and nothing else", () => {
     expect(trialStage("trial-01-captain-locke")?.trial?.number).toBe(1);
     expect(trialStage(storyIds[0] ?? "")).toBeUndefined();
+  });
+});
+
+describe("Pell's line in the Proving Lab (M6-01G)", () => {
+  const line = (cleared: string[], known = true) =>
+    pellLine(buildTrialList(new Set(cleared)), known);
+
+  it("uses the default line when progress is unknown", () => {
+    expect(line(storyIds, false)).toBe("default");
+    expect(PELL_LINES.default).toContain("Back again?");
+  });
+
+  it("says nothing is open before chapter 1 is cleared", () => {
+    expect(line([])).toBe("nothingOpen");
+    expect(line(storyIds.slice(0, 7))).toBe("nothingOpen");
+  });
+
+  it("announces a new trial while an uncleared trial is open", () => {
+    expect(line(storyIds.slice(0, 8))).toBe("newTrial");
+    expect(line([...storyIds, "trial-01-captain-locke"])).toBe("newTrial");
+  });
+
+  it("grumbles after a first clear while the next trial is still locked", () => {
+    expect(line([...storyIds.slice(0, 8), "trial-01-captain-locke"])).toBe("firstClear");
+  });
+
+  it("says the next trial is in the works once every trial is cleared", () => {
+    expect(line([...storyIds, "trial-01-captain-locke", "trial-02-master-ozric"])).toBe(
+      "allCleared",
+    );
   });
 });

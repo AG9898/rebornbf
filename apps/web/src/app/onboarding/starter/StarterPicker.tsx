@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { type ReactNode, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import { CARD_ART_SIZE } from "../../../components/menu/ui-assets.ts";
 import { OnboardingPanel } from "../../../components/onboarding/OnboardingScreen.tsx";
@@ -114,7 +115,7 @@ export function StarterPicker({ options }: { options: readonly StarterOption[] }
                   onClick={() => confirm(choice.unitId)}
                   disabled={pending}
                 >
-                  {pending ? "Saving…" : "Confirm"}
+                  {pending ? <LoadingGlyph /> : "Confirm"}
                 </button>
               </div>
             </OnboardingPanel>

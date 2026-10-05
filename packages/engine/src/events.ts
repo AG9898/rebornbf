@@ -410,6 +410,19 @@ export interface WaveStartedEvent {
   readonly enemyHp?: readonly number[];
 }
 
+/**
+ * The active party was wiped and reserve squad `squad` (0-based; 1 or 2) entered at full HP with
+ * empty BB gauges (GAME_DESIGN §7 → Trials flow and three squads, RESOLVED-97). Emitted at the end
+ * of the wiping turn, after the end-of-turn tick; `turn` is the new squad's first turn, whose
+ * `TurnStarted` follows (after any wave transition at the same tick).
+ */
+export interface SquadEnteredEvent {
+  readonly type: "SquadEntered";
+  readonly tick: number;
+  readonly squad: number;
+  readonly turn: number;
+}
+
 /** A new player phase began. */
 export interface TurnStartedEvent {
   readonly type: "TurnStarted";
@@ -417,7 +430,10 @@ export interface TurnStartedEvent {
   readonly turn: number;
 }
 
-/** Terminal event: the last wave was cleared (`win`) or every party unit fell (`lose`). */
+/**
+ * Terminal event: the last wave was cleared (`win`) or every party unit fell with no reserve squad
+ * left to enter (`lose`).
+ */
 export interface BattleEndedEvent {
   readonly type: "BattleEnded";
   readonly tick: number;
@@ -480,6 +496,7 @@ export type BattleEvent =
   | WaveClearedEvent
   | FormChangedEvent
   | WaveStartedEvent
+  | SquadEnteredEvent
   | TurnStartedEvent
   | BattleEndedEvent
   | BattleContinuedEvent

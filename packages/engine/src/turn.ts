@@ -63,6 +63,7 @@ import type {
   BattleUnit,
   EnemySlotId,
   PlayerSlotId,
+  ReserveSquad,
 } from "./state/types.ts";
 import {
   applyBurstEffect,
@@ -926,12 +927,44 @@ function advanceWave(
 }
 
 /**
+ * A squad change (GAME_DESIGN §7 → Trials flow and three squads, RESOLVED-97): the wiped party is
+ * replaced by the next reserve squad at its battle-start max HP with empty BB gauges, and its
+ * leader and ally skills take over. The enemies keep their HP, buffs, and debuffs; an enemy that
+ * had not yet acted this turn loses that turn (its script count still advances), so every enemy's
+ * script continues at the next turn. The OD gauge and items carry over. Draws no RNG. Returns the
+ * state fields that change with the squad; `SquadEntered` is pushed.
+ */
+function enterNextSquad(
+  state: BattleState,
+  m: TurnMutable,
+  entering: ReserveSquad,
+  tick: number,
+  turn: number,
+  events: BattleEvent[],
+): Pick<BattleState, "leaderSkills" | "reserveSquads" | "squadIndex"> {
+  m.party = [...entering.party];
+  m.enemies = m.enemies.map((enemy, e) => {
+    const before = state.enemies[e];
+    if (enemy.hp <= 0 || !before || enemy.turnsTaken !== before.turnsTaken) return enemy;
+    return { ...enemy, turnsTaken: enemy.turnsTaken + 1 };
+  });
+  const squadIndex = (state.squadIndex ?? 0) + 1;
+  events.push({ type: "SquadEntered", tick, squad: squadIndex, turn });
+  return {
+    leaderSkills: entering.leaderSkills,
+    reserveSquads: (state.reserveSquads ?? []).slice(1),
+    squadIndex,
+  };
+}
+
+/**
  * Ends the player phase and runs the rest of the turn (GAME_DESIGN §2 Turn loop): if the last wave
  * is already cleared the battle is won at once; otherwise the enemy phase (skipped when the wave
  * is cleared), the end-of-turn tick, then wave advancement (a clear, or a due turn-triggered form
  * change) and the next turn's start (`acted`
- * cleared, passives refreshed, `TurnStarted`). A fallen party loses (`BattleEnded` is the last
- * event). The timeline must be empty (`step` without `untilTick` drains it).
+ * cleared, passives refreshed, `TurnStarted`). A fallen party is replaced by the next reserve
+ * squad after the end-of-turn tick (`enterNextSquad`); with none left it loses (`BattleEnded` is
+ * the last event). The timeline must be empty (`step` without `untilTick` drains it).
  */
 export function endTurn(state: BattleState): StepResult {
   if (state.result !== undefined) {
@@ -952,14 +985,22 @@ export function endTurn(state: BattleState): StepResult {
   const lastWave = state.waveIndex >= state.waves.length - 1;
   let tick = state.tick;
   if (allDefeated(m.enemies) && lastWave) return finish(state, m, tick, "win", events);
+  const reserves = state.reserveSquads ?? [];
   if (!allDefeated(m.enemies)) {
     tick = enemyPhase(m, tick, events);
-    if (allDefeated(m.party)) return finish(state, m, tick, "lose", events);
+    if (allDefeated(m.party) && reserves.length === 0) {
+      return finish(state, m, tick, "lose", events);
+    }
   }
   endOfTurnTick(m, tick, events);
-  if (allDefeated(m.party)) return finish(state, m, tick, "lose", events);
-  let waveIndex = state.waveIndex;
   const turn = state.turn + 1;
+  let squad: Partial<Pick<BattleState, "leaderSkills" | "reserveSquads" | "squadIndex">> = {};
+  if (allDefeated(m.party)) {
+    const entering = reserves[0];
+    if (!entering) return finish(state, m, tick, "lose", events);
+    squad = enterNextSquad(state, m, entering, tick, turn, events);
+  }
+  let waveIndex = state.waveIndex;
   let waveStartTurn = state.waveStartTurn;
   if (allDefeated(m.enemies)) {
     if (lastWave) return finish(state, m, tick, "win", events);
@@ -984,6 +1025,7 @@ export function endTurn(state: BattleState): StepResult {
     od: m.od,
     acted: [],
     recentHits: [],
+    ...squad,
   });
   events.push({ type: "TurnStarted", tick, turn });
   return { state: next, events };

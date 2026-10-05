@@ -369,30 +369,6 @@
   cursor: pointer;
 }
 
-/* ---------- "Connecting…" band while the call runs ---------- */
-
-.connecting {
-  position: absolute;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  background: rgb(0 0 0 / 0.55);
-}
-
-.connectingBand {
-  width: 100%;
-  padding: calc(var(--u) * 14) 0;
-  background: linear-gradient(
-    transparent,
-    rgb(0 0 0 / 0.85) 20%,
-    rgb(0 0 0 / 0.85) 80%,
-    transparent
-  );
-  font-size: calc(var(--u) * 26);
-  text-align: center;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;

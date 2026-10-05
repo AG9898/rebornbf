@@ -147,6 +147,9 @@ function offset(rect: Rect, by: { x: number; y: number }): Rect {
  */
 export class HudView {
   private cards: CardView[] = [];
+  /** Every object the unit cards drew (empty slots too), so a squad swap can redraw them. */
+  private cardObjects: Phaser.GameObjects.GameObject[] = [];
+  private portraits: readonly (string | undefined)[];
   private enemyNames: Phaser.GameObjects.Text[] = [];
   private od!: Fill;
   private odText!: Phaser.GameObjects.Text;
@@ -171,23 +174,44 @@ export class HudView {
     private readonly scene: Phaser.Scene,
     private readonly art: HudArt,
     private readonly enemyBounds = enemyRect,
-  ) {}
+  ) {
+    this.portraits = art.portraits;
+  }
 
   build(hud: HudState): void {
     this.buildTop();
     this.buildBoss();
+    this.buildCards(hud);
+    this.buildOd();
+    this.buildItems(hud);
+    this.buildEnemies(hud);
+    this.render(hud);
+  }
+
+  /**
+   * Redraws the unit cards for the squad that just entered (M6-01L): its names, portraits
+   * (`portraits`, per party index), element orbs, leader crown, and ally, then renders `hud`.
+   */
+  swapSquad(hud: HudState, portraits: readonly (string | undefined)[]): void {
+    for (const object of this.cardObjects) object.destroy();
+    this.cardObjects = [];
+    this.cards = [];
+    this.portraits = portraits;
+    this.buildCards(hud);
+    this.render(hud);
+  }
+
+  private buildCards(hud: HudState): void {
+    const before = new Set(this.scene.children.list);
     hud.units.forEach((unit, i) => {
-      this.cards.push(this.buildCard(unit, unitCardRect(i), this.art.portraits[i]));
+      this.cards.push(this.buildCard(unit, unitCardRect(i), this.portraits[i]));
     });
     for (let i = hud.units.length; i < PARTY_SLOTS; i++) {
       const r = unitCardRect(i);
       const height = uiPieceSize("unit-card-empty").height * CARD_PARTS.scaleY;
       this.piece("unit-card-empty", { ...r, y: r.y + (r.height - height) / 2, height });
     }
-    this.buildOd();
-    this.buildItems(hud);
-    this.buildEnemies(hud);
-    this.render(hud);
+    this.cardObjects = this.scene.children.list.filter((child) => !before.has(child));
   }
 
   /**

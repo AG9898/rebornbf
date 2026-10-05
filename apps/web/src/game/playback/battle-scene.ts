@@ -79,6 +79,18 @@ import {
   startLive,
 } from "./live.ts";
 import { FieldOverlay } from "./overlay.ts";
+import {
+  advanceSquadSwap,
+  SQUAD_SWAP_BEATS,
+  SQUAD_SWAP_MS,
+  type SquadSwap,
+  type SquadSwapBeat,
+  squadBanner,
+  squadSwapFrame,
+  squadSwapPlacement,
+  startSquadSwap,
+  swapHoldsInput,
+} from "./squad-swap.ts";
 import type { StageNames } from "./stage-names.ts";
 import {
   advanceTransition,
@@ -151,6 +163,11 @@ export interface BattleSpec {
   readonly artForm?: string;
   /** Per-slot idle form, in party order; a slot without one wears `artForm`. */
   readonly partyArtForms?: readonly (string | undefined)[];
+  /**
+   * Per reserve squad of a three-squad trial (M6-01J), in entry order: the art and forms each of
+   * its party slots wears once it enters (M6-01L). Omitted for a single-squad battle.
+   */
+  readonly reserveArt?: readonly SquadArt[];
   /** 0-based waves holding a stage boss, which get the boss banner (`stageBossWaves`). */
   readonly bossWaves?: readonly number[];
   /** Area and stage names the wave transition panel shows (`stageNames`); default the title. */
@@ -174,6 +191,12 @@ export interface BattleSpec {
    * dropped and flashes fade without blooming. Presentation only; cue timing is unchanged.
    */
   readonly reducedMotion?: boolean;
+}
+
+/** The art one squad's party slots wear, in party order. */
+export interface SquadArt {
+  readonly partyArt: readonly string[];
+  readonly partyArtForms?: readonly (string | undefined)[];
 }
 
 interface EnemyView {
@@ -261,6 +284,18 @@ export class BattleScene extends Phaser.Scene {
   private transitionBeat = -1;
   private transitionView!: WaveTransitionView;
   private heldEvents: readonly BattleEvent[] = [];
+  /** 0-based active squad (three-squad trials); its art dresses the party sprites and cards. */
+  private squad = 0;
+  /** Party size per squad at battle start (the first squad, then each reserve). */
+  private squadSizes: number[] = [];
+  /**
+   * The running squad swap (M6-01L): like a wave transition, it holds the clock and inputs, and
+   * `heldEvents` (`SquadEntered` onward) wait for its enter beat.
+   */
+  private squadSwap: SquadSwap | undefined;
+  /** Index (in `SQUAD_SWAP_BEATS`) of the last swap beat whose start hook ran. */
+  private swapBeat = -1;
+  private partyShadows: Phaser.GameObjects.Ellipse[] = [];
   private overAtMs: number | undefined;
   private down: PointerSample | undefined;
   private enemies: EnemyView[] = [];
@@ -292,6 +327,14 @@ export class BattleScene extends Phaser.Scene {
     this.seed = data.seed ?? this.spec.seed ?? 1;
     this.live = startLive(this.spec.create(this.seed));
     this.hud = initHud(this.live.state);
+    this.squad = this.live.state.squadIndex ?? 0;
+    this.squadSizes = [
+      this.live.state.party.length,
+      ...(this.live.state.reserveSquads ?? []).map((reserve) => reserve.party.length),
+    ];
+    this.squadSwap = undefined;
+    this.swapBeat = -1;
+    this.partyShadows = [];
     this.ui = INITIAL_INPUT_UI;
     this.clockMs = 0;
     this.playbackMs = 0;
@@ -314,18 +357,21 @@ export class BattleScene extends Phaser.Scene {
       const { key, imageUrl, sheet } = animated.sheet;
       this.load.atlas(key, imageUrl, sheet);
     }
-    this.spec.partyArt.forEach((art, i) => {
-      if (!art || art === animated?.art) return;
-      // Forms with a baked idle sheet (M6-05B) loop it; the rest draw their still idle sprite.
-      const sheet = unitIdleSheet(art, this.artForm(i));
-      if (sheet) {
-        if (!this.textures.exists(sheet.key)) {
-          this.load.aseprite(sheet.key, sheet.imageUrl, sheet.jsonUrl);
+    // Every squad's art loads up front, so a trial's next squad enters without a load.
+    this.squadSizes.forEach((_, squad) => {
+      this.squadArt(squad).partyArt.forEach((art, i) => {
+        if (!art || art === animated?.art) return;
+        // Forms with a baked idle sheet (M6-05B) loop it; the rest draw their still idle sprite.
+        const sheet = unitIdleSheet(art, this.artForm(i, squad));
+        if (sheet) {
+          if (!this.textures.exists(sheet.key)) {
+            this.load.aseprite(sheet.key, sheet.imageUrl, sheet.jsonUrl);
+          }
+          return;
         }
-        return;
-      }
-      const idle = unitIdleSprite(art, this.artForm(i));
-      if (!this.textures.exists(idle.key)) this.load.image(idle.key, idle.imageUrl);
+        const idle = unitIdleSprite(art, this.artForm(i, squad));
+        if (!this.textures.exists(idle.key)) this.load.image(idle.key, idle.imageUrl);
+      });
     });
     for (const enemy of this.spec.enemyWaves?.flat() ?? []) {
       if (!this.textures.exists(enemy.id)) this.load.image(enemy.id, enemy.url);
@@ -333,24 +379,45 @@ export class BattleScene extends Phaser.Scene {
     if (this.spec.background && !this.textures.exists(this.spec.background)) {
       this.load.image(this.spec.background, backgroundUrl(this.spec.background));
     }
-    preloadBattleUi(this.load, this.textures, [...this.portraits(), ...this.cutinPortraits()]);
+    preloadBattleUi(this.load, this.textures, this.allPortraits());
+  }
+
+  /** Every squad's card and cut-in portraits. */
+  private allPortraits(): (UiTexture | undefined)[] {
+    return this.squadSizes.flatMap((_, squad) => [
+      ...this.portraits(squad),
+      ...this.cutinPortraits(squad),
+    ]);
   }
 
   /** Each party slot's battle portrait: the same art id and form as its idle sprite. */
-  private portraits(): (UiTexture | undefined)[] {
-    return this.live.state.party.map((_, i) =>
-      unitPortrait(this.spec.partyArt[i], this.artForm(i) ?? "6star"),
+  private portraits(squad = this.squad): (UiTexture | undefined)[] {
+    const { partyArt } = this.squadArt(squad);
+    return Array.from({ length: this.squadSizes[squad] ?? 0 }, (_, i) =>
+      unitPortrait(partyArt[i], this.artForm(i, squad) ?? "6star"),
     );
   }
 
-  private cutinPortraits(): (UiTexture | undefined)[] {
-    return this.live.state.party.map((_, i) =>
-      unitCutinPortrait(this.spec.partyArt[i], this.artForm(i) ?? "6star"),
+  private cutinPortraits(squad = this.squad): (UiTexture | undefined)[] {
+    const { partyArt } = this.squadArt(squad);
+    return Array.from({ length: this.squadSizes[squad] ?? 0 }, (_, i) =>
+      unitCutinPortrait(partyArt[i], this.artForm(i, squad) ?? "6star"),
     );
   }
 
-  private artForm(slot: number): string | undefined {
-    return this.spec.partyArtForms?.[slot] ?? this.spec.artForm;
+  /** The art squad `squad` wears: the spec's party art first, then each reserve's. */
+  private squadArt(squad: number): SquadArt {
+    if (squad === 0) {
+      return {
+        partyArt: this.spec.partyArt,
+        ...(this.spec.partyArtForms ? { partyArtForms: this.spec.partyArtForms } : {}),
+      };
+    }
+    return this.spec.reserveArt?.[squad - 1] ?? { partyArt: [] };
+  }
+
+  private artForm(slot: number, squad = this.squad): string | undefined {
+    return this.squadArt(squad).partyArtForms?.[slot] ?? this.spec.artForm;
   }
 
   create(): void {
@@ -358,7 +425,7 @@ export class BattleScene extends Phaser.Scene {
     this.cameras.main.setZoom(CANVAS_ZOOM).centerOn(BATTLE_WIDTH / 2, BATTLE_HEIGHT / 2);
     if (this.spec.sheet) createSheetAnimations(this, this.spec.sheet.sheet);
     // HUD art is drawn at non-integer scales, so it is filtered smoothly; sprites stay nearest.
-    for (const key of battleUiTextureKeys([...this.portraits(), ...this.cutinPortraits()])) {
+    for (const key of battleUiTextureKeys(this.allPortraits())) {
       if (this.textures.exists(key)) {
         this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
       }
@@ -366,24 +433,7 @@ export class BattleScene extends Phaser.Scene {
     this.drawBands();
 
     this.buildEnemyBodies();
-    this.live.state.party.forEach((_, i) => {
-      const spriteRect = unitSpriteRect(i);
-      this.groundShadow(spriteRect);
-      const art = this.spec.partyArt[i];
-      const idleSheet = art ? unitIdleSheet(art, this.artForm(i)) : undefined;
-      if (art && art === this.spec.sheet?.art) {
-        this.units.push(this.sheetUnit(spriteRect, this.spec.sheet.sheet));
-      } else if (idleSheet) {
-        // `load.aseprite` keeps the sheet's JSON in the JSON cache under the texture key.
-        const sheet = loadUnitIdleSheet(idleSheet, this.cache.json.get(idleSheet.key));
-        createSheetAnimations(this, sheet);
-        this.units.push(this.sheetUnit(spriteRect, sheet));
-      } else if (art) {
-        this.units.push(this.idleUnit(spriteRect, unitIdleSprite(art, this.artForm(i)).key));
-      } else {
-        this.units.push({ sprite: this.box(spriteRect, COLORS.unit), sprite0: spriteRect });
-      }
-    });
+    this.buildParty();
     this.hudView = new HudView(
       this,
       {
@@ -428,6 +478,10 @@ export class BattleScene extends Phaser.Scene {
         this.stepTransition(stepMs);
         continue;
       }
+      if (this.squadSwap) {
+        this.stepSquadSwap(stepMs);
+        continue;
+      }
       if (this.cutinRemainingMs > 0) {
         this.cutinRemainingMs = Math.max(0, this.cutinRemainingMs - stepMs);
         continue;
@@ -446,13 +500,44 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
+  /** Draws the active squad's party sprites and their ground shadows. */
+  private buildParty(): void {
+    const { partyArt } = this.squadArt(this.squad);
+    this.live.state.party.forEach((_, i) => {
+      const spriteRect = unitSpriteRect(i);
+      this.partyShadows.push(...this.groundShadow(spriteRect));
+      const art = partyArt[i];
+      const idleSheet = art ? unitIdleSheet(art, this.artForm(i)) : undefined;
+      if (art && art === this.spec.sheet?.art) {
+        this.units.push(this.sheetUnit(spriteRect, this.spec.sheet.sheet));
+      } else if (idleSheet) {
+        // `load.aseprite` keeps the sheet's JSON in the JSON cache under the texture key.
+        const sheet = loadUnitIdleSheet(idleSheet, this.cache.json.get(idleSheet.key));
+        createSheetAnimations(this, sheet);
+        this.units.push(this.sheetUnit(spriteRect, sheet));
+      } else if (art) {
+        this.units.push(this.idleUnit(spriteRect, unitIdleSprite(art, this.artForm(i)).key));
+      } else {
+        this.units.push({ sprite: this.box(spriteRect, COLORS.unit), sprite0: spriteRect });
+      }
+    });
+  }
+
   /** Stop at a cut-in even when the engine released later events in the same frame. */
   private showEvents(events: readonly BattleEvent[]): void {
     this.heldEvents = [];
     if (events.length === 0) return;
     let shown = events.length;
     for (const [index, event] of events.entries()) {
+      if (event.type === "SquadEntered" && this.squadSwap === undefined) {
+        // The next squad waits for the swap's enter beat (M6-01L); the wiped party leaves first.
+        this.heldEvents = events.slice(index);
+        shown = index;
+        this.startSquadSwap(event.squad);
+        break;
+      }
       this.hud = applyHudEvents(this.hud, [event]);
+      if (event.type === "SquadEntered") this.enterSquad(event.squad);
       const sparkCritical =
         event.type === "Sparked" &&
         events.some(
@@ -479,10 +564,17 @@ export class BattleScene extends Phaser.Scene {
         break;
       }
     }
-    this.bridge.onEvents?.(shown === events.length ? events : events.slice(0, shown));
+    if (shown > 0) {
+      this.bridge.onEvents?.(shown === events.length ? events : events.slice(0, shown));
+    }
     this.hudView.render(this.hud);
     this.overlay.render(this.hud);
-    if (isOver(this.live) && this.heldEvents.length === 0 && this.overAtMs === undefined) {
+    if (
+      isOver(this.live) &&
+      this.heldEvents.length === 0 &&
+      this.squadSwap === undefined &&
+      this.overAtMs === undefined
+    ) {
       this.overAtMs = this.clockMs;
       if (this.live.state.result) {
         const resume =
@@ -525,6 +617,7 @@ export class BattleScene extends Phaser.Scene {
     if (
       gesture.kind === "none" ||
       holdsInput(this.transition) ||
+      swapHoldsInput(this.squadSwap) ||
       this.cutinRemainingMs > 0 ||
       this.heldEvents.length > 0 ||
       !acceptsInput(this.live)
@@ -1148,6 +1241,93 @@ export class BattleScene extends Phaser.Scene {
       default:
         return;
     }
+  }
+
+  /**
+   * Starts the squad swap after a trial party is wiped (M6-01L). Input and the battle clock hold
+   * until the next squad has entered.
+   */
+  private startSquadSwap(squad: number): void {
+    this.squadSwap = startSquadSwap(squad);
+    this.swapBeat = -1;
+    this.ui = {
+      odArmed: this.ui.odArmed,
+      ...(this.ui.selectedItem === undefined ? {} : { selectedItem: this.ui.selectedItem }),
+    };
+    this.showSelection(this.live.state);
+    for (const view of this.units) this.tweens.killTweensOf(view.sprite);
+    this.stepSquadSwap(0);
+  }
+
+  /** Plays `ms` of x1 swap time: runs each beat's start once, then places the party sprites. */
+  private stepSquadSwap(ms: number): void {
+    if (!this.squadSwap) return;
+    this.squadSwap = advanceSquadSwap(this.squadSwap, ms);
+    const frame = squadSwapFrame(this.squadSwap);
+    const reached = frame ? frame.index : SQUAD_SWAP_BEATS.length - 1;
+    while (this.swapBeat < reached) {
+      this.swapBeat += 1;
+      const beat = SQUAD_SWAP_BEATS[this.swapBeat];
+      if (beat) this.beginSwapBeat(beat);
+    }
+    const place = frame
+      ? squadSwapPlacement(frame.beat, frame.progress, this.motion)
+      : { alpha: 1, offsetX: 0, visible: true };
+    for (const view of this.units) this.placeUnit(view, place);
+    if (frame) return;
+    this.squadSwap = undefined;
+    this.swapBeat = -1;
+  }
+
+  private beginSwapBeat(beat: SquadSwapBeat): void {
+    if (!this.squadSwap) return;
+    switch (beat) {
+      case "banner":
+        this.banners([squadBanner(this.squadSwap.squad)], SQUAD_SWAP_MS.banner);
+        return;
+      case "enter": {
+        // The engine swapped the party at the wipe; the new squad appears only now. Events after
+        // `SquadEntered` (the next turn, or a wave clear from end-of-turn damage) wait for the end.
+        const [entered, ...rest] = this.heldEvents;
+        this.showEvents(entered ? [entered] : []);
+        this.heldEvents = rest;
+        return;
+      }
+      default:
+        return;
+    }
+  }
+
+  /** Replaces the wiped party's sprites, cards, and field marks with squad `squad`'s. */
+  private enterSquad(squad: number): void {
+    this.squad = squad;
+    for (const view of this.units) view.sprite.destroy();
+    for (const shadow of this.partyShadows) shadow.destroy();
+    this.units = [];
+    this.partyShadows = [];
+    this.buildParty();
+    for (const view of this.units) this.placeUnit(view, { alpha: 0, offsetX: 0, visible: false });
+    this.hudView.swapSquad(
+      this.hud,
+      this.portraits().map((texture) => texture?.key),
+    );
+    this.overlay.resetUnits(this.hud);
+    this.setStatus(`Squad ${squad + 1}`);
+  }
+
+  /** A party sprite at a swap placement, from its rest x (sprites stand on their bottom centre). */
+  private placeUnit(
+    view: UnitView,
+    place: { readonly alpha: number; readonly offsetX: number; readonly visible: boolean },
+  ): void {
+    const x =
+      view.sprite instanceof Phaser.GameObjects.Sprite
+        ? view.sprite0.x + view.sprite0.width / 2
+        : view.sprite0.x;
+    view.sprite
+      .setVisible(place.visible)
+      .setAlpha(place.alpha)
+      .setX(x + place.offsetX);
   }
 
   /** An entering enemy at `progress` 0..1: fading in (and sliding in from the left with motion). */

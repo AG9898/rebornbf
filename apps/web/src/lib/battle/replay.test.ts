@@ -20,6 +20,7 @@ import {
   startLive,
 } from "../../game/playback/live.ts";
 import { STORY_STAGES } from "../quests/quest-map.ts";
+import { TRIAL_STAGES } from "../quests/trials.ts";
 import { type FinishSessionRow, verifyFinish } from "./finish.ts";
 import {
   type BattleInputLog,
@@ -536,5 +537,60 @@ describe("session auto-battle settings (M7-01_3)", () => {
       result: live.state.result,
     });
     expect(replayEvents(configured, log)).toEqual(events);
+  });
+});
+
+describe("three-squad trial replay (M6-01J)", () => {
+  const party = (ids: string[]) => ({
+    leader_index: 0,
+    units: ids.map((id) => ({
+      owned_unit_id: `owned-${id}`,
+      unit_id: id,
+      form_id: `${id}-3`,
+      level: 1,
+    })),
+    ally: null,
+  });
+  const session = row({
+    stage_id: TRIAL_STAGES[0]?.id ?? "",
+    squad: {
+      ...party(["brand", "maren"]),
+      reserves: [party(["rook", "garrick"]), party(["solen"])],
+    },
+  });
+  const built = sessionBattle(session);
+  if (!built.ok) throw new Error(built.message);
+  const { setup, seed } = built.battle;
+  const { live, events } = playLive(createBattle(setup, seed));
+
+  it("builds the frozen reserve squads into the engine setup", () => {
+    expect(setup.trial).toBe(true);
+    expect(setup.squad.map((member) => member.unit.id)).toEqual(["brand", "maren"]);
+    expect(setup.reserveSquads?.map((reserve) => reserve.squad.map((m) => m.unit.id))).toEqual([
+      ["rook", "garrick"],
+      ["solen"],
+    ]);
+    expect(built.battle.reserveArt.map((art) => art.partyArt.length)).toEqual([2, 1]);
+  });
+
+  it("replays the live trial on the server to the same result after squads enter", () => {
+    expect(live.state.result).toBeDefined();
+    expect(events.some((event) => event.type === "SquadEntered")).toBe(true);
+    const parsed = parseInputLog(JSON.parse(JSON.stringify(live.log)));
+    if (!parsed.ok) throw new Error(parsed.message);
+    expect(verifyFinish(session, USER, parsed.log, NOW, "either")).toEqual({
+      ok: true,
+      result: live.state.result,
+      turns: live.log.length,
+      remainingItems: {},
+    });
+  });
+
+  it("refuses a session with more than two reserve squads", () => {
+    const reserves = [party(["rook"]), party(["garrick"]), party(["solen"])];
+    expect(sessionBattle({ ...session, squad: { ...session.squad, reserves } })).toEqual({
+      ok: false,
+      message: "This battle's squads are invalid.",
+    });
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useActionState, useState } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import styles from "../../../components/onboarding/onboarding.module.css";
 import {
   DISPLAY_NAME_MAX,
@@ -69,7 +70,7 @@ export function NameForm({ initialName }: { initialName: string }): ReactNode {
       </div>
       <div className={styles.actions}>
         <button type="submit" className={styles.button} disabled={pending}>
-          {pending ? "Saving…" : "Confirm"}
+          {pending ? <LoadingGlyph /> : "Confirm"}
         </button>
       </div>
     </form>

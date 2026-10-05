@@ -29,6 +29,12 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/settings")).toBe(true);
   });
 
+  it("protects the Conclave and Proving Lab (M6-01G)", () => {
+    expect(isProtectedPath("/conclave")).toBe(true);
+    expect(isProtectedPath("/conclave/lab")).toBe(true);
+    expect(isProtectedPath("/conclaves")).toBe(false);
+  });
+
   it("protects Reinforcement and Begin Quest without matching unrelated prefixes", () => {
     expect(isProtectedPath("/start/story-01")).toBe(true);
     expect(isProtectedPath("/start/story-01/begin")).toBe(true);
@@ -50,7 +56,6 @@ describe("isProtectedPath", () => {
       "/accountx",
       "/unitsx",
       "/squads",
-      "/gallery",
     ]) {
       expect(isProtectedPath(path)).toBe(false);
     }

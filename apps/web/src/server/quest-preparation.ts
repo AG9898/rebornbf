@@ -8,9 +8,18 @@ import { SIGN_IN_PATH } from "../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../lib/supabase/server.ts";
 import { OWNED_UNIT_COLUMNS, type OwnedUnitRow } from "../lib/units/owned-units.ts";
 
-/** Session-bound reads only; the RPC remains the authority for unlocks and inventory. */
+/** Saved squads a stage takes: three for a trial (M6-01J, RESOLVED-95), else one. */
+export function stageSquadCount(stage: Stage): 1 | 3 {
+  return stage.trial ? 3 : 1;
+}
+
+/**
+ * Session-bound reads only; the RPC remains the authority for unlocks and inventory. `squads` holds
+ * every saved squad; `squadCount` says how many of them the stage starts with (three for a trial).
+ */
 export async function questPreparation(stageId: string): Promise<{
   stage: Stage;
+  squadCount: 1 | 3;
   owned: OwnedUnitRow[];
   squads: SquadRow[];
   items: ItemStock[];
@@ -43,6 +52,7 @@ export async function questPreparation(stageId: string): Promise<{
   ]);
   return {
     stage,
+    squadCount: stageSquadCount(stage),
     owned: units.data ?? [],
     squads: squads.data ?? [],
     items: items.data ?? [],

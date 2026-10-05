@@ -24,14 +24,18 @@ export type UtilityTab = {
   label: string;
   /** Icon in `public/assets/ui/util-<icon>.webp`. */
   icon: "book" | "castle" | "scroll" | "chest";
+  /** Position in the strip's four slots (two each side of the flourish). */
+  slot: 0 | 1 | 2 | 3;
 };
 
-/** The strip under the squad showcase: two tabs on the left, two on the right. */
+/**
+ * The strip under the squad showcase. Slot 1 held the retired Gallery tab (RESOLVED-96) and stays
+ * empty until the owner names a replacement; the other tabs keep their positions.
+ */
 export const UTILITY_TABS: readonly UtilityTab[] = [
-  { href: "/other", label: "Menu", icon: "book" },
-  { href: "/gallery", label: "Gallery", icon: "castle" },
-  { href: "/news", label: "Info", icon: "scroll" },
-  { href: "/gifts", label: "Gifts", icon: "chest" },
+  { href: "/other", label: "Menu", icon: "book", slot: 0 },
+  { href: "/news", label: "Info", icon: "scroll", slot: 2 },
+  { href: "/gifts", label: "Gifts", icon: "chest", slot: 3 },
 ];
 
 export type GameMode = {
@@ -43,7 +47,7 @@ export type GameMode = {
 
 /** Home carousel, left to right; it opens on Quest in the middle, as the original does. */
 export const GAME_MODES: readonly GameMode[] = [
-  { href: "/trials", title: "Trials", emblem: "trials" },
+  { href: "/conclave", title: "Conclave", emblem: "trials" },
   { href: "/quests", title: "Quest", emblem: "quest" },
   { href: "/dungeons", title: "Dungeons", emblem: "dungeons" },
 ];

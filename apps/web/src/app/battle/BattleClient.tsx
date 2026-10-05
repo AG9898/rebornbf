@@ -4,6 +4,7 @@ import { createBattle } from "@bfr/engine";
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import { LoadingGlyph } from "../../components/loading/LoadingGlyph.tsx";
 import { stageBackground, stageEnemyArt } from "../../game/assets/stage-art.ts";
 import type { BattleSpec } from "../../game/playback/battle-scene.ts";
 import { stageBossWaves } from "../../game/playback/cues.ts";
@@ -14,7 +15,11 @@ import type { SessionBattle } from "../../lib/battle/session-battle.ts";
 
 const PhaserBattle = dynamic(() => import("./PhaserBattle.tsx"), {
   ssr: false,
-  loading: () => <p className="m-auto text-sm">Loading battle scene…</p>,
+  loading: () => (
+    <div className="fixed inset-0">
+      <LoadingGlyph variant="screen" />
+    </div>
+  ),
 });
 
 /** A session battle (M3-04B): the session's stage and squad, one run on the server-issued seed. */
@@ -24,6 +29,7 @@ function sessionSpec(battle: SessionBattle): BattleSpec {
     create: (seed) => createBattle(battle.setup, seed),
     partyArt: battle.partyArt,
     partyArtForms: battle.partyArtForms,
+    ...(battle.reserveArt.length > 0 ? { reserveArt: battle.reserveArt } : {}),
     bossWaves: stageBossWaves(battle.stage),
     names: stageNames(battle.stage),
     background: stageBackground(battle.stage),

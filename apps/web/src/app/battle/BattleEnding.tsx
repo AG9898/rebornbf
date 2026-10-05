@@ -4,6 +4,7 @@ import type { Stage } from "@bfr/data";
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
+import { LoadingGlyph } from "../../components/loading/LoadingGlyph.tsx";
 import { UiImage } from "../../components/menu/UiImage.tsx";
 import { THUMB_ART_SIZE } from "../../components/menu/ui-assets.ts";
 import {
@@ -134,8 +135,8 @@ function Victory({
   }
   if (current.kind === "verifying") {
     return (
-      <div className={styles.status} role="status" aria-live="polite">
-        <p className={styles.outline}>Verifying battle…</p>
+      <div className={styles.status} aria-live="polite">
+        <LoadingGlyph reducedMotion={reduced} />
       </div>
     );
   }
@@ -426,7 +427,11 @@ function GameOver({
                   className={`${styles.pill} ${styles.pillButton} ${styles.lit}`}
                 >
                   <span className={styles.outline}>
-                    {continueState.busy ? "Continuing…" : "Continue · 5 gems"}
+                    {continueState.busy ? (
+                      <LoadingGlyph reducedMotion={reduced} />
+                    ) : (
+                      "Continue · 5 gems"
+                    )}
                   </span>
                 </button>
               ) : null}

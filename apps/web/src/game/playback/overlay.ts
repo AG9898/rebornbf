@@ -43,6 +43,25 @@ export class FieldOverlay {
   ) {}
 
   build(hud: HudState): void {
+    this.buildUnits(hud);
+    this.reticle = this.scene.add.image(0, 0, uiPiece("target-reticle").key).setVisible(false);
+    this.scene.tweens.add({
+      targets: this.reticle,
+      angle: 360,
+      duration: 6000,
+      repeat: -1,
+    });
+    this.resetEnemies();
+  }
+
+  /** Clears the wiped party's guard shields and badges for the squad that entered (M6-01L). */
+  resetUnits(hud: HudState): void {
+    for (const guard of this.guards) guard.destroy();
+    for (const row of this.unitRows) for (const image of row.images) image.destroy();
+    this.buildUnits(hud);
+  }
+
+  private buildUnits(hud: HudState): void {
     this.guards = hud.units.map((_, i) => {
       const frame = unitSpriteRect(i);
       const { width, height } = uiPieceSize("icon-guard");
@@ -52,14 +71,6 @@ export class FieldOverlay {
         .setVisible(false);
     });
     this.unitRows = hud.units.map(() => ({ key: "", images: [] }));
-    this.reticle = this.scene.add.image(0, 0, uiPiece("target-reticle").key).setVisible(false);
-    this.scene.tweens.add({
-      targets: this.reticle,
-      angle: 360,
-      duration: 6000,
-      repeat: -1,
-    });
-    this.resetEnemies();
   }
 
   /** Clears enemy badges (a new wave spawned). */

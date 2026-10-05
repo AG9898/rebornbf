@@ -6,11 +6,12 @@ import {
   type QuestChapterView,
   type QuestProgressRow,
 } from "../lib/quests/quest-map.ts";
+import { buildTrialList, type TrialView } from "../lib/quests/trials.ts";
 import { createSupabaseServerClient } from "../lib/supabase/server.ts";
 
-/** Read only the caller's progress; failed reads must not offer stages as playable. */
-export async function questProgress(): Promise<{
-  chapters: QuestChapterView[];
+/** The caller's cleared stage IDs under RLS; empty when signed out. */
+async function clearedProgress(): Promise<{
+  cleared: ReadonlySet<string>;
   signedIn: boolean;
   failed: boolean;
 }> {
@@ -28,5 +29,25 @@ export async function questProgress(): Promise<{
     failed = Boolean(error);
     rows = data ?? [];
   }
-  return { chapters: buildQuestMap(clearedStageIds(rows)), signedIn: Boolean(userId), failed };
+  return { cleared: clearedStageIds(rows), signedIn: Boolean(userId), failed };
+}
+
+/** Read only the caller's progress; failed reads must not offer stages as playable. */
+export async function questProgress(): Promise<{
+  chapters: QuestChapterView[];
+  signedIn: boolean;
+  failed: boolean;
+}> {
+  const { cleared, signedIn, failed } = await clearedProgress();
+  return { chapters: buildQuestMap(cleared), signedIn, failed };
+}
+
+/** The trial list for the Conclave and Proving Lab (M6-01G), gated as `start_battle` gates it. */
+export async function trialProgress(): Promise<{
+  trials: TrialView[];
+  signedIn: boolean;
+  failed: boolean;
+}> {
+  const { cleared, signedIn, failed } = await clearedProgress();
+  return { trials: buildTrialList(cleared), signedIn, failed };
 }

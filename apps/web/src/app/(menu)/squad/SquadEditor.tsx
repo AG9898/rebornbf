@@ -4,6 +4,7 @@ import type { Element, Stats } from "@bfr/data";
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import menu from "../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../components/menu/text-box.ts";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
@@ -162,7 +163,7 @@ export function SquadEditor({
           onClick={save}
           disabled={pending || problem !== null || !dirty}
         >
-          <span className={units.outline}>{pending ? "Saving" : "Save"}</span>
+          <span className={units.outline}>{pending ? <LoadingGlyph /> : "Save"}</span>
         </button>
       </header>
 

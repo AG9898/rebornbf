@@ -1,0 +1,117 @@
+/*
+ * LoadingGlyph (ART_GUIDE.md -> Trials flow). One indicator for every wait: the white glyph bobs and
+ * the trail dots pulse; both stop under OS reduced motion or `data-still` (the saved setting).
+ */
+
+.glyph {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.art {
+  display: block;
+  width: auto;
+  height: 1.6em;
+  filter: drop-shadow(0 0 0.15em rgb(0 0 0 / 0.6));
+  animation: bob 0.9s ease-in-out infinite alternate;
+}
+
+.label {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.12em #1a1208;
+  text-shadow: 0 0.06em 0 #1a1208;
+}
+
+.dots span {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.inline {
+  vertical-align: middle;
+  font-size: 0.85em;
+}
+
+/* Full screen: the darkened summoning circle of bg-proving-lab behind a centred glyph. */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #05070a;
+}
+
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/ui/bg-proving-lab.webp") 50% 61% / cover no-repeat;
+  transform: scale(1.7);
+  transform-origin: 50% 61%;
+  filter: brightness(0.35) saturate(0.8);
+}
+
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 30%, rgb(0 0 0 / 0.7) 100%);
+}
+
+.screenGlyph {
+  position: relative;
+  z-index: 1;
+  flex-direction: column;
+  gap: 0.6em;
+  font-size: clamp(18px, 4.5vmin, 28px);
+}
+
+.screenGlyph .art {
+  height: clamp(72px, 22vmin, 140px);
+}
+
+[data-still="true"] .art,
+[data-still="true"] .dots span {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art,
+  .dots span {
+    animation: none;
+  }
+}
+
+@keyframes bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-0.12em);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}

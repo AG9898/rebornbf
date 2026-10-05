@@ -62,3 +62,33 @@ export function buildTrialList(
     ];
   });
 }
+
+/** The Proving Lab, where the trial list lives (M6-01G, RESOLVED-95); `/trials` redirects here. */
+export const TRIALS_LAB_PATH = "/conclave/lab";
+
+/** Pell's lines in the Proving Lab, one per player state (BFR copy, M6-01G). */
+export const PELL_LINES = {
+  default: "Back again? My replicas haven't lost a wink of sleep over you.",
+  newTrial: "Fresh off the workbench! Bring all three squads; you'll need every one of them.",
+  firstClear:
+    "You beat my replica?! …Fine. I'm already building the next one, and it won't be so polite.",
+  allCleared: "Still preparing the next trial! Go train. You'll want the practice.",
+  nothingOpen: "Not yet. Come back once you've cleared more of the Vale.",
+} as const;
+
+export type PellLine = keyof typeof PELL_LINES;
+
+/**
+ * Which line Pell says: the default when progress is unknown (signed out or a failed read);
+ * otherwise "nothing open" before any trial opens, "new trial" while an uncleared trial is open,
+ * "all cleared" once every trial is cleared, and "first clear" when some are cleared and the
+ * rest are still locked (the next replica is being built).
+ */
+export function pellLine(trials: readonly TrialView[], progressKnown: boolean): PellLine {
+  if (!progressKnown) return "default";
+  if (trials.length === 0 || trials.every((trial) => trial.state === "locked"))
+    return "nothingOpen";
+  if (trials.some((trial) => trial.state === "open")) return "newTrial";
+  if (trials.every((trial) => trial.state === "cleared")) return "allCleared";
+  return "firstClear";
+}

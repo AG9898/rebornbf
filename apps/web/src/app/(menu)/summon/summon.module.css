@@ -1,7 +1,7 @@
 /*
  * Summon screen and sequence (ART_GUIDE → Summon screen, gate, and reveal). Sizes are logical px
- * (--u); pieces are exported at 2x. `.page` stays unpositioned so `.stage`, `.connecting`, and
- * `.modal` (position: absolute) cover the whole menu column, status bar and nav included.
+ * (--u); pieces are exported at 2x. `.page` stays unpositioned so `.stage`, the loading glyph,
+ * and `.modal` (position: absolute) cover the whole menu column, status bar and nav included.
  */
 
 .page {
@@ -245,7 +245,6 @@
 
 /* ---------- Overlays (cover the whole column) ---------- */
 
-.connecting,
 .modal {
   position: absolute;
   inset: 0;
@@ -254,14 +253,6 @@
   align-items: center;
   justify-content: center;
   background: rgb(0 0 0 / 0.55);
-}
-
-.connecting span {
-  width: 100%;
-  padding-block: calc(var(--u) * 26);
-  background: rgb(10 8 4 / 0.8);
-  text-align: center;
-  font-size: calc(var(--u) * 28);
 }
 
 .ratesPanel {

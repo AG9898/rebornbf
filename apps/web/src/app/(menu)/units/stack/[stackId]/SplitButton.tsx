@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../../../components/loading/LoadingGlyph.tsx";
 import styles from "../../units.module.css";
 import { splitStack } from "./actions.ts";
 
@@ -35,7 +36,7 @@ export function SplitButton({ stackId }: { stackId: string }): ReactNode {
         onClick={run}
         disabled={pending}
       >
-        <span className={styles.outline}>{pending ? "Splitting…" : "Split"}</span>
+        <span className={styles.outline}>{pending ? <LoadingGlyph /> : "Split"}</span>
       </button>
       {error ? (
         <p className={styles.splitError} role="alert">

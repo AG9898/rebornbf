@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState, useTransition } from "react";
+import { LoadingGlyph } from "../../../../../components/loading/LoadingGlyph.tsx";
 import type {
   OwnedSphereEntry,
   SphereSlot,
@@ -82,7 +83,7 @@ export function SphereEquip({
           </p>
         ) : (
           <p className={styles.equipMessage} aria-live="polite">
-            {pending ? "Saving…" : (notice ?? hint)}
+            {pending ? <LoadingGlyph /> : (notice ?? hint)}
           </p>
         )}
         {socket?.sphere ? (

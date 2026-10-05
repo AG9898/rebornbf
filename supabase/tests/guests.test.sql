@@ -11,7 +11,7 @@ insert into public.owned_units(id, user_id, unit_id, form_id, level) values
 insert into public.content_items(kind,id,data) values
   ('stage','guest-test-stage','{"id":"guest-test-stage","story":{"number":1}}');
 
-select ok(not has_function_privilege('anon', 'public.start_battle(text,smallint,text,jsonb)', 'execute'), 'anon cannot start with guests');
+select ok(not has_function_privilege('anon', 'public.start_battle(text,smallint,text,jsonb,jsonb)', 'execute'), 'anon cannot start with guests');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000c1","role":"authenticated"}', true);
 select lives_ok($$select public.save_squad(0::smallint,array['00000000-0000-0000-0000-00000000c101']::uuid[],0::smallint)$$, 'saves the squad without an ally');
