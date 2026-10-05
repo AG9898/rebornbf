@@ -20,7 +20,9 @@ import {
   type Stage,
   StageSchema,
   type Stats,
+  TOAD_STAGE_ID,
   TRIAL_1,
+  TRIAL_2,
   type Unit,
   UnitSchema,
   ZENITH_CORE_STAGE_ID,
@@ -116,6 +118,14 @@ const GATE_SQUADS: Readonly<Record<string, readonly ResolvedStatsMember[]>> = {
     maxed("garrick", 5),
     maxed("rook", 5),
   ],
+  // GAME_DESIGN §5's Trial 2 reference squad (as trial-2.test.ts): its ally is Aurelle 6★.
+  [TRIAL_2]: [
+    maxed("brand", 7),
+    maxed("maren", 7),
+    maxed("solen", 7),
+    maxed("morrick", 6),
+    maxed("rook", 6),
+  ],
 };
 
 /**
@@ -123,7 +133,11 @@ const GATE_SQUADS: Readonly<Record<string, readonly ResolvedStatsMember[]>> = {
  * the chapter 1 clear grants six +10% spheres and the Trial 1 first clear six +20% ones. No
  * earlier gate has any.
  */
-const GATE_SPHERES: Readonly<Record<string, number>> = { [CHAPTER_1_CLEAR]: 10, [TRIAL_1]: 20 };
+const GATE_SPHERES: Readonly<Record<string, number>> = {
+  [CHAPTER_1_CLEAR]: 10,
+  [TRIAL_1]: 20,
+  [TRIAL_2]: 20,
+};
 
 /**
  * The ally a ramped series is tested with: a friend's copy of the gate's newest starter at max
@@ -133,6 +147,7 @@ const ALLIES: Readonly<Record<string, AllySetup>> = {
   "story-06-sunken-waystation": { ...maxed("garrick", 5), kind: "duplicate" },
   [CHAPTER_1_CLEAR]: { ...maxed("solen", 6), kind: "duplicate" },
   [TRIAL_1]: { ...maxed("vespera", 6), kind: "duplicate" },
+  [TRIAL_2]: { ...maxed("aurelle", 6), kind: "duplicate" },
 };
 
 function ally(stage: Stage): AllySetup {
@@ -217,6 +232,8 @@ const hobStages = HOB_DUNGEONS.map((entry) =>
   StageSchema.parse(load(`stages/${hobStage(entry).id}.json`)),
 );
 
+const toadStage = StageSchema.parse(load(`stages/${TOAD_STAGE_ID}.json`));
+
 /** Every dungeon stage the battle tests play: the material, key-item, and battle item stages. */
 const playable = [
   ...stages.map(({ stage }) => stage),
@@ -298,6 +315,51 @@ describe("farming dungeon series (M4-03C–F)", () => {
       }
     }
   });
+  it("the Trial 2 squad, ally and +20% spheres clear the toad stage, rare toads included", () => {
+    expect(toadStage.dungeon?.gate).toBe(TRIAL_2);
+    expect(toadStage.dungeon?.ramp).toBeUndefined();
+    // Seeds 0 and 1000 force a Matriarch and a Regent Toad into the final wave; 3000 neither.
+    for (const seed of [...SEEDS, 0, 1000, 3000]) {
+      const state = playOut(toadStage, seed, { ramp: toadStage.dungeon?.ramp, ally: true });
+      expect(state.result, `seed ${seed}`).toBe("win");
+      expect(state.waveIndex).toBe(2);
+    }
+  });
+
+  it("seeded toad settlement: Lanterns at 25% then sure, Matriarch 10% and Regent 20% sure", () => {
+    let rng = createRng(7171);
+    const counts = { matriarch: 0, regent: 0, lantern: 0, finalLantern: 0 };
+    const clears = 10000;
+    for (let i = 0; i < clears; i++) {
+      const seed = nextFloat(rng);
+      rng = seed.rng;
+      const resolved = {
+        ...toadStage,
+        waves: dungeonWaves(toadStage, Math.floor(seed.value * 0x100000000)),
+      };
+      const finalSlot = resolved.waves[2]?.enemies.find((slot) => slot.capture === "always");
+      const settled = settleCaptures(resolved, rng);
+      rng = settled.rng;
+      const got = (unit: string) => settled.units.filter((id) => id === unit).length;
+      expect(got("matriarch-toad")).toBe(finalSlot?.enemy === "dg-matriarch-toad" ? 1 : 0);
+      expect(got("regent-toad")).toBe(finalSlot?.enemy === "dg-regent-toad" ? 1 : 0);
+      expect(got("matriarch-toad") + got("regent-toad")).toBeLessThanOrEqual(1);
+      counts.matriarch += got("matriarch-toad");
+      counts.regent += got("regent-toad");
+      const sure = finalSlot?.enemy === "dg-lantern-toad" ? 1 : 0;
+      counts.finalLantern += sure;
+      counts.lantern += got("lantern-toad") - sure;
+    }
+    expect(counts.matriarch / clears).toBeGreaterThan(0.09);
+    expect(counts.matriarch / clears).toBeLessThan(0.11);
+    expect(counts.regent / clears).toBeGreaterThan(0.19);
+    expect(counts.regent / clears).toBeLessThan(0.21);
+    expect(counts.finalLantern + counts.matriarch + counts.regent).toBe(clears);
+    // Three Lantern rolls per clear in waves 1–2 at 25%.
+    expect(counts.lantern / (3 * clears)).toBeGreaterThan(0.24);
+    expect(counts.lantern / (3 * clears)).toBeLessThan(0.26);
+  });
+
   it("has 58 material stages, each at its family's gate and ramp", () => {
     expect(stages).toHaveLength(58);
     for (const { family, stage } of stages) {

@@ -1,0 +1,53 @@
+{
+  "id": "dg2-brine-urchin",
+  "name": "Brine Urchin",
+  "element": "water",
+  "stats": {
+    "hp": 14000,
+    "atk": 3200,
+    "def": 600,
+    "rec": 100
+  },
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 60
+    }
+  },
+  "normalAttack": {
+    "moveType": "ranged",
+    "startDelayFrames": 24,
+    "hitFrames": [0, 10],
+    "damageDistribution": [50, 50],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "spine-shell",
+      "name": "Spine Shell",
+      "attacks": [],
+      "effects": [
+        {
+          "id": "buff.def",
+          "value": 0.5,
+          "turns": 2,
+          "target": "self"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "spine-shell",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ]
+}

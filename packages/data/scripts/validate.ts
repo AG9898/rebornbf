@@ -11,6 +11,7 @@ import {
   validateEnemyFile,
   validateEvolutionRefs,
   validateFirstClearItems,
+  validateFirstClearSpheres,
   validateFirstClearUnits,
   validateGemBudget,
   validateGuestFile,
@@ -62,6 +63,7 @@ const unitIds = new Set(jsonFiles("units").map((file) => file.slice("units/".len
 const itemIds = new Set(jsonFiles("items").map((file) => file.slice("items/".length, -5)));
 validateDir("guests", (file, json) => validateGuestFile(file, json, unitIds));
 validateDir("spheres", (file, json) => validateSphereFile(file, json, unitIds));
+const sphereIds = new Set(jsonFiles("spheres").map((file) => file.slice("spheres/".length, -5)));
 for (const unit of units) {
   errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
 }
@@ -95,6 +97,8 @@ errors.push(...validateDungeons(stages, enemies, itemIds));
 errors.push(...validateFirstClearItems(stages, itemIds));
 // First-clear reward units name stackable unit files.
 errors.push(...validateFirstClearUnits(stages, new Map(units.map((unit) => [unit.id, unit]))));
+// First-clear reward spheres name sphere files.
+errors.push(...validateFirstClearSpheres(stages, sphereIds));
 // Trial numbers are unique and each trial opens on a story stage's first clear.
 errors.push(...validateTrials(stages));
 // The tutorial's preset squad names unit forms, and its enemies may drop nothing granted.

@@ -2,7 +2,7 @@ import { AILMENTS, type Effect, type EnemySkill } from "@bfr/data";
 import { describe, expect, it } from "vitest";
 import { continueBattle } from "./actions/continue.ts";
 import { evaluateEnemyAi } from "./ai/evaluate.ts";
-import type { ActiveEffect } from "./effects/buffs.ts";
+import { type ActiveEffect, removeBuffs } from "./effects/buffs.ts";
 import { applyEffect } from "./effects/index.ts";
 import { refreshPassives } from "./effects/passive.ts";
 import { takeUnitDamage } from "./effects/survival.ts";
@@ -377,6 +377,74 @@ describe("turn loop (M1-07B)", () => {
     expect(state).toMatchObject({ turn: 2, waveIndex: 1, acted: [], phase: "player" });
     expect(state.enemies.map((e) => [e.slot, e.enemyId, e.hp])).toEqual([["e0", "boss", 10000]]);
     expect(state.party[0]?.guarding).toBe(false);
+  });
+
+  it("removes the party's timed buffs and debuffs on a wave change, except Max HP boosts", () => {
+    const start = createBattle(makeSetup(2), 5);
+    const maxHp: ActiveEffect = {
+      id: "passive.stat_pct",
+      stat: "hp",
+      value: 0.2,
+      target: "self",
+      source: "bb",
+    };
+    let effects = withEffect([], { id: "buff.atk", value: 0.5, turns: 3, target: "party" });
+    effects = withEffect(effects, { id: "buff.def", value: 0.5, turns: 1, target: "party" });
+    effects = withEffect(effects, { id: "debuff.atk_down", value: 0.3, turns: 3, target: "enemy" });
+    effects = withEffect(effects, {
+      id: "ailment.inflict.weak",
+      value: 1,
+      turns: 3,
+      target: "enemy",
+    });
+    effects = [...effects, maxHp];
+    const buffed = patchUnit(start, "p0", {
+      effects,
+      hp: 500,
+      bc: 9,
+      overdrive: true,
+      overdriveTurns: 3,
+    });
+    const cleared = { ...buffed, enemies: buffed.enemies.map((e) => ({ ...e, hp: 0 })) };
+    const { state, events } = endTurn(cleared);
+
+    const p0 = state.party[0];
+    // Ailments, passives, and the Max HP boost survive; durations ticked once first.
+    expect(p0?.effects.filter((e) => e.source !== "leader").map((e) => e.id)).toEqual([
+      "ailment.inflict.weak",
+      "passive.stat_pct",
+    ]);
+    expect(p0?.effects.find((e) => e.id === "ailment.inflict.weak")?.turns).toBe(2);
+    expect(p0?.effects).toContainEqual(maxHp);
+    expect(p0).toMatchObject({ hp: 500, bc: 9, overdrive: true });
+    // The OD gauge keeps its points (the end-of-turn tick still adds its fill); items untouched.
+    expect(state.od.points).toBeGreaterThanOrEqual(cleared.od.points);
+    expect(state.items).toEqual(cleared.items);
+
+    // buff.def expired in the end-of-turn tick; the wave change ends the rest, once per ID.
+    const ended = ofType(events, "EffectEnded").filter((e) => e.target === "p0");
+    expect(ended.map((e) => e.effect)).toEqual(["buff.def", "buff.atk", "debuff.atk_down"]);
+    const types = events.map((e) => e.type);
+    const waveCleared = types.indexOf("WaveCleared");
+    const lastEnded = types.lastIndexOf("EffectEnded");
+    expect(waveCleared).toBeLessThan(lastEnded);
+    expect(lastEnded).toBeLessThan(types.indexOf("WaveStarted"));
+  });
+
+  it("removeBuffs drops Max HP boosts too unless asked to keep them", () => {
+    const maxHp: ActiveEffect = {
+      id: "passive.stat_pct",
+      stat: "hp",
+      value: 0.2,
+      target: "self",
+      source: "bb",
+    };
+    const effects = [
+      ...withEffect([], { id: "buff.atk", value: 0.5, turns: 3, target: "party" }),
+      maxHp,
+    ];
+    expect(removeBuffs(effects, { keepMaxHp: true })).toEqual([maxHp]);
+    expect(removeBuffs(effects, { keepMaxHp: false })).toEqual([]);
   });
 
   it("clears the spark-assist memory at the end of the turn", () => {

@@ -1,9 +1,10 @@
 // Writes every templated farming-dungeon stage and material enemy, the battle item stages and
-// their carriers, and the Crown Shard and Zenith Core stages (src/dungeons.ts), to content/.
+// their carriers, the toad series and its chapter 2 mobs, and the Crown Shard and Zenith Core stages (src/dungeons.ts), to content/.
 // Run after editing a template, then `pnpm format` and `pnpm --filter @bfr/data seed`.
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  chapter2DungeonMobs,
   crownShardStage,
   DUNGEON_FAMILIES,
   dungeonStage,
@@ -16,6 +17,9 @@ import {
   itemCarrier,
   itemStage,
   materialEnemy,
+  TOAD_ENEMIES,
+  toadEnemy,
+  toadStage,
   zenithCoreStage,
 } from "../src/dungeons.ts";
 
@@ -54,7 +58,14 @@ for (const entry of ITEM_DUNGEONS) {
     written++;
   }
 }
-for (const stage of [crownShardStage(), zenithCoreStage()]) {
+for (const enemy of [...TOAD_ENEMIES.map(toadEnemy), ...chapter2DungeonMobs()]) {
+  writeFileSync(
+    join(content, "enemies", `${enemy.id}.json`),
+    `${JSON.stringify(enemy, null, 2)}\n`,
+  );
+  written++;
+}
+for (const stage of [crownShardStage(), zenithCoreStage(), toadStage()]) {
   writeFileSync(join(content, "stages", `${stage.id}.json`), `${JSON.stringify(stage, null, 2)}\n`);
   written++;
 }

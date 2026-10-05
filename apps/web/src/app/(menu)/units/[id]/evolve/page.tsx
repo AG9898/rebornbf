@@ -19,6 +19,7 @@ import {
   type OwnedItemRow,
   type SquadUseRow,
 } from "../../../../../lib/units/evolution.ts";
+import { evolveRarityWord, evolveTheme } from "../../../../../lib/units/evolve-cinematic.ts";
 import {
   isOwnedUnitId,
   OWNED_UNIT_COLUMNS,
@@ -27,8 +28,11 @@ import {
   unitContent,
 } from "../../../../../lib/units/owned-units.ts";
 import { UNIT_STACK_COLUMNS, type UnitStackRow } from "../../../../../lib/units/unit-stacks.ts";
+import { loadPlayerSettings } from "../../../../../server/player-settings.ts";
 import units from "../../units.module.css";
 import { EvolveButton } from "./EvolveButton.tsx";
+import type { EvolveCinematicView } from "./EvolveCinematic.tsx";
+import { EvolveHost } from "./EvolveHost.tsx";
 import evolve from "./evolve.module.css";
 
 export const metadata: Metadata = { title: "Evolve · BFR" };
@@ -141,30 +145,32 @@ export default async function EvolvePage({
   if (!supabase || !userId) redirect(`${SIGN_IN_PATH}?next=/units`);
   if (!isOwnedUnitId(id)) notFound();
 
-  const [ownedResult, stacksResult, squadsResult, itemsResult, walletResult] = await Promise.all([
-    supabase
-      .from("owned_units")
-      .select(OWNED_UNIT_COLUMNS)
-      .eq("user_id", userId)
-      .overrideTypes<OwnedUnitRow[], { merge: false }>(),
-    supabase
-      .from("owned_unit_stacks")
-      .select(UNIT_STACK_COLUMNS)
-      .eq("user_id", userId)
-      .gt("count", 0)
-      .overrideTypes<UnitStackRow[], { merge: false }>(),
-    supabase
-      .from("squads")
-      .select("unit_ids")
-      .eq("user_id", userId)
-      .overrideTypes<SquadUseRow[], { merge: false }>(),
-    supabase
-      .from("owned_items")
-      .select("item_id, count")
-      .eq("user_id", userId)
-      .overrideTypes<OwnedItemRow[], { merge: false }>(),
-    supabase.from("wallets").select("zel").eq("user_id", userId).maybeSingle<{ zel: number }>(),
-  ]);
+  const [ownedResult, stacksResult, squadsResult, itemsResult, walletResult, { settings }] =
+    await Promise.all([
+      supabase
+        .from("owned_units")
+        .select(OWNED_UNIT_COLUMNS)
+        .eq("user_id", userId)
+        .overrideTypes<OwnedUnitRow[], { merge: false }>(),
+      supabase
+        .from("owned_unit_stacks")
+        .select(UNIT_STACK_COLUMNS)
+        .eq("user_id", userId)
+        .gt("count", 0)
+        .overrideTypes<UnitStackRow[], { merge: false }>(),
+      supabase
+        .from("squads")
+        .select("unit_ids")
+        .eq("user_id", userId)
+        .overrideTypes<SquadUseRow[], { merge: false }>(),
+      supabase
+        .from("owned_items")
+        .select("item_id, count")
+        .eq("user_id", userId)
+        .overrideTypes<OwnedItemRow[], { merge: false }>(),
+      supabase.from("wallets").select("zel").eq("user_id", userId).maybeSingle<{ zel: number }>(),
+      loadPlayerSettings(),
+    ]);
   const owned = ownedResult.data ?? [];
   const target = owned.find((row) => row.id === id);
   if (!ownedResult.error && !target) notFound();
@@ -206,9 +212,34 @@ export default async function EvolvePage({
     ["REC", "????"],
   ];
   const blockers = plan ? evolveBlockers(plan) : [];
+  const cinematic: EvolveCinematicView | null = plan
+    ? {
+        name,
+        baseSprite: plan.from.sprite,
+        materials: [
+          ...plan.units.map((need) => ({
+            key: need.unitId,
+            name: need.name,
+            thumb: need.thumb,
+            icon: null,
+          })),
+          ...plan.items.map((need) => ({
+            key: need.itemId,
+            name: need.name,
+            thumb: null,
+            icon: itemIcon(need.itemId),
+          })),
+        ],
+        nextSprite: plan.next.sprite,
+        nextLabel: `${plan.next.rarityLabel} ${plan.next.name}`,
+        quote: target ? (unitContent(target.unit_id)?.quote ?? null) : null,
+        word: evolveRarityWord(plan.next.rarity),
+        theme: evolveTheme(plan.next.rarity),
+      }
+    : null;
 
   return (
-    <div className={units.listPage}>
+    <EvolveHost unitId={id} reducedMotion={settings.reducedMotion} className={units.listPage}>
       <header className={units.titleBar}>
         <Link href={`/units/${id}`} className={`${units.pill} ${units.backButton}`}>
           <span className={units.outline}>Back</span>
@@ -225,7 +256,7 @@ export default async function EvolvePage({
         <div className={evolve.body}>
           <p className={evolve.message}>This unit could not be loaded. Try again shortly.</p>
         </div>
-      ) : !plan ? (
+      ) : !plan || !cinematic ? (
         <div className={evolve.body}>
           <p className={evolve.message}>{name} cannot evolve any further.</p>
         </div>
@@ -277,6 +308,7 @@ export default async function EvolvePage({
             label={plan.omni ? "Omni Evolve" : "Evolve"}
             zel={plan.zel}
             blockers={blockers}
+            cinematic={cinematic}
           />
         </>
       )}
@@ -284,6 +316,6 @@ export default async function EvolvePage({
       <p className={menu.ticker}>
         {plan ? "Gather the materials and Zel to evolve." : "Select a unit to evolve."}
       </p>
-    </div>
+    </EvolveHost>
   );
 }

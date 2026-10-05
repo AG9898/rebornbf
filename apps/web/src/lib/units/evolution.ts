@@ -41,6 +41,8 @@ export type EvolutionFormView = {
   id: string;
   name: string;
   rarityLabel: string;
+  /** The form's rarity (the evolve cinematic's word and theme, M4-06M). */
+  rarity: Form["rarity"];
   maxLevel: number;
   illustration: string | null;
   /** The form's battle-idle sprite (the evolve screen's centrepiece, M4-06L), when exported. */
@@ -89,6 +91,7 @@ function formView(unitId: string, form: Form): EvolutionFormView {
     id: form.id,
     name: form.name,
     rarityLabel: rarityLabel(form.rarity),
+    rarity: form.rarity,
     maxLevel: form.maxLevel,
     illustration: art ? `/assets/units/${unitId}/illustration-${art}.png` : null,
     sprite: art ? `/assets/units/${unitId}/battle-idle-${art}.png` : null,

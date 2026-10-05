@@ -13,7 +13,7 @@ import {
   unitIdleSheet,
   unitIdleSprite,
 } from "../assets/sprites.ts";
-import { backgroundUrl } from "../assets/stage-art.ts";
+import { backgroundUrl, type EnemyArt } from "../assets/stage-art.ts";
 import {
   battleUiTextureKeys,
   preloadBattleUi,
@@ -146,7 +146,7 @@ export interface BattleSpec {
   /** Locked background id selected by the stage's chapter or explicit stage mapping. */
   readonly background?: string;
   /** Enemy art in stage wave order, sized by the locked export's canvas. */
-  readonly enemyWaves?: readonly (readonly { readonly id: string; readonly size: number }[])[];
+  readonly enemyWaves?: readonly (readonly EnemyArt[])[];
   /** Exported idle form each unit wears (default 6★). */
   readonly artForm?: string;
   /** Per-slot idle form, in party order; a slot without one wears `artForm`. */
@@ -327,8 +327,8 @@ export class BattleScene extends Phaser.Scene {
       const idle = unitIdleSprite(art, this.artForm(i));
       if (!this.textures.exists(idle.key)) this.load.image(idle.key, idle.imageUrl);
     });
-    for (const id of new Set(this.spec.enemyWaves?.flat().map((enemy) => enemy.id) ?? [])) {
-      if (!this.textures.exists(id)) this.load.image(id, `/assets/enemies/${id}/battle-idle.png`);
+    for (const enemy of this.spec.enemyWaves?.flat() ?? []) {
+      if (!this.textures.exists(enemy.id)) this.load.image(enemy.id, enemy.url);
     }
     if (this.spec.background && !this.textures.exists(this.spec.background)) {
       this.load.image(this.spec.background, backgroundUrl(this.spec.background));
@@ -826,12 +826,13 @@ export class BattleScene extends Phaser.Scene {
     this.enemies = this.hud.enemies.map((_, i) => {
       const rect = this.enemyBounds(i);
       const shadows = this.groundShadow(rect, rect.width > SPRITE_SIZE ? 112 : 80);
-      const id = this.spec.enemyWaves?.[this.hud.wave]?.[i]?.id;
-      const body = id
+      const art = this.spec.enemyWaves?.[this.hud.wave]?.[i];
+      const body = art
         ? this.add
-            .sprite(rect.x + rect.width / 2, rect.y + rect.height, id)
+            .sprite(rect.x + rect.width / 2, rect.y + rect.height, art.id)
             .setOrigin(0.5, 1)
             .setDisplaySize(rect.width, rect.height)
+            .setFlipX(art.flipX ?? false)
         : this.box(rect, COLORS.enemy);
       return { body, rect, shadows };
     });

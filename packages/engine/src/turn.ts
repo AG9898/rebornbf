@@ -15,7 +15,13 @@ import {
   NORMAL_ATTACK_PLAN,
   pickRandomFoe,
 } from "./effects/attack.ts";
-import { type ActiveEffect, addedElements, buffTotal, defConversionAtk } from "./effects/buffs.ts";
+import {
+  type ActiveEffect,
+  addedElements,
+  buffTotal,
+  defConversionAtk,
+  removeBuffs,
+} from "./effects/buffs.ts";
 import {
   bcFillOnDamageTaken,
   bcFillPerTurn,
@@ -876,9 +882,11 @@ function formChangeDue(state: BattleState): boolean {
 }
 
 /**
- * The wave transition shared by a wave clear and a form change: the next wave spawns and
- * `WaveStarted` is emitted. The party, OD gauge, and items pass through untouched either way, so a
- * form change treats the party exactly as a wave change does. With `carry` (a form change), each
+ * The wave transition shared by a wave clear and a form change: every party unit loses its timed
+ * buffs and debuffs except Max HP boosts (`EffectEnded` per removed ID; RESOLVED-88), then the
+ * next wave spawns and `WaveStarted` is emitted. HP, gauges, ailments, Overdrive, the OD gauge,
+ * and items pass through untouched, so a form change treats the party exactly as a wave change
+ * does. With `carry` (a form change), each
  * new enemy keeps the HP fraction of the outgoing enemy in its slot: ⌊hp × newMax / oldMax⌋, at
  * least 1. Returns the new wave index.
  */
@@ -890,6 +898,12 @@ function advanceWave(
   carry?: readonly BattleEnemy[],
 ): number {
   const waveIndex = state.waveIndex + 1;
+  m.party = m.party.map((unit) => {
+    const effects = removeBuffs(unit.effects, { keepMaxHp: true });
+    if (effects.length === unit.effects.length) return unit;
+    pushEnded(events, tick, unit.slot, unit.effects, effects);
+    return { ...unit, effects };
+  });
   const spawned = spawnWave(state.waves[waveIndex] ?? []);
   if (!carry) {
     m.enemies = spawned;

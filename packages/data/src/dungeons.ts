@@ -525,28 +525,234 @@ export function hobStage(entry: (typeof HOB_DUNGEONS)[number]): Stage {
   return stage;
 }
 
+// Toad series (M4-03K, RESOLVED-71, RESOLVED-72): one stage, opening on the Trial 2 first clear,
+// in the chapter 2 dungeon theme (the Lantern Grotto, a glowing sea cave on the Saltglass Coast).
+// Lantern Toads are the material enemy on the template's layout (25% in waves 1–2, the final
+// wave's always captured); a Matriarch Toad (10%) or Regent Toad (20%) replaces the final-wave
+// Lantern Toad, always captured. No ramp (the toads are 3★ and 4★) and no daily limit. Numbers
+// are BFR tuning for GAME_DESIGN §5's Trial 2 reference squad, not source values.
+
+/** Trial 2's stage, whose first clear opens the toad series (RESOLVED-71). */
+export const TRIAL_2 = "trial-02-master-ozric";
+
+/** The toad series' ID and its one stage. */
+export const TOAD_SERIES = "toads";
+export const TOAD_STAGE_ID = "dungeon-lantern-toad";
+
+/** The toad enemies: the capturable Lantern Toad and the two rare final-wave spawns. */
+export const TOAD_ENEMIES = [
+  { unit: "lantern-toad", title: "Lantern Toad", element: "fire", rate: DUNGEON_CAPTURE_RATE },
+  { unit: "regent-toad", title: "Regent Toad", element: "fire", rate: 100 },
+  { unit: "matriarch-toad", title: "Matriarch Toad", element: "light", rate: 100 },
+] as const satisfies readonly { unit: string; title: string; element: Element; rate: number }[];
+
+/** Per-clear chance of each rare final-wave toad, in basis points, in band order (RESOLVED-71). */
+export const TOAD_FINAL_SPAWNS = [
+  { enemy: "dg-matriarch-toad", replaces: "dg-lantern-toad", rateBp: 1000 },
+  { enemy: "dg-regent-toad", replaces: "dg-lantern-toad", rateBp: 2000 },
+] as const;
+
+/** A toad enemy: `dg-<unit>`, a two-hit melee material enemy capturing its unit at `rate`%. */
+export function toadEnemy(entry: (typeof TOAD_ENEMIES)[number]): Enemy {
+  const result = materialEnemy(
+    {
+      family: entry.unit,
+      title: entry.title,
+      single: entry.element,
+      place: "Grotto",
+      gate: TRIAL_2,
+      ramp: 0,
+      stats: { hp: 20000, atk: 4000, def: 1800, rec: 100 },
+      zel: { rate: 50, amount: 150 },
+    },
+    entry.element,
+  );
+  result.drops.capture = { unit: entry.unit, rate: entry.rate };
+  return result;
+}
+
+/**
+ * The chapter 2 dungeon companion mobs (RESOLVED-72), original Lantern Grotto designs used by the
+ * toad series: Vent Shrimp (Fire; every third turn Scald Spout, a 0.5× AoE), Brine Urchin (Water;
+ * every third turn Spine Shell, +50% DEF for 2 turns), Glass Jelly (Thunder; every fourth turn
+ * Lamp Sting, a 1.3× single hit on the lowest-HP unit). Sprites are M6-07N.
+ */
+export function chapter2DungeonMobs(): Enemy[] {
+  const base = {
+    stats: { hp: 14000, atk: 3200, def: 600, rec: 100 },
+    drops: { bcResistance: 0.05, zel: { rate: 60, amount: 60 } },
+  };
+  return [
+    {
+      id: "dg2-vent-shrimp",
+      name: "Vent Shrimp",
+      element: "fire",
+      ...structuredClone(base),
+      normalAttack: {
+        moveType: "melee",
+        startDelayFrames: 18,
+        hitFrames: [0, 8, 16],
+        damageDistribution: [30, 30, 40],
+        dropChecks: 0,
+      },
+      skills: [
+        {
+          id: "scald-spout",
+          name: "Scald Spout",
+          attacks: [
+            {
+              moveType: "ranged",
+              startDelayFrames: 28,
+              hitFrames: [0, 8, 16],
+              damageDistribution: [30, 30, 40],
+              dropChecks: 0,
+            },
+          ],
+          effects: [{ id: "attack.aoe", value: 0.5, target: "enemies" }],
+        },
+      ],
+      ai: [
+        { when: "every_n_turns", n: 3, skill: "scald-spout", target: "random" },
+        { when: "default", skill: "normal", target: "random" },
+      ],
+    },
+    {
+      id: "dg2-brine-urchin",
+      name: "Brine Urchin",
+      element: "water",
+      ...structuredClone(base),
+      normalAttack: {
+        moveType: "ranged",
+        startDelayFrames: 24,
+        hitFrames: [0, 10],
+        damageDistribution: [50, 50],
+        dropChecks: 0,
+      },
+      skills: [
+        {
+          id: "spine-shell",
+          name: "Spine Shell",
+          attacks: [],
+          effects: [{ id: "buff.def", value: 0.5, turns: 2, target: "self" }],
+        },
+      ],
+      ai: [
+        { when: "every_n_turns", n: 3, skill: "spine-shell", target: "random" },
+        { when: "default", skill: "normal", target: "random" },
+      ],
+    },
+    {
+      id: "dg2-glass-jelly",
+      name: "Glass Jelly",
+      element: "thunder",
+      ...structuredClone(base),
+      normalAttack: {
+        moveType: "ranged",
+        startDelayFrames: 20,
+        hitFrames: [0],
+        damageDistribution: [100],
+        dropChecks: 0,
+      },
+      skills: [
+        {
+          id: "lamp-sting",
+          name: "Lamp Sting",
+          attacks: [
+            {
+              moveType: "melee",
+              startDelayFrames: 22,
+              hitFrames: [0, 10],
+              damageDistribution: [50, 50],
+              dropChecks: 0,
+            },
+          ],
+          effects: [{ id: "attack.st", value: 1.3, target: "enemy" }],
+        },
+      ],
+      ai: [
+        { when: "every_n_turns", n: 4, skill: "lamp-sting", target: "lowest_hp" },
+        { when: "default", skill: "normal", target: "random" },
+      ],
+    },
+  ];
+}
+
+/**
+ * The toad series' stage ("Lantern Toad Grotto"): wave 1 `L L`, wave 2 `U L J`, wave 3 `S L J`
+ * with the final Lantern Toad always captured (L Lantern Toad, S Vent Shrimp, U Brine Urchin,
+ * J Glass Jelly), and the rare final-wave toads in `dungeon.finalSpawns`.
+ */
+export function toadStage(): Stage {
+  const lantern = "dg-lantern-toad";
+  return {
+    id: TOAD_STAGE_ID,
+    name: "Lantern Toad Grotto",
+    dungeon: {
+      series: TOAD_SERIES,
+      gate: TRIAL_2,
+      finalSpawns: TOAD_FINAL_SPAWNS.map((entry) => ({ ...entry })),
+    },
+    waves: [
+      { enemies: [{ enemy: lantern }, { enemy: lantern }] },
+      {
+        enemies: [{ enemy: "dg2-brine-urchin" }, { enemy: lantern }, { enemy: "dg2-glass-jelly" }],
+      },
+      {
+        enemies: [
+          { enemy: "dg2-vent-shrimp" },
+          { enemy: lantern, capture: "always" },
+          { enemy: "dg2-glass-jelly" },
+        ],
+      },
+    ],
+  };
+}
+
 /**
  * Resolve one rare encounter from a server-issued unsigned 32-bit seed, separately from combat
  * RNG. Low base-10000 digit selects the per-entry rate; the next digit selects the wave. The
  * modulo bias from 2^32 is negligible (< 0.000003 per bucket). Matches SQL dungeon_waves exactly.
  * The first matching regular enemy in the selected wave is replaced; its capture marker remains.
- * A Grand Hob's enemy capture rate is 100%, including in waves 1–2.
+ * A Grand Hob's enemy capture rate is 100%, including in waves 1–2. A stage with `finalSpawns`
+ * (the toad series) instead walks consecutive basis-point bands of the same low digit, in list
+ * order, and replaces the first matching slot of the final wave with the band's enemy.
  */
 export function dungeonWaves(stage: Stage, seed: number): Stage["waves"] {
   if (!Number.isSafeInteger(seed) || seed < 0 || seed > 0xffffffff) {
     throw new RangeError("dungeon seed must be an unsigned 32-bit integer");
   }
+  const finals = stage.dungeon?.finalSpawns;
+  if (finals) {
+    let band = 0;
+    const roll = seed % 10000;
+    const hit = finals.find((entry) => {
+      band += entry.rateBp;
+      return roll < band;
+    });
+    if (!hit) return stage.waves;
+    return replaceIn(stage.waves, stage.waves.length - 1, hit.replaces, hit.enemy);
+  }
   const rare = stage.dungeon?.rareSpawn;
   if (!rare || seed % 10000 >= rare.rateBp) return stage.waves;
-  const index = Math.floor(seed / 10000) % stage.waves.length;
-  return stage.waves.map((wave, w) => {
+  return replaceIn(
+    stage.waves,
+    Math.floor(seed / 10000) % stage.waves.length,
+    rare.replaces,
+    rare.enemy,
+  );
+}
+
+/** `waves` with the first `replaces` slot of wave `index` swapped for `enemy` (a new array). */
+function replaceIn(
+  waves: Stage["waves"],
+  index: number,
+  replaces: string,
+  enemy: string,
+): Stage["waves"] {
+  return waves.map((wave, w) => {
     if (w !== index) return wave;
-    const slot = wave.enemies.findIndex((enemy) => enemy.enemy === rare.replaces);
+    const slot = wave.enemies.findIndex((s) => s.enemy === replaces);
     if (slot < 0) throw new Error("rare-spawn replacement candidate is missing");
-    return {
-      enemies: wave.enemies.map((enemy, e) =>
-        e === slot ? { ...enemy, enemy: rare.enemy } : enemy,
-      ),
-    };
+    return { ...wave, enemies: wave.enemies.map((s, e) => (e === slot ? { ...s, enemy } : s)) };
   });
 }

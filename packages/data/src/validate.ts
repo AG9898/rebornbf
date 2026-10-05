@@ -194,6 +194,19 @@ export function validateDungeons(
         errors.push(`${file}: dungeon.rareSpawn.enemy: replacement has no capture drop`);
       }
     }
+    const finalWave = stage.waves[stage.waves.length - 1];
+    dungeon.finalSpawns?.forEach((entry, i) => {
+      const spawn = enemies.get(entry.enemy);
+      const path = formatPath(["dungeon", "finalSpawns", i, "enemy"]);
+      if (!spawn) {
+        errors.push(`${file}: ${path}: unknown enemy "${entry.enemy}"`);
+      } else if (
+        finalWave?.enemies.find((slot) => slot.enemy === entry.replaces)?.capture === "always" &&
+        !spawn.drops.capture
+      ) {
+        errors.push(`${file}: ${path}: replacement has no capture drop`);
+      }
+    });
     stage.waves.forEach((wave, w) => {
       wave.enemies.forEach((slot, e) => {
         const enemy = enemies.get(slot.enemy);
@@ -240,6 +253,23 @@ export function validateFirstClearUnits(
       if (!unit) errors.push(`stages/${stage.id}.json: ${path}: unknown unit "${entry.unit}"`);
       else if (!unit.stackable) {
         errors.push(`stages/${stage.id}.json: ${path}: unit "${entry.unit}" is not stackable`);
+      }
+    });
+  }
+  return errors;
+}
+
+/** Cross-file first-clear sphere checks: every first-clear reward sphere is one of `sphereIds`. */
+export function validateFirstClearSpheres(
+  stages: readonly Stage[],
+  sphereIds: ReadonlySet<string>,
+): string[] {
+  const errors: string[] = [];
+  for (const stage of stages) {
+    stage.firstClear?.spheres?.forEach((entry, i) => {
+      if (!sphereIds.has(entry.sphere)) {
+        const path = formatPath(["firstClear", "spheres", i, "sphere"]);
+        errors.push(`stages/${stage.id}.json: ${path}: unknown sphere "${entry.sphere}"`);
       }
     });
   }

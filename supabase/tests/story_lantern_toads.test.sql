@@ -12,7 +12,7 @@ select is((select sum((u ->> 'count')::integer)::integer
 select is((select jsonb_object_agg(c.data -> 'story' ->> 'number', u -> 'count')
   from public.content_items c
   cross join lateral jsonb_array_elements(c.data -> 'firstClear' -> 'units') u
-  where c.kind = 'stage'),
+  where c.kind = 'stage' and u ->> 'unit' = 'lantern-toad'),
   '{"2":18,"4":9,"6":9,"8":9,"10":18,"12":15,"14":15,"16":15}'::jsonb,
   'the toads follow the RESOLVED-71 schedule');
 

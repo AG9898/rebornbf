@@ -1,0 +1,60 @@
+{
+  "id": "dg2-vent-shrimp",
+  "name": "Vent Shrimp",
+  "element": "fire",
+  "stats": {
+    "hp": 14000,
+    "atk": 3200,
+    "def": 600,
+    "rec": 100
+  },
+  "drops": {
+    "bcResistance": 0.05,
+    "zel": {
+      "rate": 60,
+      "amount": 60
+    }
+  },
+  "normalAttack": {
+    "moveType": "melee",
+    "startDelayFrames": 18,
+    "hitFrames": [0, 8, 16],
+    "damageDistribution": [30, 30, 40],
+    "dropChecks": 0
+  },
+  "skills": [
+    {
+      "id": "scald-spout",
+      "name": "Scald Spout",
+      "attacks": [
+        {
+          "moveType": "ranged",
+          "startDelayFrames": 28,
+          "hitFrames": [0, 8, 16],
+          "damageDistribution": [30, 30, 40],
+          "dropChecks": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "attack.aoe",
+          "value": 0.5,
+          "target": "enemies"
+        }
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "when": "every_n_turns",
+      "n": 3,
+      "skill": "scald-spout",
+      "target": "random"
+    },
+    {
+      "when": "default",
+      "skill": "normal",
+      "target": "random"
+    }
+  ]
+}

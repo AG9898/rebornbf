@@ -55,15 +55,27 @@ export const FirstClearUnitSchema = z.strictObject({
 });
 export type FirstClearUnit = z.infer<typeof FirstClearUnitSchema>;
 
+/** Copies of a `content/spheres/` sphere granted by a first clear (RESOLVED-71). */
+export const FirstClearSphereSchema = z.strictObject({
+  sphere: ContentIdSchema,
+  count: PositiveIntSchema,
+});
+export type FirstClearSphere = z.infer<typeof FirstClearSphereSchema>;
+
 /**
  * Rewards for a stage's first clear (granted server-side after replay; GAME_DESIGN §8). `items`
  * are granted through `grant_item` (e.g. Trial 1's Zenith Core, RESOLVED-69); `units` add copies
- * of stackable units to the player's stacks (story Lantern Toads, RESOLVED-71).
+ * of stackable units to the player's stacks (story Lantern Toads, the Trial 2 Satchel Toad,
+ * RESOLVED-71); `spheres` add sphere instances (the all-stat seals); `signatureClaims` grants
+ * that many signature sphere claims, each redeemed for one signature sphere of the player's
+ * choice by `choose_signature_sphere` (Trial 2, RESOLVED-71).
  */
 export const FirstClearRewardSchema = z.strictObject({
   gems: NonNegativeIntSchema,
   items: z.array(FirstClearItemSchema).min(1).optional(),
   units: z.array(FirstClearUnitSchema).min(1).optional(),
+  spheres: z.array(FirstClearSphereSchema).min(1).optional(),
+  signatureClaims: PositiveIntSchema.optional(),
   /** One-based position in the starter order after excluding the onboarding pick. */
   starter: z
     .strictObject({
@@ -106,6 +118,23 @@ export const DungeonPlacementSchema = z.strictObject({
       replaces: ContentIdSchema,
       rateBp: z.number().int().min(0).max(10000),
     })
+    .optional(),
+  /**
+   * Rare final-wave replacements (the toad series, M4-03K): at most one per entry, chosen from the
+   * same server seed digit as `rareSpawn` by consecutive basis-point bands in list order (so the
+   * entries are mutually exclusive and their rates sum to at most 10000). Each replaces the first
+   * `replaces` slot in the final wave; never an extra enemy. Not combined with `rareSpawn`.
+   */
+  finalSpawns: z
+    .array(
+      z.strictObject({
+        enemy: ContentIdSchema,
+        replaces: ContentIdSchema,
+        rateBp: z.number().int().min(1).max(10000),
+      }),
+    )
+    .min(1)
+    .max(4)
     .optional(),
 });
 export type DungeonPlacement = z.infer<typeof DungeonPlacementSchema>;
@@ -235,6 +264,33 @@ export const StageSchema = z
         code: "custom",
         path: ["dungeon", "gate"],
         message: "a stage cannot gate itself",
+      });
+    }
+    const finalSpawns = stage.dungeon?.finalSpawns;
+    if (finalSpawns) {
+      if (stage.dungeon?.rareSpawn) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["dungeon", "finalSpawns"],
+          message: "a stage has rareSpawn or finalSpawns, not both",
+        });
+      }
+      if (finalSpawns.reduce((sum, entry) => sum + entry.rateBp, 0) > 10000) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["dungeon", "finalSpawns"],
+          message: "final-spawn rates sum to more than 10000 basis points",
+        });
+      }
+      const last = stage.waves[stage.waves.length - 1];
+      finalSpawns.forEach((entry, i) => {
+        if (!last?.enemies.some((slot) => slot.enemy === entry.replaces)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["dungeon", "finalSpawns", i, "replaces"],
+            message: "the final wave needs this final-spawn replacement candidate",
+          });
+        }
       });
     }
     stage.waves.forEach((wave, w) => {

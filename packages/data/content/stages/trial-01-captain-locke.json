@@ -12,6 +12,12 @@
         "item": "zenith-core",
         "count": 1
       }
+    ],
+    "spheres": [
+      {
+        "sphere": "vanguard-seal",
+        "count": 6
+      }
     ]
   },
   "waves": [

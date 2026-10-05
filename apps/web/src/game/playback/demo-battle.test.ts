@@ -21,7 +21,13 @@ describe("demo battle (M2-05B)", () => {
     expect(stageBackground(DEMO_STAGE)).toBe("plains");
     expect(stageBackground(StageSchema.parse(story01))).toBe("plains");
     expect(DEMO_BATTLE_SPEC.enemyWaves).toEqual(stageEnemyArt(DEMO_STAGE));
-    expect(DEMO_BATTLE_SPEC.enemyWaves?.[2]).toEqual([{ id: "demo-ashen-warden", size: 256 }]);
+    expect(DEMO_BATTLE_SPEC.enemyWaves?.[2]).toEqual([
+      {
+        id: "demo-ashen-warden",
+        size: 256,
+        url: "/assets/enemies/demo-ashen-warden/battle-idle.png",
+      },
+    ]);
   });
 
   // Farming-dungeon stages get the chapter 1 dungeon background and their sprites in M6-07M

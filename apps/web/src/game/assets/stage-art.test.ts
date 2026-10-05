@@ -18,7 +18,7 @@ interface BackgroundManifest {
   >;
 }
 interface EnemyManifest {
-  enemies: Record<string, { canvas: number }>;
+  enemies: Record<string, { canvas: number; fallback?: string }>;
 }
 
 // The public mirror has no art/ (RESOLVED-61), so this drift check runs in the private repo only.
@@ -39,7 +39,10 @@ describe.skipIf(!existsSync(backgroundsPath) || !existsSync(enemiesPath))(
     it("has each enemy sprite's canvas", () => {
       const manifest = JSON.parse(readFileSync(enemiesPath, "utf8")) as EnemyManifest;
       const expected = Object.fromEntries(
-        Object.entries(manifest.enemies).map(([id, { canvas }]) => [id, { canvas }]),
+        Object.entries(manifest.enemies).map(([id, { canvas, fallback }]) => [
+          id,
+          { canvas, ...(fallback ? { fallback } : {}) },
+        ]),
       );
       expect(stageArt.enemies).toEqual(expected);
     });
@@ -90,7 +93,19 @@ describe("dungeon art", () => {
     expect(
       existsSync(join(import.meta.dirname, "../../../public/assets/backgrounds/fairy-meadow.webp")),
     ).toBe(true);
-    for (const stage of dungeonStages) expect(stageBackground(stage)).toBe("fairy-meadow");
+    for (const stage of dungeonStages.filter((s) => s.dungeon?.series !== "toads")) {
+      expect(stageBackground(stage)).toBe("fairy-meadow");
+    }
+  });
+
+  it("reserves the chapter 2 dungeon theme for the toad series on the coast fallback (M4-03K)", () => {
+    const toads = dungeonStages.filter((stage) => stage.dungeon?.series === "toads");
+    expect(toads).toHaveLength(1);
+    expect(stageArt.backgrounds["lantern-grotto"]).toMatchObject({
+      series: ["toads"],
+      fallback: "saltglass-coast",
+    });
+    for (const stage of toads) expect(stageBackground(stage)).toBe("saltglass-coast");
   });
 
   it("has a locked sprite for every companion mob a dungeon fields", () => {
@@ -109,6 +124,71 @@ describe("dungeon art", () => {
         ),
       ).toBe(true);
     }
+  });
+
+  const publicDir = join(import.meta.dirname, "../../../public");
+
+  it("resolves every enemy of every dungeon stage to an exported sprite (M6-07O)", () => {
+    for (const stage of dungeonStages) {
+      const waves = stageEnemyArt(stage);
+      expect(waves.map((w) => w.map((sprite) => sprite.id))).toEqual(
+        stage.waves.map((w) => w.enemies.map((enemy) => enemy.enemy)),
+      );
+      for (const sprite of waves.flat()) {
+        expect(sprite.size).toBeGreaterThan(0);
+        expect(existsSync(join(publicDir, sprite.url)), `${stage.id}: ${sprite.url}`).toBe(true);
+      }
+      // A rare or final-wave spawn swaps in for a slot, so it needs a sprite too.
+      const spawns = [
+        ...(stage.dungeon?.rareSpawn ? [stage.dungeon.rareSpawn] : []),
+        ...(stage.dungeon?.finalSpawns ?? []),
+      ];
+      for (const { enemy } of spawns) {
+        const [sprite] = stageEnemyArt({ ...stage, waves: [{ enemies: [{ enemy }] }] }).flat();
+        expect(sprite && existsSync(join(publicDir, sprite.url)), `${stage.id}: ${enemy}`).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it("shows each material enemy as its unit's single-form idle sprite (M6-07O)", () => {
+    const enemies: Record<string, unknown> = stageArt.enemies;
+    const materials = dungeonStages.flatMap((stage) =>
+      stageEnemyArt(stage)
+        .flat()
+        .filter((sprite) => sprite.id.startsWith("dg-") && !sprite.id.startsWith("dg-item-")),
+    );
+    expect(materials.length).toBeGreaterThan(0);
+    for (const sprite of materials) {
+      const unit = sprite.id.slice("dg-".length);
+      expect(enemies[sprite.id]).toBeUndefined();
+      expect(sprite.size).toBe(128);
+      expect(sprite.flipX).toBe(true);
+      expect(sprite.url).toMatch(new RegExp(`^/assets/units/${unit}/battle-idle-\\w+\\.png$`));
+      expect(existsSync(join(publicDir, "assets/enemies", sprite.id))).toBe(false);
+    }
+    const cinder = dungeonStages.find((stage) => stage.id === "dungeon-cinder-sprite");
+    expect(cinder && stageEnemyArt(cinder)[0]?.[0]?.url).toBe(
+      "/assets/units/cinder-sprite/battle-idle-2star.png",
+    );
+  });
+
+  it("shows the reserved chapter 2 dungeon mobs as their element's coast mob (M6-07N pending)", () => {
+    const toads = dungeonStages.find((stage) => stage.dungeon?.series === "toads");
+    expect(toads).toBeDefined();
+    if (!toads) return;
+    const urls = Object.fromEntries(
+      stageEnemyArt(toads)
+        .flat()
+        .filter((sprite) => sprite.id.startsWith("dg2-"))
+        .map((sprite) => [sprite.id, sprite.url]),
+    );
+    expect(urls).toEqual({
+      "dg2-vent-shrimp": "/assets/enemies/ch2-kiln-crab/battle-idle.png",
+      "dg2-brine-urchin": "/assets/enemies/ch2-saltfin/battle-idle.png",
+      "dg2-glass-jelly": "/assets/enemies/ch2-storm-ray/battle-idle.png",
+    });
   });
 
   it("has a locked sprite for every item Hoarder (M6-07P)", () => {

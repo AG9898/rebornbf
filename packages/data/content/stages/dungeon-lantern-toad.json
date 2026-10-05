@@ -1,0 +1,59 @@
+{
+  "id": "dungeon-lantern-toad",
+  "name": "Lantern Toad Grotto",
+  "dungeon": {
+    "series": "toads",
+    "gate": "trial-02-master-ozric",
+    "finalSpawns": [
+      {
+        "enemy": "dg-matriarch-toad",
+        "replaces": "dg-lantern-toad",
+        "rateBp": 1000
+      },
+      {
+        "enemy": "dg-regent-toad",
+        "replaces": "dg-lantern-toad",
+        "rateBp": 2000
+      }
+    ]
+  },
+  "waves": [
+    {
+      "enemies": [
+        {
+          "enemy": "dg-lantern-toad"
+        },
+        {
+          "enemy": "dg-lantern-toad"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg2-brine-urchin"
+        },
+        {
+          "enemy": "dg-lantern-toad"
+        },
+        {
+          "enemy": "dg2-glass-jelly"
+        }
+      ]
+    },
+    {
+      "enemies": [
+        {
+          "enemy": "dg2-vent-shrimp"
+        },
+        {
+          "enemy": "dg-lantern-toad",
+          "capture": "always"
+        },
+        {
+          "enemy": "dg2-glass-jelly"
+        }
+      ]
+    }
+  ]
+}

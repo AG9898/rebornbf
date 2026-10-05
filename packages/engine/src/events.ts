@@ -378,7 +378,11 @@ export interface OverdriveEndedEvent {
   readonly actor: PlayerSlotId;
 }
 
-/** Every enemy of wave `wave` (0-based) is defeated and a later wave follows. */
+/**
+ * Every enemy of wave `wave` (0-based) is defeated and a later wave follows. Followed at the same
+ * tick by an `EffectEnded` for each timed buff or debuff the party loses (RESOLVED-88), then
+ * `WaveStarted`; `FormChanged` is followed the same way.
+ */
 export interface WaveClearedEvent {
   readonly type: "WaveCleared";
   readonly tick: number;

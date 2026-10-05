@@ -13,6 +13,7 @@ import {
   validateEnemyFile,
   validateEvolutionRefs,
   validateFirstClearItems,
+  validateFirstClearSpheres,
   validateFirstClearUnits,
   validateGemBudget,
   validateItemFile,
@@ -242,8 +243,14 @@ describe("story Lantern Toads (M4-04G)", () => {
   it("grants the RESOLVED-71 schedule, 108 in all: 18 burst levels for each of six starters", () => {
     const schedule = new Map<number, number>();
     let total = 0;
+    const toads: string[] = [];
     for (const stage of stages()) {
       for (const entry of stage.firstClear?.units ?? []) {
+        if (entry.unit === "satchel-toad") {
+          // The one Satchel Toad is Trial 2's first-clear reward (M4-04F).
+          toads.push(`${stage.id}:${entry.count}`);
+          continue;
+        }
         expect(stage.story, `${stage.id} grants units outside the story`).toBeDefined();
         expect(entry.unit).toBe("lantern-toad");
         schedule.set(stage.story?.number ?? 0, entry.count);
@@ -263,11 +270,12 @@ describe("story Lantern Toads (M4-04G)", () => {
     // Each Lantern Toad is +1 burst level; BB and SBB each go 1 -> 10 (§6 → Burst levels).
     expect(total).toBe(108);
     expect(total).toBe(6 * 2 * (10 - 1));
+    expect(toads).toEqual(["trial-02-master-ozric:1"]);
   });
 
   it("checks first-clear units exist and are stackable", () => {
     const units = new Map(
-      ["lantern-toad.json", "placeholder-ember.json"].map((name) => {
+      ["lantern-toad.json", "satchel-toad.json", "placeholder-ember.json"].map((name) => {
         const unit = UnitSchema.parse(loadUnit(name));
         return [unit.id, unit] as const;
       }),
@@ -565,6 +573,24 @@ describe("farming dungeons (M4-03B)", () => {
     ]);
   });
 
+  it("checks final-spawn enemy references and final-wave capture compatibility (M4-03K)", () => {
+    const stage = (enemy: string): Stage => ({
+      ...dungeon,
+      dungeon: {
+        series: "test",
+        gate: story.id,
+        finalSpawns: [{ enemy, replaces: mote.id, rateBp: 1000 }],
+      },
+    });
+    expect(validateDungeons([story, stage(mote.id)], enemies, itemIds)).toEqual([]);
+    expect(validateDungeons([story, stage("missing")], enemies, itemIds)).toEqual([
+      'stages/test-dungeon.json: dungeon.finalSpawns[0].enemy: unknown enemy "missing"',
+    ]);
+    expect(validateDungeons([story, stage(grunt.id)], enemies, itemIds)).toEqual([
+      "stages/test-dungeon.json: dungeon.finalSpawns[0].enemy: replacement has no capture drop",
+    ]);
+  });
+
   it("reports drops that name unknown units or items", () => {
     expect(validateDropRefs("enemies/test-mote.json", mote, new Set(), new Set())).toEqual([
       'enemies/test-mote.json: drops.capture.unit: unknown unit "moss-mote"',
@@ -605,6 +631,20 @@ describe("trials (M6-01A)", () => {
     expect(validateFirstClearItems([rewarded], new Set(["crown-shard"]))).toEqual([
       'stages/test-trial.json: firstClear.items[0].item: unknown item "zenith-core"',
     ]);
+  });
+
+  it("checks first-clear reward spheres against the sphere files (M4-04F)", () => {
+    const rewarded: Stage = {
+      ...trial,
+      firstClear: { gems: 0, spheres: [{ sphere: "vanguard-seal", count: 6 }], signatureClaims: 1 },
+    };
+    expect(validateFirstClearSpheres([rewarded], new Set(["vanguard-seal"]))).toEqual([]);
+    expect(validateFirstClearSpheres([rewarded], new Set(["wayfarer-seal"]))).toEqual([
+      'stages/test-trial.json: firstClear.spheres[0].sphere: unknown sphere "vanguard-seal"',
+    ]);
+    expect(
+      StageSchema.safeParse({ ...rewarded, firstClear: { gems: 0, signatureClaims: 0 } }).success,
+    ).toBe(false);
   });
 
   it("rejects a trial with no boss or that is also a story stage", () => {

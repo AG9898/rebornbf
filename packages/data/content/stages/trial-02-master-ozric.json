@@ -6,7 +6,14 @@
     "gate": "story-16-tidewright-spire"
   },
   "firstClear": {
-    "gems": 0
+    "gems": 0,
+    "units": [
+      {
+        "unit": "satchel-toad",
+        "count": 1
+      }
+    ],
+    "signatureClaims": 1
   },
   "waves": [
     {

@@ -4,9 +4,9 @@ begin;
 select plan(14);
 
 -- Seeded content (2) -----------------------------------------------------------------------------
-select is((select data -> 'firstClear' from public.content_items
+select is((select data -> 'firstClear' -> 'items' from public.content_items
   where kind = 'stage' and id = 'trial-01-captain-locke'),
-  '{"gems":0,"items":[{"item":"zenith-core","count":1}]}'::jsonb,
+  '[{"item":"zenith-core","count":1}]'::jsonb,
   'Trial 1''s first clear grants 1 Zenith Core');
 select is((select data -> 'dungeon' from public.content_items
   where kind = 'stage' and id = 'dungeon-zenith-core'),

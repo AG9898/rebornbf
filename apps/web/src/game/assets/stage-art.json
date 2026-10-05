@@ -1,5 +1,5 @@
 {
-  "note": "Battle art the app selects by stage, derived from art/backgrounds/backgrounds.json (chapters, stages) and art/enemies/enemies.json (canvas). stage-art.test.ts fails when they drift; copy the changed fields here.",
+  "note": "Battle art the app selects by stage, derived from art/backgrounds/backgrounds.json (chapters, stages) and art/enemies/enemies.json (canvas, fallback). stage-art.test.ts fails when they drift; copy the changed fields here.",
   "backgrounds": {
     "plains": {
       "chapters": [1],
@@ -34,6 +34,12 @@
         "wyrm-coffer",
         "zenith-core"
       ]
+    },
+    "lantern-grotto": {
+      "chapters": [],
+      "stages": [],
+      "series": ["toads"],
+      "fallback": "saltglass-coast"
     }
   },
   "enemies": {
@@ -138,6 +144,18 @@
     },
     "dg-item-grand-tonic": {
       "canvas": 128
+    },
+    "dg2-vent-shrimp": {
+      "canvas": 128,
+      "fallback": "ch2-kiln-crab"
+    },
+    "dg2-brine-urchin": {
+      "canvas": 128,
+      "fallback": "ch2-saltfin"
+    },
+    "dg2-glass-jelly": {
+      "canvas": 128,
+      "fallback": "ch2-storm-ray"
     }
   }
 }

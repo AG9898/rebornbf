@@ -95,7 +95,7 @@ describe("turn-triggered form changes (M6-01B_1)", () => {
     expect(types(idle(killed.state, 4).log)).not.toContain("FormChanged");
   });
 
-  it("treats the party exactly as a wave change does: nothing about it changes", () => {
+  it("treats the party exactly as a wave change does", () => {
     const base = createBattle(formSetup(1), 21);
     const buffed: BattleState = {
       ...base,
@@ -112,7 +112,18 @@ describe("turn-triggered form changes (M6-01B_1)", () => {
     const changed = endTurn(buffed);
     const unchanged = endTurn({ ...buffed, formChanges: [] });
     expect(types(changed.events)).toContain("FormChanged");
-    expect(changed.state.party).toEqual(unchanged.state.party);
+    // The form change strips the party's timed buffs (RESOLVED-88); nothing else differs.
+    expect(changed.state.party).toEqual(
+      unchanged.state.party.map((unit) => ({
+        ...unit,
+        effects: unit.effects.filter((effect) => effect.id !== "buff.atk"),
+      })),
+    );
+    expect(
+      changed.state.party.every((unit) => unit.effects.every((e) => e.id !== "buff.atk")),
+    ).toBe(true);
+    const ended = changed.events.filter((e) => e.type === "EffectEnded");
+    expect(ended).toHaveLength(buffed.party.length);
     expect(changed.state.od).toEqual(unchanged.state.od);
     expect(changed.state.items).toEqual(unchanged.state.items);
     expect(changed.state.rng).toEqual(unchanged.state.rng);

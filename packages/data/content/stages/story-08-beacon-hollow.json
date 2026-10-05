@@ -17,6 +17,12 @@
         "unit": "lantern-toad",
         "count": 9
       }
+    ],
+    "spheres": [
+      {
+        "sphere": "wayfarer-seal",
+        "count": 6
+      }
     ]
   },
   "waves": [

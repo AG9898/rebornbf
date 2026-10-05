@@ -50,6 +50,30 @@ export function effectSlot(effect: ActiveEffect): "bb" | "ubb" | "passive" {
   return effect.source === "bb" || effect.source === "sbb" ? "bb" : "passive";
 }
 
+/** A Max HP boost: `passive.stat_pct` on HP, which lasts the whole quest (RESOLVED-88). */
+export function isMaxHpBoost(effect: ActiveEffect): boolean {
+  return effect.id === "passive.stat_pct" && effect.stat === "hp";
+}
+
+/**
+ * Removes every timed (non-passive) buff and debuff from `effects` (GAME_DESIGN §2 → Turn loop and
+ * battle end, RESOLVED-88): burst, skill, and triggered effects go; passives and status ailments
+ * (`ailment.inflict.*`) stay, and with `keepMaxHp` so do Max HP boosts. Used by the wave
+ * transition and shared with the party buff-wipe skill effect (M6-01B_4). Pair with
+ * `endedEffectIds(before, after)` for the `EffectEnded` events.
+ */
+export function removeBuffs(
+  effects: readonly ActiveEffect[],
+  options: { readonly keepMaxHp: boolean },
+): ActiveEffect[] {
+  return effects.filter(
+    (effect) =>
+      isPassiveSource(effect.source) ||
+      effect.id.startsWith("ailment.inflict.") ||
+      (options.keepMaxHp && isMaxHpBoost(effect)),
+  );
+}
+
 export type BuffId = Extract<Effect["id"], `buff.${string}`>;
 export type BuffHandler = (
   effects: readonly ActiveEffect[],

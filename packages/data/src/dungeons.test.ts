@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   CHAPTER_1_CLEAR,
   CHAPTER_1_DUNGEON_MOBS,
+  chapter2DungeonMobs,
   crownShardStage,
   DUNGEON_CAPTURE_RATE,
   DUNGEON_FAMILIES,
@@ -21,7 +22,12 @@ import {
   itemStage,
   materialEnemy,
   materialUnitId,
+  TOAD_ENEMIES,
+  TOAD_STAGE_ID,
   TRIAL_1,
+  TRIAL_2,
+  toadEnemy,
+  toadStage,
   ZENITH_CORE_STAGE_ID,
   zenithCoreStage,
 } from "./dungeons.ts";
@@ -99,6 +105,77 @@ describe("hob series (M4-03I)", () => {
   });
 });
 
+describe("toad series (M4-03K)", () => {
+  it("has one Trial 2 stage, three capturable toads, and three chapter 2 dungeon mobs", () => {
+    const stage = toadStage();
+    expect(stage.id).toBe(TOAD_STAGE_ID);
+    expect(StageSchema.parse(load(`stages/${stage.id}.json`))).toEqual(stage);
+    expect((load(`stages/${TRIAL_2}.json`) as { trial?: { number: number } }).trial?.number).toBe(
+      2,
+    );
+    expect(stage.dungeon).toEqual({
+      series: "toads",
+      gate: TRIAL_2,
+      finalSpawns: [
+        { enemy: "dg-matriarch-toad", replaces: "dg-lantern-toad", rateBp: 1000 },
+        { enemy: "dg-regent-toad", replaces: "dg-lantern-toad", rateBp: 2000 },
+      ],
+    });
+    for (const entry of TOAD_ENEMIES) {
+      const enemy = toadEnemy(entry);
+      expect(EnemySchema.parse(load(`enemies/${enemy.id}.json`))).toEqual(enemy);
+      expect((load(`units/${entry.unit}.json`) as { element: string }).element).toBe(enemy.element);
+      expect(enemy.drops.capture).toEqual({
+        unit: entry.unit,
+        rate: entry.unit === "lantern-toad" ? 25 : 100,
+      });
+    }
+    for (const mob of chapter2DungeonMobs()) {
+      expect(mob.id.startsWith("dg2-")).toBe(true);
+      expect(EnemySchema.parse(load(`enemies/${mob.id}.json`))).toEqual(mob);
+      expect(mob.drops.capture).toBeUndefined();
+    }
+    const slots = stage.waves.flatMap((wave) => wave.enemies);
+    expect(slots.filter((slot) => slot.enemy === "dg-lantern-toad")).toHaveLength(4);
+    expect(slots.filter((slot) => slot.capture)).toEqual([
+      { enemy: "dg-lantern-toad", capture: "always" },
+    ]);
+  });
+
+  it("resolves a Matriarch (10%) or Regent (20%) in the final wave by seed band", () => {
+    const stage = toadStage();
+    const finalToad = (seed: number) =>
+      dungeonWaves(stage, seed)[2]?.enemies.find((slot) => slot.capture === "always")?.enemy;
+    expect(finalToad(0)).toBe("dg-matriarch-toad");
+    expect(finalToad(20999)).toBe("dg-matriarch-toad");
+    expect(finalToad(1000)).toBe("dg-regent-toad");
+    expect(finalToad(42999)).toBe("dg-regent-toad");
+    expect(dungeonWaves(stage, 3000)).toBe(stage.waves);
+    expect(dungeonWaves(stage, 4294967295)).toBe(stage.waves);
+    for (const seed of [0, 1000, 12345]) {
+      const waves = dungeonWaves(stage, seed);
+      expect(waves.slice(0, 2)).toEqual(stage.waves.slice(0, 2));
+      expect(waves.map((wave) => wave.enemies.length)).toEqual([2, 3, 3]);
+    }
+    expect(stage.waves[2]?.enemies[1]?.enemy).toBe("dg-lantern-toad");
+  });
+
+  it("rejects final spawns that overflow, lack a final-wave candidate, or mix with rareSpawn", () => {
+    const stage = toadStage();
+    const over = structuredClone(stage);
+    if (over.dungeon?.finalSpawns?.[1]) over.dungeon.finalSpawns[1].rateBp = 9500;
+    expect(StageSchema.safeParse(over).success).toBe(false);
+    const missing = structuredClone(stage);
+    missing.waves[2] = { enemies: [{ enemy: "dg2-vent-shrimp" }] };
+    expect(StageSchema.safeParse(missing).success).toBe(false);
+    const both = structuredClone(stage);
+    if (both.dungeon) {
+      both.dungeon.rareSpawn = { enemy: "dg-regent-toad", replaces: "dg-lantern-toad", rateBp: 1 };
+    }
+    expect(StageSchema.safeParse(both).success).toBe(false);
+  });
+});
+
 describe("dungeon templates (M4-03C–F)", () => {
   it.each(families)("the $title series has one templated stage per element", (family) => {
     expect(familyElements(family)).toEqual(family.single ? [family.single] : ELEMENTS);
@@ -123,6 +200,7 @@ describe("dungeon templates (M4-03C–F)", () => {
       zenithCoreStage().id,
       ...ITEM_DUNGEONS.map((entry) => itemStage(entry).id),
       ...HOB_DUNGEONS.map((entry) => hobStage(entry).id),
+      toadStage().id,
     ]);
     const dungeons = readdirSync(join(content, "stages"))
       .map((name) => StageSchema.parse(load(`stages/${name}`)))
@@ -226,7 +304,7 @@ describe("dungeon templates (M4-03C–F)", () => {
     });
     const trial = StageSchema.parse(load(`stages/${TRIAL_1}.json`));
     expect(trial.trial?.number).toBe(1);
-    expect(trial.firstClear).toEqual({ gems: 0, items: [{ item: "zenith-core", count: 1 }] });
+    expect(trial.firstClear?.items).toEqual([{ item: "zenith-core", count: 1 }]);
     expect(stage.waves).toHaveLength(3);
     for (const slot of stage.waves.flatMap((wave) => wave.enemies)) {
       expect(Object.values(CHAPTER_1_DUNGEON_MOBS)).toContain(slot.enemy);
