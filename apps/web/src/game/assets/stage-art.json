@@ -38,8 +38,7 @@
     "lantern-grotto": {
       "chapters": [],
       "stages": [],
-      "series": ["toads"],
-      "fallback": "saltglass-coast"
+      "series": ["toads"]
     }
   },
   "enemies": {
@@ -146,16 +145,13 @@
       "canvas": 128
     },
     "dg2-vent-shrimp": {
-      "canvas": 128,
-      "fallback": "ch2-kiln-crab"
+      "canvas": 128
     },
     "dg2-brine-urchin": {
-      "canvas": 128,
-      "fallback": "ch2-saltfin"
+      "canvas": 128
     },
     "dg2-glass-jelly": {
-      "canvas": 128,
-      "fallback": "ch2-storm-ray"
+      "canvas": 128
     }
   }
 }

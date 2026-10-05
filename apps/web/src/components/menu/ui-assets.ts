@@ -161,6 +161,7 @@ export const UI_ASSETS = {
   "ribbon-new": { width: 220, height: 53 },
   "ribbon-clear": { width: 220, height: 52 },
   "reinforcement-row": { width: 1280, height: 170 },
+  "party-row": { width: 1280, height: 286 },
   "bg-vortex": { width: 1024, height: 1536 },
   "bg-conclave": { width: 1024, height: 1536 },
   "bg-proving-lab": { width: 1024, height: 1536 },

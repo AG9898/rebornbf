@@ -98,14 +98,15 @@ describe("dungeon art", () => {
     }
   });
 
-  it("reserves the chapter 2 dungeon theme for the toad series on the coast fallback (M4-03K)", () => {
+  it("fights the toad series in the Lantern Grotto (M6-07N)", () => {
     const toads = dungeonStages.filter((stage) => stage.dungeon?.series === "toads");
     expect(toads).toHaveLength(1);
-    expect(stageArt.backgrounds["lantern-grotto"]).toMatchObject({
+    expect(stageArt.backgrounds["lantern-grotto"]).toEqual({
+      chapters: [],
+      stages: [],
       series: ["toads"],
-      fallback: "saltglass-coast",
     });
-    for (const stage of toads) expect(stageBackground(stage)).toBe("saltglass-coast");
+    for (const stage of toads) expect(stageBackground(stage)).toBe("lantern-grotto");
   });
 
   it("has a locked sprite for every companion mob a dungeon fields", () => {
@@ -174,7 +175,7 @@ describe("dungeon art", () => {
     );
   });
 
-  it("shows the reserved chapter 2 dungeon mobs as their element's coast mob (M6-07N pending)", () => {
+  it("shows the chapter 2 dungeon mobs with their own locked sprites (M6-07N)", () => {
     const toads = dungeonStages.find((stage) => stage.dungeon?.series === "toads");
     expect(toads).toBeDefined();
     if (!toads) return;
@@ -185,9 +186,9 @@ describe("dungeon art", () => {
         .map((sprite) => [sprite.id, sprite.url]),
     );
     expect(urls).toEqual({
-      "dg2-vent-shrimp": "/assets/enemies/ch2-kiln-crab/battle-idle.png",
-      "dg2-brine-urchin": "/assets/enemies/ch2-saltfin/battle-idle.png",
-      "dg2-glass-jelly": "/assets/enemies/ch2-storm-ray/battle-idle.png",
+      "dg2-vent-shrimp": "/assets/enemies/dg2-vent-shrimp/battle-idle.png",
+      "dg2-brine-urchin": "/assets/enemies/dg2-brine-urchin/battle-idle.png",
+      "dg2-glass-jelly": "/assets/enemies/dg2-glass-jelly/battle-idle.png",
     });
   });
 
