@@ -1,3 +1,10 @@
 {
-  "aurelle": ["omni"]
+  "aurelle": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "brand": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "garrick": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "maren": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "morrick": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "rook": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "solen": ["3star", "4star", "5star", "6star", "7star", "omni"],
+  "vespera": ["3star", "4star", "5star", "6star", "7star", "omni"]
 }

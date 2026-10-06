@@ -93,10 +93,11 @@ describe("exported idle sheets (M6-05B)", () => {
   });
 
   it("leaves forms without a sheet on their still sprite", () => {
-    expect(unitIdleSheet("brand", "omni")).toBeUndefined();
-    expect(unitIdleSheet("aurelle", "6star")).toBeUndefined();
-    expect(unitIdleSprite("brand", "omni").imageUrl).toBe(
-      "/assets/units/brand/battle-idle-omni.png",
+    // No unit has an 8★ form, so it is never listed in idle-sheets.json.
+    expect(unitIdleSheet("brand", "8star")).toBeUndefined();
+    expect(unitIdleSheet("aurelle", "8star")).toBeUndefined();
+    expect(unitIdleSprite("brand", "8star").imageUrl).toBe(
+      "/assets/units/brand/battle-idle-8star.png",
     );
   });
 });
