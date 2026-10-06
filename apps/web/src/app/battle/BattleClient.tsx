@@ -39,12 +39,12 @@ function sessionSpec(battle: SessionBattle): BattleSpec {
   };
 }
 
-/** The player's saved presentation settings the scene applies (M7-01_2). */
-export type BattlePreferences = Pick<BattleSpec, "initialSpeed" | "reducedMotion">;
+/** The player's saved presentation settings the scene applies (M7-01_2, volumes M7-01_4). */
+export type BattlePreferences = Pick<BattleSpec, "initialSpeed" | "reducedMotion" | "volume">;
 
 /**
  * Plays `battle` when the page started from a session, else the offline demo, with the player's
- * saved default speed and reduced-motion setting. Spark assist is not here: it is part of the
+ * saved default speed, reduced-motion setting, and music/SFX volumes. Spark assist is not here: it is part of the
  * session's engine setup, so the server replay uses the same value.
  */
 export default function BattleClient({
@@ -58,13 +58,16 @@ export default function BattleClient({
 }): ReactNode {
   const speed = preferences?.initialSpeed;
   const reducedMotion = preferences?.reducedMotion;
+  const music = preferences?.volume?.music;
+  const sfx = preferences?.volume?.sfx;
   const spec = useMemo(
     (): BattleSpec => ({
       ...(battle ? sessionSpec(battle) : DEMO_BATTLE_SPEC),
       ...(speed ? { initialSpeed: speed } : {}),
       ...(reducedMotion ? { reducedMotion } : {}),
+      ...(music !== undefined && sfx !== undefined ? { volume: { music, sfx } } : {}),
     }),
-    [battle, speed, reducedMotion],
+    [battle, speed, reducedMotion, music, sfx],
   );
   const stage = battle?.stage;
   const back = stage ? questReturn(stage) : undefined;

@@ -108,3 +108,29 @@
   color: #fbe39a;
   font-size: calc(var(--u) * 24);
 }
+
+/* Music and SFX volume sliders (M7-01_4): the label above, slider and percent below. */
+.volumeRow {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 14);
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+  height: calc(var(--u) * 30);
+  accent-color: #d49a2a;
+}
+
+.volumeValue {
+  width: calc(var(--u) * 48);
+  color: #fff4d6;
+  font-size: calc(var(--u) * 24);
+  text-align: right;
+}

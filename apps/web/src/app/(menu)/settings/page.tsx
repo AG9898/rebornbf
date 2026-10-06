@@ -52,7 +52,8 @@ async function loadAutoUnits(
 }
 
 /**
- * The settings screen (M7-01_2): spark assist, default battle speed, and reduced motion, plus the
+ * The settings screen (M7-01_2): spark assist, default battle speed, reduced motion, and the music
+ * and SFX volumes (M7-01_4), plus the
  * auto-battle advanced settings (M7-01_3), read with `get_settings` and saved with `save_settings`.
  * Protected (`/settings`); when a read fails its form is not shown, so saving cannot overwrite
  * values that were never loaded.
@@ -75,6 +76,8 @@ export default async function SettingsPage(): Promise<ReactNode> {
               sparkAssist: settings.sparkAssist,
               battleSpeed: settings.battleSpeed,
               reducedMotion: settings.reducedMotion,
+              musicVolume: settings.musicVolume,
+              sfxVolume: settings.sfxVolume,
             }}
           />
         )}

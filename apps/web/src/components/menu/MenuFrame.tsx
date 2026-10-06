@@ -11,17 +11,20 @@ export function MenuFrame({
   children,
   playerName,
   wallet,
+  volume,
 }: {
   children: ReactNode;
   /** The signed-in player's display name for the status bar; null shows the placeholder. */
   playerName?: string | null;
   /** The player's wallet for the status bar; null (signed out or unread) shows 0. */
   wallet?: { gems: number; zel: number } | null;
+  /** The player's saved music and SFX levels (0–1); null keeps the audio defaults. */
+  volume?: { music: number; sfx: number } | null;
 }): ReactNode {
   return (
     <div className={styles.backdrop}>
       <div className={styles.frame}>
-        <MenuMusic />
+        <MenuMusic volume={volume ?? null} />
         <WalletGemsProvider initialGems={wallet?.gems ?? null}>
           <div className={styles.screen}>
             <TopBar playerName={playerName} zel={wallet?.zel ?? null} />

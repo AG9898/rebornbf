@@ -10,6 +10,7 @@ import {
   sessionProblem,
 } from "../../lib/battle/session-battle.ts";
 import { TRIALS_LAB_PATH } from "../../lib/quests/trials.ts";
+import { audioLevels } from "../../lib/settings/player-settings.ts";
 import { SIGN_IN_PATH } from "../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../lib/supabase/server.ts";
 import { loadPlayerSettings } from "../../server/player-settings.ts";
@@ -57,7 +58,8 @@ async function loadSession(sessionId: string): Promise<Loaded> {
  * The battle route. With `?session=<id>` it plays a story battle issued by `start_battle`
  * (M3-04B): the session's stage, squad snapshot, and server-rolled seed. Without one it plays the
  * offline demo (M2-05B): no sign-in, no rewards; the whole battle runs client-side. Both play at
- * the player's saved default speed and reduced-motion setting (M7-01_2; defaults when signed out).
+ * the player's saved default speed and reduced-motion setting (M7-01_2) and music/SFX volumes
+ * (M7-01_4); defaults when signed out.
  * The battle fills the whole screen with no page header; only a load error shows a way back.
  */
 export default async function BattlePage({
@@ -74,6 +76,7 @@ export default async function BattlePage({
   const preferences: BattlePreferences = {
     initialSpeed: settings.battleSpeed,
     reducedMotion: settings.reducedMotion,
+    volume: audioLevels(settings),
   };
   const isTrial = loaded !== undefined && "battle" in loaded && !!loaded.battle.stage.trial;
   const back = !sessionId

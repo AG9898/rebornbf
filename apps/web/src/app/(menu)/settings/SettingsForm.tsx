@@ -1,27 +1,48 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
 import menu from "../../../components/menu/menu.module.css";
-import type { BattleSettingsDraft } from "../../../lib/settings/player-settings.ts";
+import { gameAudio } from "../../../game/audio/index.ts";
+import { audioLevels, type BattleSettingsDraft } from "../../../lib/settings/player-settings.ts";
 import { saveBattleSettings } from "./actions.ts";
 import styles from "./settings.module.css";
 
-/** Edits the battle settings and saves them together; changes apply from the next battle. */
+const VOLUMES = [
+  { key: "musicVolume", label: "Music volume", hint: "Menu and battle themes." },
+  { key: "sfxVolume", label: "SFX volume", hint: "Hits, sparks, bursts, and menu sounds." },
+] as const;
+
+/**
+ * Edits the battle settings and the music and SFX volumes, and saves them together. Volume
+ * changes play live through the shared audio player (M7-01_4); leaving with unsaved volumes puts
+ * the saved levels back. The other settings apply from the next battle.
+ */
 export default function SettingsForm({ initial }: { initial: BattleSettingsDraft }): ReactNode {
   const [draft, setDraft] = useState<BattleSettingsDraft>(initial);
   const [saved, setSaved] = useState<BattleSettingsDraft>(initial);
   const [message, setMessage] = useState<{ ok: boolean; text: string }>();
   const [pending, startTransition] = useTransition();
+  const savedRef = useRef(saved);
+  savedRef.current = saved;
   const dirty =
     draft.sparkAssist !== saved.sparkAssist ||
     draft.battleSpeed !== saved.battleSpeed ||
-    draft.reducedMotion !== saved.reducedMotion;
+    draft.reducedMotion !== saved.reducedMotion ||
+    draft.musicVolume !== saved.musicVolume ||
+    draft.sfxVolume !== saved.sfxVolume;
+
+  // Unsaved volume previews end with the screen: the player hears the saved levels again.
+  useEffect(() => () => gameAudio().setVolume(audioLevels(savedRef.current)), []);
 
   function update(change: Partial<BattleSettingsDraft>): void {
-    setDraft((current) => ({ ...current, ...change }));
+    const next = { ...draft, ...change };
+    setDraft(next);
     setMessage(undefined);
+    if ("musicVolume" in change || "sfxVolume" in change) {
+      gameAudio().setVolume(audioLevels(next));
+    }
   }
 
   function save(): void {
@@ -29,7 +50,7 @@ export default function SettingsForm({ initial }: { initial: BattleSettingsDraft
       const result = await saveBattleSettings(draft);
       if (result.ok) {
         setSaved(draft);
-        setMessage({ ok: true, text: "Saved. Changes apply from your next battle." });
+        setMessage({ ok: true, text: "Saved. Battle changes apply from your next battle." });
       } else {
         setMessage({ ok: false, text: result.message });
       }
@@ -92,6 +113,30 @@ export default function SettingsForm({ initial }: { initial: BattleSettingsDraft
           onChange={(event) => update({ reducedMotion: event.target.checked })}
         />
       </label>
+
+      {VOLUMES.map(({ key, label, hint }) => (
+        <label key={key} className={`${styles.row} ${styles.volumeRow}`}>
+          <span className={styles.label}>
+            {label}
+            <span className={styles.hint}>{hint}</span>
+          </span>
+          <span className={styles.volume}>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              className={styles.slider}
+              value={draft[key]}
+              onChange={(event) => update({ [key]: Number(event.target.value) })}
+              onPointerUp={() => {
+                if (key === "sfxVolume") gameAudio().playSfx("ui-confirm");
+              }}
+            />
+            <output className={styles.volumeValue}>{draft[key]}</output>
+          </span>
+        </label>
+      ))}
 
       <button type="submit" className={menu.panelLink} disabled={pending || !dirty}>
         {pending ? <LoadingGlyph /> : "Save"}

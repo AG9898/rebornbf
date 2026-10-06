@@ -57,13 +57,21 @@ describe("player settings (M7-01_1)", () => {
 
 describe("settings screen save arguments (M7-01_2)", () => {
   it("maps a draft to save_settings arguments for only its own fields", () => {
-    expect(battleSettingsArgs({ sparkAssist: true, battleSpeed: 2, reducedMotion: false })).toEqual(
-      {
-        p_spark_assist: true,
-        p_battle_speed: 2,
-        p_reduced_motion: false,
-      },
-    );
+    expect(
+      battleSettingsArgs({
+        sparkAssist: true,
+        battleSpeed: 2,
+        reducedMotion: false,
+        musicVolume: 0,
+        sfxVolume: 100,
+      }),
+    ).toEqual({
+      p_spark_assist: true,
+      p_battle_speed: 2,
+      p_reduced_motion: false,
+      p_music_volume: 0,
+      p_sfx_volume: 100,
+    });
   });
   it("refuses malformed drafts", () => {
     expect(battleSettingsArgs(null)).toBeNull();
@@ -74,6 +82,16 @@ describe("settings screen save arguments (M7-01_2)", () => {
       battleSettingsArgs({ sparkAssist: "yes", battleSpeed: 1, reducedMotion: false }),
     ).toBeNull();
     expect(battleSettingsArgs({ sparkAssist: false, battleSpeed: 1 })).toBeNull();
+  });
+  it("refuses volumes outside whole percents 0-100 (M7-01_4)", () => {
+    const base = { sparkAssist: false, battleSpeed: 1, reducedMotion: false };
+    expect(battleSettingsArgs({ ...base, musicVolume: 50 })).toBeNull();
+    expect(battleSettingsArgs({ ...base, musicVolume: 101, sfxVolume: 70 })).toBeNull();
+    expect(battleSettingsArgs({ ...base, musicVolume: 50, sfxVolume: -1 })).toBeNull();
+    expect(battleSettingsArgs({ ...base, musicVolume: 12.5, sfxVolume: 70 })).toBeNull();
+  });
+  it("turns saved percents into audio levels", () => {
+    expect(audioLevels({ musicVolume: 0, sfxVolume: 25 })).toEqual({ music: 0, sfx: 0.25 });
   });
 });
 

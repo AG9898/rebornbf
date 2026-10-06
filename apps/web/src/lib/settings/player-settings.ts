@@ -48,9 +48,7 @@ function bool(value: unknown, fallback: boolean): boolean {
 }
 
 function percent(value: unknown, fallback: number): number {
-  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100
-    ? value
-    : fallback;
+  return isPercent(value) ? value : fallback;
 }
 
 function isAutoMode(value: unknown): value is AutoUnitMode {
@@ -82,30 +80,45 @@ export function parsePlayerSettings(row: PlayerSettingsRow | null | undefined): 
 }
 
 /** The saved volumes as the audio system's 0–1 levels (M7-03A `AudioVolume`). */
-export function audioLevels(settings: PlayerSettings): { music: number; sfx: number } {
+export function audioLevels(settings: Pick<PlayerSettings, "musicVolume" | "sfxVolume">): {
+  music: number;
+  sfx: number;
+} {
   return { music: settings.musicVolume / 100, sfx: settings.sfxVolume / 100 };
 }
 
-/** The fields the settings screen edits (M7-01_2); volumes are a later screen. */
+/** The fields the settings screen edits (M7-01_2), with the music and SFX volumes (M7-01_4). */
 export type BattleSettingsDraft = Pick<
   PlayerSettings,
-  "sparkAssist" | "battleSpeed" | "reducedMotion"
+  "sparkAssist" | "battleSpeed" | "reducedMotion" | "musicVolume" | "sfxVolume"
 >;
+
+function isPercent(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100;
+}
 
 /** `save_settings` arguments for a draft, or null when the draft is malformed. */
 export function battleSettingsArgs(draft: unknown): {
   p_spark_assist: boolean;
   p_battle_speed: 1 | 2;
   p_reduced_motion: boolean;
+  p_music_volume: number;
+  p_sfx_volume: number;
 } | null {
   if (typeof draft !== "object" || draft === null) return null;
-  const { sparkAssist, battleSpeed, reducedMotion } = draft as Record<string, unknown>;
+  const { sparkAssist, battleSpeed, reducedMotion, musicVolume, sfxVolume } = draft as Record<
+    string,
+    unknown
+  >;
   if (typeof sparkAssist !== "boolean" || typeof reducedMotion !== "boolean") return null;
   if (battleSpeed !== 1 && battleSpeed !== 2) return null;
+  if (!isPercent(musicVolume) || !isPercent(sfxVolume)) return null;
   return {
     p_spark_assist: sparkAssist,
     p_battle_speed: battleSpeed,
     p_reduced_motion: reducedMotion,
+    p_music_volume: musicVolume,
+    p_sfx_volume: sfxVolume,
   };
 }
 

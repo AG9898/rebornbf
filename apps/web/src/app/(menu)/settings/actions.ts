@@ -7,10 +7,11 @@ import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 export type SaveSettingsResult = { ok: true } | { ok: false; message: string };
 
 /**
- * Saves the settings screen's fields (spark assist, default battle speed, reduced motion) through
- * `save_settings` (M7-01_1) as the signed-in player. Only these three arguments are sent, so the
- * RPC keeps the player's volumes and auto-battle settings. The next battle session freezes spark
- * assist; the battle page reads speed and reduced motion when it loads.
+ * Saves the settings screen's fields (spark assist, default battle speed, reduced motion, music and
+ * SFX volume) through `save_settings` (M7-01_1) as the signed-in player. Only these arguments are
+ * sent, so the RPC keeps the player's auto-battle settings. The next battle session freezes spark
+ * assist; the battle page reads speed, reduced motion, and the volumes when it loads, and the menu
+ * layout reads the volumes (M7-01_4).
  */
 export async function saveBattleSettings(draft: unknown): Promise<SaveSettingsResult> {
   const args = battleSettingsArgs(draft);

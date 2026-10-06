@@ -23,7 +23,7 @@ import {
   unitCutinPortrait,
   unitPortrait,
 } from "../assets/ui.ts";
-import { battleMusic, cueSfx, gameAudio } from "../audio/index.ts";
+import { type AudioVolume, battleMusic, cueSfx, gameAudio } from "../audio/index.ts";
 import type { BattleBridge } from "../bridge.ts";
 import { BATTLE_HEIGHT, BATTLE_WIDTH, CANVAS_ZOOM } from "../bridge.ts";
 import {
@@ -191,6 +191,11 @@ export interface BattleSpec {
    * dropped and flashes fade without blooming. Presentation only; cue timing is unchanged.
    */
   readonly reducedMotion?: boolean;
+  /**
+   * The player's saved music and SFX levels (M7-01_4), set on the shared audio player when the
+   * battle starts; absent keeps the current levels.
+   */
+  readonly volume?: AudioVolume;
 }
 
 /** The art one squad's party slots wear, in party order. */
@@ -452,6 +457,7 @@ export class BattleScene extends Phaser.Scene {
     this.transitionView = new WaveTransitionView(this, this.fontFamily, this.motion);
     this.status = this.text(BATTLE_WIDTH / 2, 124, "", "#e8ecff", 17).setOrigin(0.5, 0);
     this.banners(waveBanners(this.hud.wave, this.cueContext()));
+    if (this.spec.volume) gameAudio().setVolume(this.spec.volume);
     gameAudio().playMusic(battleMusic(this.hud.wave, this.cueContext()));
     const stopMusic = (): void => gameAudio().stopMusic();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, stopMusic);
