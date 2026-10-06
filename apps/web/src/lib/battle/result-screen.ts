@@ -3,6 +3,7 @@ import crownShard from "@bfr/data/content/items/crown-shard.json";
 import zenithCore from "@bfr/data/content/items/zenith-core.json";
 import { itemIcon } from "../../components/menu/item-icon.ts";
 import type { UiAsset } from "../../components/menu/ui-assets.ts";
+import { dungeonSeriesTitle } from "../quests/dungeons.ts";
 import { BATTLE_ITEMS } from "../quests/item-loadout.ts";
 import { CHAPTER_TITLES } from "../quests/quest-map.ts";
 import { TRIALS_LAB_PATH } from "../quests/trials.ts";
@@ -90,25 +91,28 @@ function thumbPath(unitId: string, art: string | null): string | null {
 }
 
 /** The area line: a story stage's chapter title, or "Trial N". */
-export function areaName(stage: Pick<Stage, "story" | "trial">): string {
+export function areaName(stage: Pick<Stage, "story" | "trial" | "dungeon">): string {
   if (stage.story) return CHAPTER_TITLES[stage.story.chapter] ?? `Chapter ${stage.story.chapter}`;
   if (stage.trial) return `Trial ${stage.trial.number}`;
+  if (stage.dungeon) return dungeonSeriesTitle(stage.dungeon.series);
   return "Quest";
 }
 
 /** Where the flow returns: the stage's own chapter list, or the Proving Lab for a trial. */
-export function questReturn(stage: Pick<Stage, "story" | "trial">): {
+export function questReturn(stage: Pick<Stage, "story" | "trial" | "dungeon">): {
   href: string;
   label: string;
 } {
   if (stage.trial) return { href: TRIALS_LAB_PATH, label: "Back to Trials" };
+  if (stage.dungeon)
+    return { href: `/dungeons/${stage.dungeon.series}`, label: "Back to dungeons" };
   if (stage.story) return { href: `/quests/${stage.story.chapter}`, label: "Back to quests" };
   return { href: "/quests", label: "Back to quests" };
 }
 
 /** The reward screen for a verified win; never called for pending, failed, or lost battles. */
 export function questResultView(
-  stage: Pick<Stage, "name" | "story" | "trial">,
+  stage: Pick<Stage, "name" | "story" | "trial" | "dungeon">,
   submission: Extract<Submission, { ok: true }>,
 ): QuestResultView {
   const { rewards } = submission;

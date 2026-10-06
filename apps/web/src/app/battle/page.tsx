@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { questReturn } from "../../lib/battle/result-screen.ts";
 import {
   BATTLE_SESSION_COLUMNS,
   type BattleSessionRow,
@@ -9,7 +10,6 @@ import {
   sessionBattle,
   sessionProblem,
 } from "../../lib/battle/session-battle.ts";
-import { TRIALS_LAB_PATH } from "../../lib/quests/trials.ts";
 import { audioLevels } from "../../lib/settings/player-settings.ts";
 import { SIGN_IN_PATH } from "../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../lib/supabase/server.ts";
@@ -78,11 +78,11 @@ export default async function BattlePage({
     reducedMotion: settings.reducedMotion,
     volume: audioLevels(settings),
   };
-  const isTrial = loaded !== undefined && "battle" in loaded && !!loaded.battle.stage.trial;
+  const stage = loaded !== undefined && "battle" in loaded ? loaded.battle.stage : undefined;
   const back = !sessionId
     ? { href: "/home", label: "Home" }
-    : isTrial
-      ? { href: TRIALS_LAB_PATH, label: "Trials" }
+    : stage
+      ? questReturn(stage)
       : { href: "/quests", label: "Quest" };
 
   return (

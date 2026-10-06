@@ -21,7 +21,13 @@ export async function beginQuest(
   const content = sessionStage(stage);
   if (!content) redirect("/quests");
   if (!Number.isInteger(slot) || slot < 0 || slot >= SQUAD_SLOTS)
-    redirect(content.trial ? TRIALS_LAB_PATH : "/quests");
+    redirect(
+      content.trial
+        ? TRIALS_LAB_PATH
+        : content.dungeon
+          ? `/dungeons/${content.dungeon.series}`
+          : "/quests",
+    );
   const returnPath = beginQuestHref(stage, ally, slot);
   let value: unknown = [];
   try {

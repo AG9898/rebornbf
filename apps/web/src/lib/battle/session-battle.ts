@@ -1,7 +1,9 @@
 import {
   CONTENT_VERSION,
+  dungeonWaves,
   type Enemy,
   EnemySchema,
+  rampedStats,
   type Sphere,
   type Stage,
   type Stats,
@@ -36,6 +38,7 @@ import {
   type SquadMemberSetup,
   type UnitTypeRoll,
 } from "@bfr/engine";
+import { DUNGEON_ENEMIES, dungeonStage } from "../quests/dungeons.ts";
 import { BATTLE_ITEMS } from "../quests/item-loadout.ts";
 import { STORY_STAGES } from "../quests/quest-map.ts";
 import { trialStage } from "../quests/trials.ts";
@@ -141,6 +144,7 @@ const ENEMIES: ReadonlyMap<string, Enemy> = new Map(
     lockeP2,
     ozric,
     ozricP2,
+    ...DUNGEON_ENEMIES,
   ].map((json) => {
     const enemy = EnemySchema.parse(json);
     return [enemy.id, enemy];
@@ -160,9 +164,9 @@ export function storyStage(stageId: string): Stage | undefined {
   return STORY_STAGES.find((stage) => stage.id === stageId);
 }
 
-/** The story or trial stage a session can play (M6-01A_1); dungeons are not playable yet. */
+/** Every story, trial, and launch farming stage a frozen session can play. */
 export function sessionStage(stageId: string): Stage | undefined {
-  return storyStage(stageId) ?? trialStage(stageId);
+  return storyStage(stageId) ?? trialStage(stageId) ?? dungeonStage(stageId);
 }
 
 function enemySetup(id: string): EnemySetup | null {
@@ -298,8 +302,12 @@ export function sessionProblem(row: BattleSessionRow, now: Date): string | null 
  * squad. A trial's setup carries `trial: true`, so the engine refuses continues (RESOLVED-17).
  */
 export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
-  const stage = sessionStage(row.stage_id);
-  if (!stage) return { ok: false, message: "This stage is not in this version of the game." };
+  const content = sessionStage(row.stage_id);
+  if (!content) return { ok: false, message: "This stage is not in this version of the game." };
+  // Playback art and replay must see the same seeded replacement, with no second roll.
+  const stage = content.dungeon
+    ? { ...content, waves: dungeonWaves(content, Number(row.seed)) }
+    : content;
 
   const waves: EnemySetup[][] = [];
   for (const wave of stage.waves) {
@@ -307,7 +315,9 @@ export function sessionBattle(row: BattleSessionRow): SessionBattleResult {
     for (const slot of wave.enemies) {
       const enemy = enemySetup(slot.enemy);
       if (!enemy) return { ok: false, message: "This stage is not in this version of the game." };
-      enemies.push(enemy);
+      enemies.push(
+        stage.dungeon ? { ...enemy, stats: rampedStats(enemy.stats, stage.dungeon.ramp) } : enemy,
+      );
     }
     waves.push(enemies);
   }

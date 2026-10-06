@@ -1,6 +1,8 @@
 import { CONTENT_VERSION } from "@bfr/data";
 import { createBattle } from "@bfr/engine";
 import { describe, expect, it } from "vitest";
+import { stageBackground, stageEnemyArt } from "../../game/assets/stage-art.ts";
+import { DUNGEON_ENEMIES, DUNGEON_STAGES } from "../quests/dungeons.ts";
 import { STORY_STAGES } from "../quests/quest-map.ts";
 import { unitContent } from "../units/owned-units.ts";
 import {
@@ -35,6 +37,54 @@ function row(overrides: Partial<BattleSessionRow> = {}): BattleSessionRow {
 }
 
 describe("session battle (M3-04B)", () => {
+  it("builds every dungeon for playback and replay, applying the ramp exactly once (M4-03)", () => {
+    for (const stage of DUNGEON_STAGES) {
+      const result = sessionBattle(row({ stage_id: stage.id, seed: 1500 }));
+      if (!result.ok) throw new Error(`${stage.id}: ${result.message}`);
+      expect(createBattle(result.battle.setup, result.battle.seed).waves).toHaveLength(
+        stage.waves.length,
+      );
+      expect(stageBackground(result.battle.stage)).toBe(
+        stage.dungeon?.series === "toads" ? "lantern-grotto" : "fairy-meadow",
+      );
+      const art = stageEnemyArt(result.battle.stage);
+      expect(art.map((wave) => wave.map((enemy) => enemy.id))).toEqual(
+        result.battle.setup.waves.map((wave) => wave.map((enemy) => enemy.id)),
+      );
+    }
+    const result = sessionBattle(row({ stage_id: "dungeon-zenith-core" }));
+    if (!result.ok) throw new Error(result.message);
+    const baseline = DUNGEON_ENEMIES.find((enemy) => enemy.id === "dg1-ember-mite");
+    expect(baseline?.stats.hp).toBe(4000);
+    expect(result.battle.setup.waves[0]?.[0]?.stats.hp).toBe(6600); // 4000 × 1.65
+    expect(result.battle.setup.waves[0]?.[0]?.stats.atk).toBe(1403); // round(850 × 1.65)
+    expect(result.battle.setup.waves[0]?.[0]?.stats.def).toBe(baseline?.stats.def);
+  });
+
+  it("uses the session seed once for rare hob/toad replacements in combat and renderer art", () => {
+    for (const [stageId, seed, expected, wave] of [
+      ["dungeon-vital-hob", 0, "dg-grand-hob", 0],
+      ["dungeon-vital-hob", 10000, "dg-grand-hob", 1],
+      ["dungeon-vital-hob", 20000, "dg-grand-hob", 2],
+      ["dungeon-lantern-toad", 999, "dg-matriarch-toad", 2],
+      ["dungeon-lantern-toad", 1000, "dg-regent-toad", 2],
+      ["dungeon-lantern-toad", 3000, "dg-lantern-toad", 2],
+    ] as const) {
+      const session = row({ stage_id: stageId, seed });
+      const result = sessionBattle(session);
+      if (!result.ok) throw new Error(result.message);
+      expect(result.battle.setup.waves[wave]?.some((enemy) => enemy.id === expected)).toBe(true);
+      expect(stageEnemyArt(result.battle.stage)[wave]?.some((enemy) => enemy.id === expected)).toBe(
+        true,
+      );
+      expect(sessionBattle(session)).toEqual(result);
+    }
+    expect(
+      DUNGEON_STAGES.find((stage) => stage.id === "dungeon-vital-hob")
+        ?.waves.flatMap((wave) => wave.enemies)
+        .some((slot) => slot.enemy === "dg-grand-hob"),
+    ).toBe(false);
+  });
   it("uses frozen hob totals once for playback/replay, including duplicate allies", () => {
     const imps = { hp: 150, atk: 60, def: 60, rec: 60 };
     const snapshot = { ...snap("brand", "brand-3"), imps };

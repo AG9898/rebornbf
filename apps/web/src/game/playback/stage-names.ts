@@ -14,6 +14,7 @@ export interface StageNames {
 const SERIES_TITLES: Readonly<Record<string, string>> = {
   [ITEM_SERIES]: "Item",
   hobs: "Hob",
+  toads: "Lantern Toad",
   "zenith-core": "Zenith Core",
 };
 

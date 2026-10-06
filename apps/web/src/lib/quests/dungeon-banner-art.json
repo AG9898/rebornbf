@@ -1,0 +1,22 @@
+{
+  "evolution-materials": "/assets/ui/banners/evolution-materials.webp",
+  "fusion-vessels": "/assets/ui/banners/fusion-vessels.webp",
+  "hob-warrens": "/assets/ui/banners/hob-warrens.webp",
+  "item-caches": "/assets/ui/banners/item-caches.webp",
+  "zenith-core-spire": "/assets/ui/banners/zenith-core-spire.webp",
+  "series-sprite": "/assets/ui/banners/series-sprite.webp",
+  "series-effigy": "/assets/ui/banners/series-effigy.webp",
+  "series-mote": "/assets/ui/banners/series-mote.webp",
+  "series-cairn": "/assets/ui/banners/series-cairn.webp",
+  "series-prism-cairn": "/assets/ui/banners/series-prism-cairn.webp",
+  "series-wyrm-coffer": "/assets/ui/banners/series-wyrm-coffer.webp",
+  "series-colossus": "/assets/ui/banners/series-colossus.webp",
+  "series-glint-urn": "/assets/ui/banners/series-glint-urn.webp",
+  "series-dusk-urn": "/assets/ui/banners/series-dusk-urn.webp",
+  "series-flask": "/assets/ui/banners/series-flask.webp",
+  "series-alembic": "/assets/ui/banners/series-alembic.webp",
+  "series-athanor": "/assets/ui/banners/series-athanor.webp",
+  "series-grail": "/assets/ui/banners/series-grail.webp",
+  "series-hobs": "/assets/ui/banners/series-hobs.webp",
+  "series-toads": "/assets/ui/banners/series-toads.webp"
+}

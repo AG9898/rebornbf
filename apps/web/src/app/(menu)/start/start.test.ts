@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DUNGEON_STAGES } from "../../../lib/quests/dungeons.ts";
 import { STORY_STAGES } from "../../../lib/quests/quest-map.ts";
 import { reinforcements } from "../../../lib/quests/reinforcement.ts";
 import { TRIAL_STAGES } from "../../../lib/quests/trials.ts";
@@ -45,6 +46,49 @@ beforeEach(() => {
 });
 
 describe("quest preparation integration (M3-04I)", () => {
+  it("keeps the vortex through dungeon Reinforcement and Begin Quest and Back returns to its series", async () => {
+    const dungeon = DUNGEON_STAGES.find((entry) => entry.dungeon?.series === "sprite");
+    if (!dungeon) throw new Error("Missing dungeon fixture");
+    preparation.mockResolvedValue({
+      stage: dungeon,
+      owned,
+      squads: [{ slot: 7, unit_ids: [id], leader_index: 0 }],
+      items: [],
+      userId: "player-one",
+      failed: false,
+    });
+    const reinforcement = renderToStaticMarkup(
+      await ReinforcementPage({
+        params: Promise.resolve({ stage: dungeon.id }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(reinforcement).toContain('data-backdrop="vortex"');
+    expect(reinforcement).toMatch(/<a[^>]* href="\/dungeons\/sprite"[^>]*>Back<\/a>/);
+    const prep = renderToStaticMarkup(
+      await BeginQuestPage({
+        params: Promise.resolve({ stage: dungeon.id }),
+        searchParams: Promise.resolve({ slot: "7" }),
+      }),
+    );
+    expect(prep).toContain('data-backdrop="vortex"');
+    expect(prep).toContain("action=");
+  });
+
+  it.each(["this dungeon is still locked", "no clears left today for this dungeon"])(
+    "preserves the dungeon, squad and ally on start_battle refusal: %s",
+    async (message) => {
+      const stageId = "dungeon-vital-hob";
+      rpc.mockResolvedValue({ error: { code: "22023", message: `start_battle: ${message}` } });
+      await expect(beginQuest(stageId, 7, "aurelle")).rejects.toThrow(
+        `redirect:/start/${stageId}/begin?slot=7&ally=aurelle&error=`,
+      );
+      expect(rpc).toHaveBeenCalledWith(
+        "start_battle",
+        expect.objectContaining({ p_stage_id: stageId, p_squad_slot: 7, p_ally: "aurelle" }),
+      );
+    },
+  );
   it("retains trial, ally and squad after a trial gate refusal", async () => {
     const trial = TRIAL_STAGES[0];
     if (!trial) throw new Error("Missing trial fixture");

@@ -68,10 +68,19 @@ export default async function ReinforcementPage({
     );
   }
   return (
-    <div className={styles.page} data-backdrop="olive">
+    <div
+      className={`${styles.page} ${preparation.stage.dungeon ? styles.vortex : ""}`}
+      data-backdrop={preparation.stage.dungeon ? "vortex" : "olive"}
+    >
       <header className={unitStyles.titleBar}>
         <Link
-          href={preparation.stage.story ? `/quests/${preparation.stage.story.chapter}` : "/quests"}
+          href={
+            preparation.stage.dungeon
+              ? `/dungeons/${preparation.stage.dungeon.series}`
+              : preparation.stage.story
+                ? `/quests/${preparation.stage.story.chapter}`
+                : "/quests"
+          }
           className={`${unitStyles.pill} ${unitStyles.backButton}`}
         >
           Back

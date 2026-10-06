@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DUNGEON_STAGES } from "../lib/quests/dungeons.ts";
 import { STORY_STAGES } from "../lib/quests/quest-map.ts";
 import { TRIAL_STAGES } from "../lib/quests/trials.ts";
 import { questPreparation } from "./quest-preparation.ts";
@@ -41,7 +42,7 @@ beforeEach(() => {
 });
 
 describe("shared story/trial preparation reads", () => {
-  it.each([...STORY_STAGES.slice(0, 1), ...TRIAL_STAGES])(
+  it.each([...STORY_STAGES.slice(0, 1), ...TRIAL_STAGES, ...DUNGEON_STAGES.slice(0, 1)])(
     "accepts $name and reads the caller's units, saved squads and item stock",
     async (stage) => {
       const preparation = await questPreparation(stage.id);

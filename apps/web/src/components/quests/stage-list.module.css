@@ -125,6 +125,18 @@ a.panel:hover {
   filter: grayscale(0.4);
 }
 
+.stage:has([aria-disabled="true"]) .panel {
+  opacity: 0.65;
+}
+
+.rewards {
+  margin: calc(var(--u) * 6) calc(var(--u) * 12) 0;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 18);
+  line-height: 1.4;
+  color: #eee1b8;
+}
+
 /* On the panel's top-left corner, at the panel's own scale (both pieces are 2x exports). */
 .ribbon {
   position: absolute;

@@ -77,7 +77,10 @@ export default async function BeginQuestPage({
     ally ?? null,
   ];
   return (
-    <div className={`${styles.page} ${styles.fill}`} data-backdrop="olive">
+    <div
+      className={`${styles.page} ${styles.fill} ${preparation.stage.dungeon ? styles.vortex : ""}`}
+      data-backdrop={preparation.stage.dungeon ? "vortex" : "olive"}
+    >
       <header className={unitStyles.titleBar}>
         <Link href={`/start/${stage}`} className={`${unitStyles.pill} ${unitStyles.backButton}`}>
           Back

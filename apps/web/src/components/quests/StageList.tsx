@@ -13,6 +13,8 @@ export type StageListEntry = {
   waves: number;
   state: StageState;
   leftToday?: number;
+  /** Dungeon captures and drops; placed below the panel so longer lists stay readable. */
+  rewards?: string;
 };
 
 /**
@@ -137,6 +139,7 @@ export function StageList({
                   {content}
                 </div>
               )}
+              {stage.rewards ? <p className={styles.rewards}>{stage.rewards}</p> : null}
             </li>
           );
         })}

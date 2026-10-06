@@ -1,5 +1,10 @@
 import "server-only";
 import {
+  buildDungeonList,
+  type DailyDungeonRow,
+  type DungeonSeriesView,
+} from "../lib/quests/dungeons.ts";
+import {
   buildQuestMap,
   clearedStageIds,
   QUEST_PROGRESS_COLUMNS,
@@ -50,4 +55,21 @@ export async function trialProgress(): Promise<{
 }> {
   const { cleared, signedIn, failed } = await clearedProgress();
   return { trials: buildTrialList(cleared), signedIn, failed };
+}
+
+/** Read gates under RLS and daily wins through the authenticated, server-owned RPC. */
+export async function dungeonProgress(): Promise<{
+  series: DungeonSeriesView[];
+  signedIn: boolean;
+  failed: boolean;
+}> {
+  const { cleared, signedIn, failed } = await clearedProgress();
+  const supabase = signedIn ? await createSupabaseServerClient() : null;
+  const result = supabase ? await supabase.rpc("dungeon_clears_today") : null;
+  const daily = (result?.data ?? []) as DailyDungeonRow[];
+  return {
+    series: buildDungeonList(cleared, daily),
+    signedIn,
+    failed: failed || Boolean(result?.error) || (signedIn && !supabase),
+  };
 }

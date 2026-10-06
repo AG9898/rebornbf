@@ -129,5 +129,8 @@ describe("return destination", () => {
     expect(questReturn(STORY)).toEqual({ href: "/quests/1", label: "Back to quests" });
     expect(questReturn(TRIAL)).toEqual({ href: "/conclave/lab", label: "Back to Trials" });
     expect(areaName(TRIAL)).toBe("Trial 1");
+    const dungeon = { dungeon: { series: "toads", gate: "trial-02-master-ozric" } };
+    expect(questReturn(dungeon)).toEqual({ href: "/dungeons/toads", label: "Back to dungeons" });
+    expect(areaName(dungeon)).toBe("Lantern Toad Grotto");
   });
 });
