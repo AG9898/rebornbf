@@ -855,15 +855,15 @@ button.actionButton:disabled {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: calc(var(--u) * 15);
+  gap: calc(var(--u) * 12);
   height: 100%;
-  padding: calc(var(--u) * 25) 0 calc(var(--u) * 17.5) calc(var(--u) * 17.5);
+  padding: calc(var(--u) * 20) 0 calc(var(--u) * 14) calc(var(--u) * 14);
 }
 
 .infoStats {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--u) * 12.5);
+  gap: calc(var(--u) * 10);
   margin: 0;
 }
 
@@ -871,23 +871,23 @@ button.actionButton:disabled {
 .infoPill {
   display: flex;
   align-items: center;
-  gap: calc(var(--u) * 15);
-  height: calc(var(--u) * 50);
-  padding: 0 calc(var(--u) * 5);
-  border: calc(var(--u) * 15) solid transparent;
-  border-image: url("/assets/ui/stat-pill.webp") 24 fill / calc(var(--u) * 15) stretch;
+  gap: calc(var(--u) * 12);
+  height: calc(var(--u) * 40);
+  padding: 0 calc(var(--u) * 4);
+  border: calc(var(--u) * 12) solid transparent;
+  border-image: url("/assets/ui/stat-pill.webp") 24 fill / calc(var(--u) * 12) stretch;
 }
 
 .infoPill[data-size="type"] {
-  width: calc(var(--u) * 210);
+  width: calc(var(--u) * 168);
 }
 
 .infoPill[data-size="wide"] {
-  width: calc(var(--u) * 232.5);
+  width: calc(var(--u) * 186);
 }
 
 .infoPill[data-size="stat"] {
-  width: calc(var(--u) * 210);
+  width: calc(var(--u) * 168);
 }
 
 .infoPillLabel,
@@ -897,13 +897,13 @@ button.actionButton:disabled {
 }
 
 .infoPillLabel {
-  font-size: calc(var(--u) * 27.5);
+  font-size: calc(var(--u) * 22);
   color: #eedcae;
 }
 
 .infoPillValue {
   margin: 0 0 0 auto;
-  font-size: calc(var(--u) * 32.5);
+  font-size: calc(var(--u) * 26);
 }
 
 .infoPill[data-size="type"] .infoPillValue {
@@ -917,9 +917,9 @@ button.actionButton:disabled {
 /* exp-track (1000x70 at 2x): the teal fill runs in the channel (1.6% to 87%), before the crystal. */
 .infoExp {
   position: relative;
-  width: calc(var(--u) * 362.5);
+  width: calc(var(--u) * 290);
   aspect-ratio: 1000 / 70;
-  margin: calc(var(--u) * -5) 0 calc(var(--u) * 2.5);
+  margin: calc(var(--u) * -4) 0 calc(var(--u) * 2);
   background: url("/assets/ui/exp-track.webp") center / 100% 100% no-repeat;
 }
 
@@ -928,9 +928,9 @@ button.actionButton:disabled {
   top: 37%;
   bottom: 22%;
   left: 1.6%;
-  border-radius: calc(var(--u) * 7.5);
+  border-radius: calc(var(--u) * 6);
   background: linear-gradient(#7fd8e6, #2a93a8 50%, #176478);
-  box-shadow: inset 0 calc(var(--u) * 1.2) 0 rgb(255 255 255 / 0.35);
+  box-shadow: inset 0 calc(var(--u) * 1) 0 rgb(255 255 255 / 0.35);
 }
 
 .infoStatRow {
@@ -944,21 +944,21 @@ button.actionButton:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(var(--u) * 50);
-  min-width: calc(var(--u) * 90);
-  margin-left: calc(var(--u) * -5);
-  padding: 0 calc(var(--u) * 15);
+  height: calc(var(--u) * 40);
+  min-width: calc(var(--u) * 72);
+  margin-left: calc(var(--u) * -4);
+  padding: 0 calc(var(--u) * 12);
   background: url("/assets/ui/bonus-plate.webp") center / 100% 100% no-repeat;
-  font-size: calc(var(--u) * 27.5);
+  font-size: calc(var(--u) * 22);
   color: #ffb12a;
   paint-order: stroke fill;
-  -webkit-text-stroke: calc(var(--u) * 3.8) #2a1606;
+  -webkit-text-stroke: calc(var(--u) * 3) #2a1606;
 }
 
 .infoSpheres {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--u) * 10);
+  gap: calc(var(--u) * 8);
   margin-top: auto;
 }
 
@@ -971,13 +971,9 @@ button.actionButton:disabled {
   align-self: flex-start;
   display: flex;
   align-items: center;
-  max-width: calc(var(--u) * 450);
+  max-width: calc(var(--u) * 360);
   color: inherit;
   text-decoration: none;
-}
-
-.infoSphere[data-locked] {
-  opacity: 0.55;
 }
 
 .infoSphere:focus-visible {
@@ -993,11 +989,14 @@ button.actionButton:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--u) * 57.5);
-  height: calc(var(--u) * 57.5);
-  border: calc(var(--u) * 8.8) solid transparent;
-  border-image: url("/assets/ui/sphere-window.webp") 14 fill / calc(var(--u) * 8.8) stretch;
-  font-size: calc(var(--u) * 25);
+  width: calc(var(--u) * 46);
+  height: calc(var(--u) * 46);
+  border: calc(var(--u) * 7) solid transparent;
+  border-image: url("/assets/ui/sphere-window.webp") 14 / calc(var(--u) * 7) stretch;
+  /* A solid slate face inside the silver rim, so an empty socket still reads as a box. */
+  border-radius: calc(var(--u) * 6);
+  background: linear-gradient(#56606e, #2c333d) padding-box;
+  font-size: calc(var(--u) * 20);
   color: #9ff0ff;
 }
 
@@ -1010,15 +1009,15 @@ button.actionButton:disabled {
 .infoSphereName {
   --stroke: 4;
   min-width: 0;
-  height: calc(var(--u) * 52.5);
+  height: calc(var(--u) * 42);
   display: flex;
   align-items: center;
-  margin-left: calc(var(--u) * -15);
-  padding: 0 calc(var(--u) * 7.5) 0 calc(var(--u) * 17.5);
-  border: calc(var(--u) * 10) solid transparent;
-  border-image: url("/assets/ui/stat-pill.webp") 24 fill / calc(var(--u) * 15) stretch;
+  margin-left: calc(var(--u) * -12);
+  padding: 0 calc(var(--u) * 6) 0 calc(var(--u) * 14);
+  border: calc(var(--u) * 8) solid transparent;
+  border-image: url("/assets/ui/stat-pill.webp") 24 fill / calc(var(--u) * 12) stretch;
   white-space: nowrap;
-  font-size: calc(var(--u) * 30);
+  font-size: calc(var(--u) * 24);
 }
 
 .infoNote {
@@ -1034,12 +1033,12 @@ button.actionButton:disabled {
 /* Right column, bottom-aligned: Enhance / Evolve, then Switch. */
 .infoRight {
   position: absolute;
-  right: calc(var(--u) * 15);
-  bottom: calc(var(--u) * 15);
+  right: calc(var(--u) * 12);
+  bottom: calc(var(--u) * 12);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: calc(var(--u) * 12.5);
+  gap: calc(var(--u) * 10);
 }
 
 .infoRight .actions {
@@ -1052,13 +1051,13 @@ button.actionButton:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--u) * 160);
-  height: calc(var(--u) * 72.5);
+  width: calc(var(--u) * 128);
+  height: calc(var(--u) * 58);
   padding: 0;
   border: 0;
   background: url("/assets/ui/btn-green.webp") center / 100% 100% no-repeat;
   font-family: inherit;
-  font-size: calc(var(--u) * 27.5);
+  font-size: calc(var(--u) * 22);
   color: inherit;
   text-decoration: none;
   cursor: pointer;
@@ -1066,7 +1065,7 @@ button.actionButton:disabled {
 
 .infoSwitch {
   background-image: url("/assets/ui/btn-blue.webp");
-  font-size: calc(var(--u) * 32.5);
+  font-size: calc(var(--u) * 26);
 }
 
 .infoButton:hover,

@@ -109,26 +109,28 @@ export function UnitDetail({
 
         {spheres && !stack ? (
           <nav className={styles.infoSpheres} aria-label="Spheres">
-            {spheres.map((socket) => (
-              <Link
-                key={socket.slot}
-                href={`/units/${unit.id}/spheres`}
-                className={styles.infoSphere}
-                data-locked={!socket.unlocked || undefined}
-                title={socket.sphere?.summary}
-              >
-                <span className={styles.infoSphereIcon} aria-hidden>
-                  {socket.sphere && sphereIcon(socket.sphere.sphereId) ? (
-                    <UiImage name={sphereIcon(socket.sphere.sphereId) as UiAsset} />
-                  ) : socket.sphere ? (
-                    <span className={styles.outline}>{socket.sphere.name.charAt(0)}</span>
-                  ) : null}
-                </span>
-                <span className={`${styles.infoSphereName} ${styles.outline}`}>
-                  {socket.sphere ? socket.sphere.name : socket.unlocked ? "Empty" : "Locked"}
-                </span>
-              </Link>
-            ))}
+            {/* A slot the unit has not unlocked is not shown at all. */}
+            {spheres
+              .filter((socket) => socket.unlocked)
+              .map((socket) => (
+                <Link
+                  key={socket.slot}
+                  href={`/units/${unit.id}/spheres`}
+                  className={styles.infoSphere}
+                  title={socket.sphere?.summary}
+                >
+                  <span className={styles.infoSphereIcon} aria-hidden>
+                    {socket.sphere && sphereIcon(socket.sphere.sphereId) ? (
+                      <UiImage name={sphereIcon(socket.sphere.sphereId) as UiAsset} />
+                    ) : socket.sphere ? (
+                      <span className={styles.outline}>{socket.sphere.name.charAt(0)}</span>
+                    ) : null}
+                  </span>
+                  <span className={`${styles.infoSphereName} ${styles.outline}`}>
+                    {socket.sphere ? socket.sphere.name : "Empty"}
+                  </span>
+                </Link>
+              ))}
           </nav>
         ) : null}
       </div>
