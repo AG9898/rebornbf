@@ -507,6 +507,8 @@ export type UnitDetailView = OwnedUnitView & {
   sbbLevel: number;
   /** The persisted type roll's name; a unit without a roll is a Lord. */
   typeLabel: string;
+  /** Stat-hob gains (M4-04B) already included in the stats, shown as the amber bonus plates. */
+  imps: Stats | null;
   /** EXP still needed for the next level; null at the form's cap or for an invalid row. */
   expToNext: number | null;
   /** How far the unit is through its current level, 0–1 (1 at the cap). */
@@ -550,6 +552,7 @@ export function toUnitDetailView(row: OwnedUnitRow): UnitDetailView {
     bbLevel: row.bb_level ?? 1,
     sbbLevel: row.sbb_level ?? 1,
     typeLabel: UNIT_TYPE_LABELS[row.unit_type?.type ?? "lord"] ?? "Lord",
+    imps: row.imps ?? null,
     ...(unit && form
       ? expProgress(unit, form, view.level, view.exp)
       : { expToNext: null, expProgress: 0 }),

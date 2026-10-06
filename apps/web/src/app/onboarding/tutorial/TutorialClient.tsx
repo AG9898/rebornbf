@@ -17,7 +17,7 @@ import { finishTutorial } from "./actions.ts";
 const PhaserBattle = dynamic(() => import("../../battle/PhaserBattle.tsx"), {
   ssr: false,
   loading: () => (
-    <div className="fixed inset-0">
+    <div className="fixed inset-0 bg-black">
       <LoadingGlyph variant="screen" />
     </div>
   ),

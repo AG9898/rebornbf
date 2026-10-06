@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { NavPending } from "../loading/NavPending.tsx";
 import { MenuMusic } from "./MenuMusic.tsx";
 import styles from "./menu.module.css";
 import { NavBar } from "./NavBar.tsx";
@@ -26,6 +27,7 @@ export function MenuFrame({
             <TopBar playerName={playerName} zel={wallet?.zel ?? null} />
             <main className={styles.main}>{children}</main>
             <NavBar />
+            <NavPending />
           </div>
         </WalletGemsProvider>
       </div>

@@ -1,6 +1,7 @@
 /*
- * LoadingGlyph (ART_GUIDE.md -> Trials flow). One indicator for every wait: the white glyph bobs and
- * the trail dots pulse; both stop under OS reduced motion or `data-still` (the saved setting).
+ * LoadingGlyph (ART_GUIDE.md -> Trials flow). One indicator for every wait: the white knight runs
+ * in place through the six-frame `loading-run` strip (990x128, 165x128 frames) and the trail dots
+ * pulse; both stop on frame one under OS reduced motion or `data-still` (the saved setting).
  */
 
 .glyph {
@@ -13,12 +14,14 @@
   line-height: 1;
 }
 
-.art {
+.runner {
   display: block;
-  width: auto;
+  flex: none;
   height: 1.6em;
-  filter: drop-shadow(0 0 0.15em rgb(0 0 0 / 0.6));
-  animation: bob 0.9s ease-in-out infinite alternate;
+  aspect-ratio: 165 / 128;
+  background: url("/assets/ui/loading-run.webp") 0 0 / 600% 100% no-repeat;
+  filter: drop-shadow(0 0 0.1em rgb(0 0 0 / 0.5));
+  animation: run 0.75s steps(6) infinite;
 }
 
 .label {
@@ -44,7 +47,7 @@
   font-size: 0.85em;
 }
 
-/* Full screen: the darkened summoning circle of bg-proving-lab behind a centred glyph. */
+/* Full screen: the current screen stays put under an even translucent black layer. */
 .screen {
   position: absolute;
   inset: 0;
@@ -52,57 +55,36 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  background: #05070a;
-}
-
-.screen::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("/assets/ui/bg-proving-lab.webp") 50% 61% / cover no-repeat;
-  transform: scale(1.7);
-  transform-origin: 50% 61%;
-  filter: brightness(0.35) saturate(0.8);
-}
-
-.screen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, transparent 30%, rgb(0 0 0 / 0.7) 100%);
+  background: rgb(0 0 0 / 0.7);
 }
 
 .screenGlyph {
-  position: relative;
-  z-index: 1;
   flex-direction: column;
-  gap: 0.6em;
-  font-size: clamp(18px, 4.5vmin, 28px);
+  gap: 0.4em;
+  margin-top: -8%;
+  font-size: clamp(12px, 3.4vmin, 15px);
 }
 
-.screenGlyph .art {
-  height: clamp(72px, 22vmin, 140px);
+.screenGlyph .runner {
+  height: clamp(40px, 12vmin, 56px);
 }
 
-[data-still="true"] .art,
+[data-still="true"] .runner,
 [data-still="true"] .dots span {
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .art,
+  .runner,
   .dots span {
     animation: none;
   }
 }
 
-@keyframes bob {
-  from {
-    transform: translateY(0);
-  }
+/* steps(6) over 0% → 120% lands on 0, 20, …, 100%: frames one to six of the strip. */
+@keyframes run {
   to {
-    transform: translateY(-0.12em);
+    background-position-x: 120%;
   }
 }
 

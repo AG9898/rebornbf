@@ -1,19 +1,20 @@
 import type { ReactNode } from "react";
-import { UiImage } from "../menu/UiImage.tsx";
 import styles from "./loading-glyph.module.css";
 
 export type LoadingGlyphVariant = "inline" | "screen";
 
 /**
  * The one loading indicator for every wait in the game (RESOLVED-95; ART_GUIDE → Trials flow):
- * the locked white `loading-glyph` with "Connecting" and three pulsing trail dots in code.
+ * the locked `loading-run` strip (six frames of the white knight running in place) with
+ * "Connecting" and three pulsing trail dots in code.
  *
  * - `inline` sits in a button or panel in place of its label, at the surrounding font size.
- * - `screen` covers the nearest positioned ancestor (the menu column inside the menu frame) over a
- *   darkened crop of the Proving Lab's summoning circle: the original's Connecting screen.
+ * - `screen` covers the nearest positioned ancestor (the menu column inside the menu frame) with an
+ *   even translucent black layer: the screen underneath stays in place, dimmed, as in the
+ *   original's Connecting overlay. It also blocks taps on that screen while it shows.
  *
- * The glyph bobs and the dots pulse; both hold still under OS reduced motion (CSS) or when the
- * caller passes the player's saved `reducedMotion` setting.
+ * The knight runs and the dots pulse; both hold still (frame one) under OS reduced motion (CSS) or
+ * when the caller passes the player's saved `reducedMotion` setting.
  */
 export function LoadingGlyph({
   variant = "inline",
@@ -32,7 +33,7 @@ export function LoadingGlyph({
       data-still={reducedMotion ? "true" : undefined}
       role={variant === "inline" ? "status" : undefined}
     >
-      <UiImage name="loading-glyph" className={styles.art} />
+      <span className={styles.runner} aria-hidden="true" />
       <span className={styles.label}>
         Connecting
         <span className={styles.dots} aria-hidden="true">

@@ -1,23 +1,27 @@
+import type { Stats } from "@bfr/data";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import menu from "../../../../components/menu/menu.module.css";
 import { textBoxStyle } from "../../../../components/menu/text-box.ts";
 import { UiImage } from "../../../../components/menu/UiImage.tsx";
-import { SkillRow } from "../../../../components/units/SkillRow.tsx";
+import type { UiAsset } from "../../../../components/menu/ui-assets.ts";
 import type { UnitDetailView } from "../../../../lib/units/owned-units.ts";
 import type { SphereSocketView } from "../../../../lib/units/spheres.ts";
-import { unitSkillDisplays } from "../../../../lib/units/unit-skills.ts";
+import { type SkillDisplay, unitSkillDisplays } from "../../../../lib/units/unit-skills.ts";
 import { SplitButton } from "../stack/[stackId]/SplitButton.tsx";
 import styles from "../units.module.css";
-import { SphereSocketFace } from "./SphereSocketFace.tsx";
+import { sphereIcon } from "./SphereSocketFace.tsx";
+import { UnitInfoBody } from "./UnitInfoBody.tsx";
 
 /**
- * One owned unit as the original's Unit Info (M3-03G, ART_GUIDE → UI → Units, Squad, and Unit
- * detail screens): the title plate with orb, stars, and names; the splash over element-tinted
- * `bg-olive`; the stat plate column; Enhance / Evolve; and the skill rows. Presentational only;
- * `page.tsx` reads the row. A stack (M4-05C) shows its copy count and Split in place of Enhance /
- * Evolve, since a stacked copy must be split out before it can be levelled or fielded.
+ * One owned unit as the original's Unit Info (M3-03G, reworked 2026-10-06; ART_GUIDE → UI →
+ * Units, Squad, and Unit detail screens): the title plate with orb, stars, and names; the splash
+ * over `bg-unit-info`; the left column of stat pills (bonus plates for stat-hob gains), the EXP
+ * track, and the sphere rows; the right column's Enhance / Evolve and Switch; then the
+ * pinned Leader Skill and burst rows (`UnitInfoBody`). Presentational; `page.tsx` reads the row.
+ * A stack (M4-05C) shows its copy count and Split in place of Enhance / Evolve, since a stacked
+ * copy must be split out before it can be levelled or fielded.
  */
 export function UnitDetail({
   unit,
@@ -34,110 +38,141 @@ export function UnitDetail({
   spheres?: readonly SphereSocketView[];
 }): ReactNode {
   const stats = unit.currentStats;
-  const statRows: readonly [string, string][] = [
-    ["HP", stats ? stats.hp.toLocaleString("en-US") : "–"],
-    ["ATK", stats ? stats.atk.toLocaleString("en-US") : "–"],
-    ["DEF", stats ? stats.def.toLocaleString("en-US") : "–"],
-    ["REC", stats ? stats.rec.toLocaleString("en-US") : "–"],
+  const statRows: readonly [string, keyof Stats][] = [
+    ["HP", "hp"],
+    ["Atk", "atk"],
+    ["Def", "def"],
+    ["Rec", "rec"],
   ];
   const atCap = unit.maxLevel !== null && unit.level >= unit.maxLevel;
-  return (
-    <div className={styles.detailPage} data-element={unit.element ?? undefined}>
-      <UnitTitleBar unit={unit} backHref="/units/list" />
+  const skills = unitSkillDisplays(unit);
+  const find = (key: SkillDisplay["key"]) => skills.find((skill) => skill.key === key) ?? null;
+  const bursts = skills.filter(
+    (skill) => skill.key === "bb" || skill.key === "sbb" || skill.key === "ubb",
+  );
 
-      <div className={styles.detailBody}>
-        <section className={styles.hero}>
-          {unit.illustration ? (
-            <Image
-              src={unit.illustration}
-              alt={`${unit.name}, ${unit.rarityLabel} form`}
-              width={1024}
-              height={1024}
-              sizes="(max-width: 640px) 90vw, 560px"
-              className={styles.detailSplash}
-              priority
-            />
-          ) : (
-            <span className={styles.detailNoArt}>{unit.name.charAt(0)}</span>
-          )}
+  const hero = (
+    <>
+      {unit.illustration ? (
+        <Image
+          src={unit.illustration}
+          alt={`${unit.name}, ${unit.rarityLabel} form`}
+          width={1024}
+          height={1024}
+          sizes="(max-width: 640px) 120vw, 760px"
+          className={styles.infoSplash}
+          priority
+        />
+      ) : (
+        <span className={styles.detailNoArt}>{unit.name.charAt(0)}</span>
+      )}
 
-          <dl className={styles.statColumn}>
-            {stack ? <StatPlate label="Copies" value={`×${stack.count}`} /> : null}
-            <StatPlate label="Type" value={unit.typeLabel} />
-            <StatPlate
-              label="Lv."
-              value={unit.maxLevel ? `${unit.level}/${unit.maxLevel}` : String(unit.level)}
-            />
-            <StatPlate
-              label="Next Lv."
-              value={
-                unit.expToNext !== null
-                  ? unit.expToNext.toLocaleString("en-US")
-                  : atCap
-                    ? "MAX"
-                    : "–"
-              }
-            />
-            <div className={styles.expBar} aria-hidden>
-              <span style={{ width: `${unit.expProgress * 100}%` }} />
-            </div>
-            {statRows.map(([label, value]) => (
-              <StatPlate key={label} label={label} value={value} />
-            ))}
-          </dl>
-
-          {stack ? (
-            <SplitButton stackId={stack.id} />
-          ) : (
-            <div className={styles.actions}>
-              <Link
-                href={`/fusion?target=${unit.id}`}
-                className={`${styles.actionButton} ${styles.enhanceButton}`}
-              >
-                <span className={styles.outline}>Enhance</span>
-              </Link>
-              {evolveLabel ? (
-                <Link href={`/units/${unit.id}/evolve`} className={styles.actionButton}>
-                  <span className={styles.outline}>{evolveLabel}</span>
-                </Link>
+      <div className={styles.infoLeft}>
+        <dl className={styles.infoStats}>
+          {stack ? <StatPill label="Copies" value={`×${stack.count}`} size="type" /> : null}
+          <StatPill label="Type" value={unit.typeLabel} size="type" accent />
+          <StatPill
+            label="Lv."
+            value={unit.maxLevel ? `${unit.level}/${unit.maxLevel}` : String(unit.level)}
+            size="wide"
+          />
+          <StatPill
+            label="Next Lv."
+            value={
+              unit.expToNext !== null
+                ? unit.expToNext.toLocaleString("en-US")
+                : atCap
+                  ? "----"
+                  : "–"
+            }
+            size="wide"
+          />
+          <div className={styles.infoExp} aria-hidden>
+            {/* The channel spans 85.4% of the track; the crystal tip fills the rest. */}
+            <span style={{ width: `${unit.expProgress * 85.4}%` }} />
+          </div>
+          {statRows.map(([label, key]) => (
+            <div key={key} className={styles.infoStatRow}>
+              <StatPill
+                label={label}
+                value={stats ? stats[key].toLocaleString("en-US") : "–"}
+                size="stat"
+              />
+              {unit.imps && unit.imps[key] > 0 ? (
+                <span className={styles.infoBonus} title={`${label} bonus from stat hobs`}>
+                  {unit.imps[key].toLocaleString("en-US")}
+                </span>
               ) : null}
             </div>
-          )}
-        </section>
+          ))}
+        </dl>
 
         {spheres && !stack ? (
-          <nav className={styles.sphereRows} aria-label="Spheres">
+          <nav className={styles.infoSpheres} aria-label="Spheres">
             {spheres.map((socket) => (
               <Link
                 key={socket.slot}
                 href={`/units/${unit.id}/spheres`}
-                className={styles.sphereRow}
+                className={styles.infoSphere}
                 data-locked={!socket.unlocked || undefined}
+                title={socket.sphere?.summary}
               >
-                <SphereSocketFace socket={socket} />
+                <span className={styles.infoSphereIcon} aria-hidden>
+                  {socket.sphere && sphereIcon(socket.sphere.sphereId) ? (
+                    <UiImage name={sphereIcon(socket.sphere.sphereId) as UiAsset} />
+                  ) : socket.sphere ? (
+                    <span className={styles.outline}>{socket.sphere.name.charAt(0)}</span>
+                  ) : null}
+                </span>
+                <span className={`${styles.infoSphereName} ${styles.outline}`}>
+                  {socket.sphere ? socket.sphere.name : socket.unlocked ? "Empty" : "Locked"}
+                </span>
               </Link>
             ))}
           </nav>
         ) : null}
-
-        <section className={styles.skills} aria-label="Skills">
-          {unitSkillDisplays(unit).map((skill) => (
-            <SkillRow key={skill.key} skill={skill} />
-          ))}
-        </section>
-
-        {stats ? null : (
-          <p className={styles.detailNote}>
-            This unit's level is outside its form's range, so its current stats are not shown.
-          </p>
-        )}
       </div>
 
-      <p className={menu.ticker}>
-        {stack
-          ? "Split a copy out of the stack to level, equip, or field it."
-          : "Enhance a unit through fusion, or evolve it at its level cap."}
-      </p>
+      {stats ? null : (
+        <p className={styles.infoNote}>
+          This unit's level is outside its form's range, so its current stats are not shown.
+        </p>
+      )}
+    </>
+  );
+
+  const actions = (
+    <>
+      {stack ? (
+        <SplitButton stackId={stack.id} />
+      ) : (
+        <>
+          <Link href={`/fusion?target=${unit.id}`} className={styles.infoButton}>
+            <span className={styles.outline}>Enhance</span>
+          </Link>
+          {evolveLabel ? (
+            <Link href={`/units/${unit.id}/evolve`} className={styles.infoButton}>
+              <span className={styles.outline}>{evolveLabel}</span>
+            </Link>
+          ) : null}
+        </>
+      )}
+    </>
+  );
+
+  return (
+    <div className={styles.detailPage} data-element={unit.element ?? undefined}>
+      <UnitTitleBar unit={unit} backHref="/units/list" />
+      <UnitInfoBody
+        hero={hero}
+        actions={actions}
+        leader={find("leader")}
+        extra={find("extra")}
+        bursts={bursts}
+      />
+      {stack ? (
+        <p className={menu.ticker}>Split a copy out of the stack to level, equip, or field it.</p>
+      ) : null}
     </div>
   );
 }
@@ -177,11 +212,24 @@ export function UnitTitleBar({
   );
 }
 
-function StatPlate({ label, value }: { label: string; value: string }): ReactNode {
+/** One stat pill: beige label, white value (the Type value in amber), sized by its row. */
+function StatPill({
+  label,
+  value,
+  size,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  size: "type" | "wide" | "stat";
+  accent?: boolean;
+}): ReactNode {
   return (
-    <div className={styles.statPlate}>
-      <dt className={`${styles.statLabel} ${styles.outline}`}>{label}</dt>
-      <dd className={`${styles.statValue} ${styles.outline}`}>{value}</dd>
+    <div className={styles.infoPill} data-size={size}>
+      <dt className={`${styles.infoPillLabel} ${styles.outline}`}>{label}</dt>
+      <dd className={`${styles.infoPillValue} ${styles.outline}`} data-accent={accent || undefined}>
+        {value}
+      </dd>
     </div>
   );
 }

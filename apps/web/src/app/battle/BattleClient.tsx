@@ -16,7 +16,7 @@ import type { SessionBattle } from "../../lib/battle/session-battle.ts";
 const PhaserBattle = dynamic(() => import("./PhaserBattle.tsx"), {
   ssr: false,
   loading: () => (
-    <div className="fixed inset-0">
+    <div className="fixed inset-0 bg-black">
       <LoadingGlyph variant="screen" />
     </div>
   ),
