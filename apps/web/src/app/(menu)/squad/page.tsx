@@ -23,7 +23,7 @@ import { type EditorUnit, SquadEditor } from "./SquadEditor.tsx";
 export const metadata: Metadata = { title: "Squad · BFR" };
 
 /**
- * The squad editor (M3-03B, restyled as the original's Manage Squad in M3-03F): the player's
+ * The squad editor (M3-03B, rebuilt with original Manage Squad pieces in M8-06): the player's
  * owned units and the squad saved in `?slot=` (0–9), both read under RLS. Saving goes through the `save_squad` RPC. Protected by `src/proxy.ts`.
  */
 export default async function SquadPage({

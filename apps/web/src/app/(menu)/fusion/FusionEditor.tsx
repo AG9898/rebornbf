@@ -1,17 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState, useTransition } from "react";
 import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
-import menu from "../../../components/menu/menu.module.css";
-import { textBoxStyle } from "../../../components/menu/text-box.ts";
-import { UiImage } from "../../../components/menu/UiImage.tsx";
+import kit from "../../../components/menu/kit.module.css";
+import { OriginalImage } from "../../../components/menu/OriginalImage.tsx";
+import {
+  OriginalButton,
+  OriginalTicker,
+  OriginalTitleBar,
+  OriginalWindow,
+} from "../../../components/menu/OriginalKit.tsx";
 import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
 import { gameAudio } from "../../../game/audio/index.ts";
 import { FUSION_MINIMUM_NOTE, fusionPreview } from "../../../lib/units/fusion.ts";
 import { type FusionResultView, fusionResultView } from "../../../lib/units/fusion-result.ts";
+import { FUSION_ASSETS as art } from "../../../lib/units/fusion-screen.ts";
 import {
   baseIneligible,
   chooseBase,
@@ -28,6 +33,7 @@ import {
   type OwnedUnitRow,
   type OwnedUnitView,
   toOwnedUnitView,
+  toUnitDetailView,
 } from "../../../lib/units/owned-units.ts";
 import {
   type CollectionEntry,
@@ -35,12 +41,12 @@ import {
   FUSION_FODDER_LIMIT,
   type UnitStackRow,
 } from "../../../lib/units/unit-stacks.ts";
-import squad from "../squad/squad.module.css";
 import units from "../units/units.module.css";
 import { fuseUnits } from "./actions.ts";
 import { FodderPicker } from "./FodderPicker.tsx";
+import { FusionButton, FusionGauge } from "./FusionPieces.tsx";
 import { type FlyingFodder, FusionResult } from "./FusionResult.tsx";
-import styles from "./fusion.module.css";
+import styles from "./original-fusion.module.css";
 
 type Mode = "stage" | "base" | "fodder";
 
@@ -52,16 +58,7 @@ type Fused = {
   result: FusionResultView;
 };
 
-/**
- * The Fuse Units stage (M4-01B/C, restyled in M4-06D; legacy/ART_GUIDE_BFR.md → UI → Fusion stage): the base's
- * idle sprite on the centre pedestal with its stat plate, five fodder pedestals at the corners and
- * bottom centre, Change Base and Display Status in the title bar, and a Fuse pill that opens the
- * confirm. The empty base opens the multi-select picker (M4-06N); each fodder pedestal is one slot
- * (sprite and ×N, RESOLVED-90) and any of them opens the tap/hold fodder picker (M4-01F) with the
- * current slots. The `fuse` RPC re-checks everything server-side. A successful fusion plays the
- * fly-in animation and the result screen (M4-06E, `FusionResult`); Skip returns to this stage with
- * the refreshed base.
- */
+/** Original Fusion pieces around the existing draft, previews, pickers and fuse RPC. */
 export function FusionEditor({
   rows,
   stacks,
@@ -95,6 +92,7 @@ export function FusionEditor({
 
   const target = rows.find((r) => r.id === draft.targetId);
   const targetView = target ? toOwnedUnitView(target) : null;
+  const detail = target ? toUnitDetailView(target) : null;
   const fodderIds = draftFodderIds(draft);
   const fodderRows = draftFodderRows(draft, rows, stacks);
   const preview = target ? fusionPreview(target, fodderRows) : null;
@@ -212,36 +210,26 @@ export function FusionEditor({
             : "Tap a fodder pedestal to change the fodder."));
 
   return (
-    <div className={squad.page}>
-      <header className={units.titleBar}>
-        <Link href="/units" className={`${units.pill} ${units.backButton}`}>
-          <span className={units.outline}>Back</span>
-        </Link>
-        <div className={`${units.titlePlate} ${styles.titlePlate}`}>
-          <UiImage name="title-plate" className={units.titlePlateArt} />
-          <div className={units.titleText} style={textBoxStyle("title-plate")}>
-            <h1 className={units.outline}>Fuse Units</h1>
-          </div>
-        </div>
-        <button
-          type="button"
-          className={`${units.pill} ${squad.barButton} ${styles.barButton}`}
+    <div className={kit.page}>
+      <OriginalTitleBar title="Fuse Units" backHref="/units">
+        <FusionButton
+          label="Change Base"
+          normal={art.baseNormal}
+          pressed={art.basePressed}
+          className={styles.changeBase}
           onClick={() => setMode("base")}
           disabled={pending || entries.length === 0}
-        >
-          <span className={units.outline}>Change Base</span>
-        </button>
-        <button
-          type="button"
-          className={`${units.pill} ${squad.barButton} ${styles.barButton} ${showStatus ? squad.barButtonLit : ""}`}
+        />
+        <FusionButton
+          label="Display Status"
+          normal={art.statusNormal}
+          pressed={art.statusPressed}
+          className={styles.displayStatus}
           onClick={() => setShowStatus((on) => !on)}
-          aria-pressed={showStatus}
-        >
-          <span className={units.outline}>Display Status</span>
-        </button>
-      </header>
-
-      <div className={squad.body}>
+          active={showStatus}
+        />
+      </OriginalTitleBar>
+      <div className={kit.body}>
         <section className={styles.stage} aria-label="Fusion stage">
           <BasePedestal
             unit={targetView}
@@ -262,114 +250,113 @@ export function FusionEditor({
               />
             );
           })}
-        </section>
-
-        <p
-          className={`${squad.plate} ${squad.strip} ${message && !message.ok ? squad.stripError : ""}`}
-          role="status"
-        >
-          {strip}
-        </p>
-
-        <div className={styles.fuseBar}>
-          <span className={`${squad.plate} ${styles.zelPlate}`}>
-            <UiImage name="icon-zel" className={styles.zelIcon} />
-            <span className={units.outline}>{zel.toLocaleString("en-US")}</span>
-          </span>
-          <span className={`${styles.fodderCount} ${units.outline}`}>
+          <span className={styles.fodderCount}>
             Slots {pedestals.length}/{FUSION_FODDER_LIMIT} · ×{copies}
           </span>
-          <button
-            type="button"
-            className={`${units.pill} ${units.pillButton} ${styles.fusePill} ${canFuse ? squad.barButtonLit : ""}`}
-            disabled={pending || !canFuse || confirming}
-            onClick={() => setConfirming(true)}
-          >
-            <span className={units.outline}>Fuse</span>
-          </button>
-        </div>
-
+          <div className={styles.fuseBar}>
+            <OriginalImage asset={art.plate} className={styles.costPlate} />
+            <FusionGauge progress={detail?.expProgress ?? 0} className={styles.stageGauge} />
+            <span className={styles.nextExp}>
+              {detail ? (detail.expToNext?.toLocaleString("en-US") ?? "MAX") : "–"}
+            </span>
+            <span className={styles.cost}>{preview?.cost.toLocaleString("en-US") ?? "0"}</span>
+            <span className={styles.gain}>EXP {preview?.gain.toLocaleString("en-US") ?? "0"}</span>
+            <FusionButton
+              label="Fuse"
+              normal={art.fuseNormal}
+              pressed={art.fusePressed}
+              wide
+              className={styles.fuseButton}
+              disabled={pending || !canFuse || confirming}
+              onClick={() => setConfirming(true)}
+            />
+          </div>
+        </section>
         {confirming && preview ? (
-          <section className={`${squad.plate} ${styles.panel}`} aria-label="Confirm fusion">
-            <p>
-              Consume {copies} selected {copies === 1 ? "unit" : "units"} for{" "}
-              {preview.cost.toLocaleString("en-US")} Zel?
-            </p>
-            <div className={styles.panelButtons}>
-              <button
-                type="button"
-                className={`${units.pill} ${units.pillButton} ${styles.panelPill} ${squad.barButtonLit}`}
-                disabled={pending || !canFuse}
-                onClick={() => {
-                  gameAudio().playSfx("ui-confirm");
-                  fuse();
-                }}
-              >
-                <span className={units.outline}>{pending ? <LoadingGlyph /> : "Confirm"}</span>
-              </button>
-              <button
-                type="button"
-                className={`${units.pill} ${units.pillButton} ${styles.panelPill}`}
-                disabled={pending}
-                onClick={() => {
-                  gameAudio().playSfx("ui-cancel");
-                  setConfirming(false);
-                }}
-              >
-                <span className={units.outline}>Cancel</span>
-              </button>
-            </div>
+          <section className={styles.overlay} aria-label="Confirm fusion">
+            <OriginalWindow variant="system" className={styles.panel}>
+              <p>
+                Consume {copies} selected {copies === 1 ? "unit" : "units"} for{" "}
+                {preview.cost.toLocaleString("en-US")} Zel?
+              </p>
+              <div className={styles.panelButtons}>
+                <OriginalButton
+                  size="sub_m_btn"
+                  onClick={
+                    pending || !canFuse
+                      ? undefined
+                      : () => {
+                          gameAudio().playSfx("ui-confirm");
+                          fuse();
+                        }
+                  }
+                >
+                  {pending ? <LoadingGlyph /> : "Confirm"}
+                </OriginalButton>
+                <OriginalButton
+                  size="sub_m_btn"
+                  onClick={
+                    pending
+                      ? undefined
+                      : () => {
+                          gameAudio().playSfx("ui-cancel");
+                          setConfirming(false);
+                        }
+                  }
+                >
+                  Cancel
+                </OriginalButton>
+              </div>
+            </OriginalWindow>
           </section>
         ) : null}
 
         {showStatus ? (
-          <section
-            className={`${squad.plate} ${styles.panel}`}
-            aria-label="Fusion status"
-            aria-live="polite"
-          >
-            {!preview || !target ? (
-              <p>Choose a base unit to see the fusion result.</p>
-            ) : (
-              <>
-                <p>EXP gained: at least {preview.gain.toLocaleString("en-US")}</p>
-                <p className={styles.note}>{FUSION_MINIMUM_NOTE}</p>
-                <p>
-                  Level {target.level} → {preview.level} · Total EXP{" "}
-                  {preview.exp.toLocaleString("en-US")}
-                </p>
-                <p>
-                  BB {target.bb_level ?? 1} → {preview.bbLevel}
-                  {preview.sbbLevel !== null
-                    ? ` · SBB ${target.sbb_level ?? 1} → ${preview.sbbLevel}`
-                    : ""}
-                </p>
-                {preview.burstDiscarded > 0 && (
+          <section className={styles.overlay} aria-label="Fusion status" aria-live="polite">
+            <OriginalWindow variant="system" className={styles.panel}>
+              {!preview || !target ? (
+                <p>Choose a base unit to see the fusion result.</p>
+              ) : (
+                <>
+                  <p>EXP gained: at least {preview.gain.toLocaleString("en-US")}</p>
+                  <p className={styles.note}>{FUSION_MINIMUM_NOTE}</p>
                   <p>
-                    {preview.burstDiscarded} burst levels exceed the available caps and will be
-                    lost.
+                    Level {target.level} → {preview.level} · Total EXP{" "}
+                    {preview.exp.toLocaleString("en-US")}
                   </p>
-                )}
-                <p>Cost: {preview.cost.toLocaleString("en-US")} Zel</p>
-                {preview.discarded > 0 && (
                   <p>
-                    {preview.discarded.toLocaleString("en-US")} EXP exceeds the level cap and will
-                    be lost.
+                    BB {target.bb_level ?? 1} → {preview.bbLevel}
+                    {preview.sbbLevel !== null
+                      ? ` · SBB ${target.sbb_level ?? 1} → ${preview.sbbLevel}`
+                      : ""}
                   </p>
-                )}
-                {zel < preview.cost && <p>Not enough Zel.</p>}
-                {preview.problem && <p>{preview.problem}</p>}
-              </>
-            )}
+                  {preview.burstDiscarded > 0 && (
+                    <p>
+                      {preview.burstDiscarded} burst levels exceed the available caps and will be
+                      lost.
+                    </p>
+                  )}
+                  <p>Cost: {preview.cost.toLocaleString("en-US")} Zel</p>
+                  {preview.discarded > 0 && (
+                    <p>
+                      {preview.discarded.toLocaleString("en-US")} EXP exceeds the level cap and will
+                      be lost.
+                    </p>
+                  )}
+                  {zel < preview.cost && <p>Not enough Zel.</p>}
+                  {preview.problem && <p>{preview.problem}</p>}
+                </>
+              )}
+              <OriginalButton size="sub_s_btn" onClick={() => setShowStatus(false)}>
+                Close
+              </OriginalButton>
+            </OriginalWindow>
           </section>
         ) : null}
       </div>
-
-      <p className={menu.ticker}>
-        {targetView
-          ? "Tap a fodder pedestal to pick fodder."
-          : "Tap the centre pedestal to choose a base unit."}
-      </p>
+      <OriginalTicker>
+        <span role="status">{strip}</span>
+      </OriginalTicker>
     </div>
   );
 }
@@ -389,12 +376,12 @@ function PedestalSprite({
       alt=""
       width={128}
       height={128}
-      className={`${squad.sprite} ${className}`}
+      className={`${styles.sprite} ${className}`}
       unoptimized
       draggable={false}
     />
   ) : (
-    <span className={`${squad.noSprite} ${units.outline}`}>{unit.name.charAt(0)}</span>
+    <span className={`${styles.noSprite} ${units.outline}`}>{unit.name.charAt(0)}</span>
   );
 }
 
@@ -413,21 +400,26 @@ function BasePedestal({
   return (
     <button
       type="button"
-      className={`${squad.pedestal} ${styles.base} ${unit ? "" : squad.pedestalEmpty}`}
+      className={`${styles.pedestal} ${styles.base}`}
       onClick={onTap}
       disabled={disabled}
       aria-label={unit ? `Base: ${unit.name}, Lv ${unit.level}. Change base` : "Choose a base unit"}
     >
-      <UiImage name="squad-pedestal" className={squad.pedestalArt} />
+      <OriginalImage asset={art.table} className={styles.table} />
       <PedestalSprite unit={unit} />
       {unit ? (
-        <span className={`${squad.plate} ${squad.statPlate}`}>
-          {unit.element ? <UiImage name={`orb-${unit.element}`} className={squad.orb} /> : null}
-          <span className={squad.statLine}>
+        <span className={styles.statPlate}>
+          {unit.element ? (
+            <OriginalImage
+              asset={`common/attribute_mark_M/${unit.element}.png`}
+              className={styles.orb}
+            />
+          ) : null}
+          <span className={styles.statLine}>
             <Stat label="Lv." value={String(unit.level)} />
             <Stat label="HP" value={value(s?.hp)} />
           </span>
-          <span className={squad.statLine}>
+          <span className={styles.statLine}>
             <Stat label="ATK" value={value(s?.atk)} />
             <Stat label="DEF" value={value(s?.def)} />
             <Stat label="REC" value={value(s?.rec)} />
@@ -459,13 +451,13 @@ function FodderPedestal({
   return (
     <button
       type="button"
-      className={`${squad.pedestal} ${styles.fodder} ${unit ? "" : squad.pedestalEmpty}`}
+      className={`${styles.pedestal} ${styles.fodder}`}
       data-spot={spot}
       onClick={onTap}
       disabled={disabled}
       aria-label={unit ? `Fodder: ${unit.name} ×${copies}. Change fodder` : "Add fodder"}
     >
-      <UiImage name="squad-pedestal" className={`${squad.pedestalArt} ${styles.fodderStone}`} />
+      <OriginalImage asset={art.table} className={styles.table} />
       <PedestalSprite unit={unit} className={styles.fodderSprite} />
       {unit ? (
         <>
@@ -483,8 +475,8 @@ function FodderPedestal({
 
 function Stat({ label, value }: { label: string; value: string }): ReactNode {
   return (
-    <span className={`${squad.stat} ${units.outline}`}>
-      <span className={squad.statLabel}>{label}</span> {value}
+    <span className={`${styles.stat} ${units.outline}`}>
+      <span className={styles.statLabel}>{label}</span> {value}
     </span>
   );
 }

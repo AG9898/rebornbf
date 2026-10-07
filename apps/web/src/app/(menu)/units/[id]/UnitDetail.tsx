@@ -2,27 +2,19 @@ import type { Stats } from "@bfr/data";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import menu from "../../../../components/menu/menu.module.css";
-import { textBoxStyle } from "../../../../components/menu/text-box.ts";
+import { OriginalImage } from "../../../../components/menu/OriginalImage.tsx";
+import { OriginalButton, OriginalTitleBar } from "../../../../components/menu/OriginalKit.tsx";
 import { UiImage } from "../../../../components/menu/UiImage.tsx";
-import type { UiAsset } from "../../../../components/menu/ui-assets.ts";
 import type { UnitDetailView } from "../../../../lib/units/owned-units.ts";
 import type { SphereSocketView } from "../../../../lib/units/spheres.ts";
+import { UNIT_INFO_ASSETS as A } from "../../../../lib/units/unit-info-screen.ts";
 import { type SkillDisplay, unitSkillDisplays } from "../../../../lib/units/unit-skills.ts";
 import { SplitButton } from "../stack/[stackId]/SplitButton.tsx";
-import styles from "../units.module.css";
 import { sphereIcon } from "./SphereSocketFace.tsx";
 import { UnitInfoBody } from "./UnitInfoBody.tsx";
+import styles from "./unit-info.module.css";
 
-/**
- * One owned unit as the original's Unit Info (M3-03G, reworked 2026-10-06; ART_GUIDE → UI →
- * Units, Squad, and Unit detail screens): the title plate with orb, stars, and names; the splash
- * over `bg-unit-info`; the left column of stat pills (bonus plates for stat-hob gains), the EXP
- * track, and the sphere rows; the right column's Enhance / Evolve and Switch; then the
- * pinned Leader Skill and burst rows (`UnitInfoBody`). Presentational; `page.tsx` reads the row.
- * A stack (M4-05C) shows its copy count and Split in place of Enhance / Evolve, since a stacked
- * copy must be split out before it can be levelled or fielded.
- */
+/** Original Unit Info chrome (M8-05) around BFR splash, owned stats and engine-scaled skills. */
 export function UnitDetail({
   unit,
   evolveLabel,
@@ -30,27 +22,22 @@ export function UnitDetail({
   spheres,
 }: {
   unit: UnitDetailView;
-  /** "Evolve" or "Omni Evolve" when the form has a next form to evolve into; otherwise null. */
   evolveLabel: string | null;
-  /** Set when this is a stack of untouched copies: its `owned_unit_stacks` id and count. */
   stack?: { id: string; count: number };
-  /** The unit's sphere sockets (M4-06J); each row opens the Equip Sphere screen. Not for stacks. */
   spheres?: readonly SphereSocketView[];
 }): ReactNode {
-  const stats = unit.currentStats;
   const statRows: readonly [string, keyof Stats][] = [
     ["HP", "hp"],
     ["Atk", "atk"],
     ["Def", "def"],
     ["Rec", "rec"],
   ];
-  const atCap = unit.maxLevel !== null && unit.level >= unit.maxLevel;
   const skills = unitSkillDisplays(unit);
   const find = (key: SkillDisplay["key"]) => skills.find((skill) => skill.key === key) ?? null;
   const bursts = skills.filter(
     (skill) => skill.key === "bb" || skill.key === "sbb" || skill.key === "ubb",
   );
-
+  const atCap = unit.maxLevel !== null && unit.level >= unit.maxLevel;
   const hero = (
     <>
       {unit.illustration ? (
@@ -60,24 +47,23 @@ export function UnitDetail({
           width={1024}
           height={1024}
           sizes="(max-width: 640px) 120vw, 760px"
-          className={styles.infoSplash}
+          className={styles.splash}
           priority
         />
       ) : (
-        <span className={styles.detailNoArt}>{unit.name.charAt(0)}</span>
+        <span className={styles.noArt}>{unit.name.charAt(0)}</span>
       )}
-
-      <div className={styles.infoLeft}>
-        <dl className={styles.infoStats}>
-          {stack ? <StatPill label="Copies" value={`×${stack.count}`} size="type" /> : null}
-          <StatPill label="Type" value={unit.typeLabel} size="type" accent />
+      <div className={styles.left}>
+        <dl className={styles.stats}>
+          <StatPill label="Type" art="type" value={unit.typeLabel} accent />
           <StatPill
             label="Lv."
+            art="lv"
             value={unit.maxLevel ? `${unit.level}/${unit.maxLevel}` : String(unit.level)}
-            size="wide"
           />
           <StatPill
             label="Next Lv."
+            art="next"
             value={
               unit.expToNext !== null
                 ? unit.expToNext.toLocaleString("en-US")
@@ -85,85 +71,101 @@ export function UnitDetail({
                   ? "----"
                   : "–"
             }
-            size="wide"
           />
-          <div className={styles.infoExp} aria-hidden>
-            {/* The channel spans 85.4% of the track; the crystal tip fills the rest. */}
-            <span style={{ width: `${unit.expProgress * 85.4}%` }} />
+          <div className={styles.exp} aria-hidden>
+            <OriginalImage asset={A.expBase} />
+            <span className={styles.expFill} style={{ width: `${unit.expProgress * 100}%` }}>
+              <OriginalImage asset={A.expFill} />
+            </span>
           </div>
           {statRows.map(([label, key]) => (
-            <div key={key} className={styles.infoStatRow}>
+            <div key={key} className={styles.statRow}>
               <StatPill
                 label={label}
-                value={stats ? stats[key].toLocaleString("en-US") : "–"}
-                size="stat"
+                art={key}
+                value={unit.currentStats ? unit.currentStats[key].toLocaleString("en-US") : "–"}
               />
               {unit.imps && unit.imps[key] > 0 ? (
-                <span className={styles.infoBonus} title={`${label} bonus from stat hobs`}>
-                  {unit.imps[key].toLocaleString("en-US")}
+                <span
+                  className={`${styles.pill} ${styles.bonus}`}
+                  title={`${label} bonus from stat hobs`}
+                >
+                  <StatusFrame bonus />
+                  <span className={`${styles.value} ${styles.text}`}>
+                    {unit.imps[key].toLocaleString("en-US")}
+                  </span>
                 </span>
               ) : null}
             </div>
           ))}
         </dl>
-
-        {spheres && !stack ? (
-          <nav className={styles.infoSpheres} aria-label="Spheres">
-            {/* A slot the unit has not unlocked is not shown at all. */}
-            {spheres
-              .filter((socket) => socket.unlocked)
-              .map((socket) => (
+      </div>
+      {spheres && !stack ? (
+        <nav className={styles.spheres} aria-label="Spheres">
+          {spheres
+            .filter((socket) => socket.unlocked)
+            .map((socket) => {
+              const icon = socket.sphere ? sphereIcon(socket.sphere.sphereId) : null;
+              return (
                 <Link
                   key={socket.slot}
                   href={`/units/${unit.id}/spheres`}
-                  className={styles.infoSphere}
+                  className={styles.sphere}
                   title={socket.sphere?.summary}
                 >
-                  <span className={styles.infoSphereIcon} aria-hidden>
-                    {socket.sphere && sphereIcon(socket.sphere.sphereId) ? (
-                      <UiImage name={sphereIcon(socket.sphere.sphereId) as UiAsset} />
+                  <span className={styles.socket} aria-hidden>
+                    <OriginalImage asset={A.socketBase} />
+                    <OriginalImage asset={A.socket} />
+                    {icon ? (
+                      <UiImage name={icon} className={styles.sphereIcon} />
                     ) : socket.sphere ? (
-                      <span className={styles.outline}>{socket.sphere.name.charAt(0)}</span>
-                    ) : null}
+                      <span className={styles.initial}>{socket.sphere.name.charAt(0)}</span>
+                    ) : (
+                      <OriginalImage asset={A.emptySphere} className={styles.emptySphere} />
+                    )}
                   </span>
-                  <span className={`${styles.infoSphereName} ${styles.outline}`}>
-                    {socket.sphere ? socket.sphere.name : "Empty"}
+                  <span className={`${styles.pill} ${styles.sphereName}`}>
+                    <StatusFrame />
+                    <span className={`${styles.value} ${styles.text}`}>
+                      {socket.sphere?.name ?? "Empty"}
+                    </span>
                   </span>
                 </Link>
-              ))}
-          </nav>
-        ) : null}
-      </div>
-
-      {stats ? null : (
-        <p className={styles.infoNote}>
+              );
+            })}
+        </nav>
+      ) : null}
+      {unit.currentStats ? null : (
+        <p className={styles.note}>
           This unit's level is outside its form's range, so its current stats are not shown.
         </p>
       )}
     </>
   );
-
-  const actions = (
+  const actions = stack ? (
+    <SplitButton stackId={stack.id} original />
+  ) : (
     <>
-      {stack ? (
-        <SplitButton stackId={stack.id} />
-      ) : (
-        <>
-          <Link href={`/fusion?target=${unit.id}`} className={styles.infoButton}>
-            <span className={styles.outline}>Enhance</span>
-          </Link>
-          {evolveLabel ? (
-            <Link href={`/units/${unit.id}/evolve`} className={styles.infoButton}>
-              <span className={styles.outline}>{evolveLabel}</span>
-            </Link>
-          ) : null}
-        </>
-      )}
+      <OriginalButton
+        size="sub_m_green_btn"
+        href={`/fusion?target=${unit.id}`}
+        className={styles.action}
+      >
+        <span className={styles.actionLabel}>Enhance</span>
+      </OriginalButton>
+      {evolveLabel ? (
+        <OriginalButton
+          size="sub_m_green_btn"
+          href={`/units/${unit.id}/evolve`}
+          className={styles.action}
+        >
+          <span className={styles.actionLabel}>{evolveLabel}</span>
+        </OriginalButton>
+      ) : null}
     </>
   );
-
   return (
-    <div className={styles.detailPage} data-element={unit.element ?? undefined}>
+    <div className={styles.page}>
       <UnitTitleBar unit={unit} backHref="/units/list" />
       <UnitInfoBody
         hero={hero}
@@ -173,16 +175,15 @@ export function UnitDetail({
         bursts={bursts}
       />
       {stack ? (
-        <p className={menu.ticker}>Split a copy out of the stack to level, equip, or field it.</p>
+        <p className={styles.stackNote}>
+          ×{stack.count} copies. Split a copy out of the stack to level, equip, or field it.
+        </p>
       ) : null}
     </div>
   );
 }
 
-/**
- * The detail's title bar: Back and the title plate with the element orb, rarity stars, form name,
- * and unit name. Shared with the Equip Sphere screen (M4-06J).
- */
+/** Shared with Equip Sphere; the screen kit supplies the one Back button and title plate. */
 export function UnitTitleBar({
   unit,
   backHref,
@@ -191,63 +192,57 @@ export function UnitTitleBar({
   backHref: string;
 }): ReactNode {
   return (
-    <header className={styles.titleBar}>
-      <Link href={backHref} className={`${styles.pill} ${styles.backButton}`}>
-        <span className={styles.outline}>Back</span>
-      </Link>
-      <div className={styles.detailPlate}>
-        <UiImage name="title-plate" className={styles.titlePlateArt} />
-        <div className={styles.detailPlateText} style={textBoxStyle("title-plate")}>
-          {unit.element ? (
-            <UiImage name={`orb-${unit.element}`} className={styles.detailOrb} />
-          ) : null}
-          <div className={styles.detailNames}>
-            <Stars rarity={unit.rarity} label={unit.rarityLabel} />
-            <h1 className={styles.outline}>
-              {unit.formName ? <span className={styles.detailForm}>{unit.formName}</span> : null}
-              {unit.name}
-            </h1>
-          </div>
-        </div>
-      </div>
-    </header>
+    <OriginalTitleBar title={unit.name} subtitle={unit.formName ?? "Unit Info"} backHref={backHref}>
+      {unit.element ? (
+        <OriginalImage
+          asset={`common/attribute_mark_M/${unit.element}.png`}
+          className={styles.orb}
+        />
+      ) : null}
+      {unit.rarity !== null ? (
+        <span
+          className={`${styles.rarity} ${styles.text}`}
+          role="img"
+          aria-label={unit.rarityLabel}
+        >
+          {"★".repeat(unit.rarity === "omni" ? 7 : unit.rarity)}
+        </span>
+      ) : null}
+    </OriginalTitleBar>
   );
 }
 
-/** One stat pill: beige label, white value (the Type value in amber), sized by its row. */
+function StatusFrame({ bonus = false }: { bonus?: boolean }): ReactNode {
+  const parts = bonus ? A.bonus : A.frame;
+  return (
+    <span className={styles.frame} aria-hidden>
+      <OriginalImage asset={parts[1]} className={styles.frameCenter} />
+      <OriginalImage asset={parts[0]} className={styles.frameLeft} />
+      <OriginalImage asset={parts[2]} className={styles.frameRight} />
+    </span>
+  );
+}
+
 function StatPill({
   label,
+  art,
   value,
-  size,
   accent = false,
 }: {
   label: string;
+  art: keyof typeof A.labels;
   value: string;
-  size: "type" | "wide" | "stat";
   accent?: boolean;
 }): ReactNode {
   return (
-    <div className={styles.infoPill} data-size={size}>
-      <dt className={`${styles.infoPillLabel} ${styles.outline}`}>{label}</dt>
-      <dd className={`${styles.infoPillValue} ${styles.outline}`} data-accent={accent || undefined}>
+    <div className={styles.pill}>
+      <StatusFrame />
+      <dt className={styles.label}>
+        <OriginalImage asset={A.labels[art]} alt={label} className={styles.labelArt} />
+      </dt>
+      <dd className={`${styles.value} ${styles.text}`} data-accent={accent || undefined}>
         {value}
       </dd>
     </div>
-  );
-}
-
-/** The form's rarity as gold stars (seven brighter stars for Omni). */
-function Stars({ rarity, label }: { rarity: UnitDetailView["rarity"]; label: string }): ReactNode {
-  if (rarity === null) return null;
-  const count = rarity === "omni" ? 7 : rarity;
-  return (
-    <span
-      className={`${styles.stars} ${styles.outline}`}
-      data-omni={rarity === "omni" || undefined}
-      role="img"
-      aria-label={label}
-    >
-      {"★".repeat(count)}
-    </span>
   );
 }

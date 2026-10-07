@@ -19,7 +19,8 @@ type OriginalImageProps = {
 
 /**
  * One imported original piece (RESOLVED-98). Pieces are 1x for the original 640-wide screen, so
- * each is drawn at its own pixel size in logical units (--u) unless `className` sets a width.
+ * each is drawn at its own pixel size in logical units (--u) unless `className` overrides it.
+ * Its base CSS uses zero specificity so screen size and visibility classes always take precedence.
  */
 export function OriginalImage({
   asset,

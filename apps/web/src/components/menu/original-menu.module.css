@@ -4,7 +4,8 @@
  * from BluuArc's recordings. Pieces are 1x, so a piece's own width is its logical width (--w).
  */
 
-.piece {
+/* Image defaults must yield to a screen's size or state classes in any stylesheet order. */
+:where(.piece) {
   display: block;
   width: calc(var(--u) * var(--w));
   height: auto;
@@ -20,7 +21,7 @@
 }
 
 /* Pressed art swaps in while a button is held. */
-.pressed {
+.pressed.pressed {
   display: none;
 }
 

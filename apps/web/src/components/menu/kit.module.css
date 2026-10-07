@@ -10,7 +10,8 @@
   -webkit-text-stroke: calc(var(--u) * 4) #10131c;
 }
 
-.pressed {
+/* Outrank OriginalImage's `.piece { display: block }` in any stylesheet order. */
+.pressed.pressed {
   display: none;
 }
 

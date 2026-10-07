@@ -44,6 +44,7 @@ export function NavBar(): ReactNode {
             href={section.href}
             className={styles.footerButton}
             style={style}
+            aria-label={section.label}
             aria-current={section === current ? "page" : undefined}
           >
             {face}

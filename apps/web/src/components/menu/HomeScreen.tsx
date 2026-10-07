@@ -109,7 +109,12 @@ export function HomeScreen({ cards }: { cards: readonly ShowcaseCard[] }): React
               </>
             );
             return shortcut.href ? (
-              <Link key={shortcut.label} href={shortcut.href} className={styles.shortcut}>
+              <Link
+                key={shortcut.label}
+                href={shortcut.href}
+                className={styles.shortcut}
+                aria-label={shortcut.label}
+              >
                 {face}
               </Link>
             ) : (
@@ -162,6 +167,7 @@ function SideButtonLink({
         type="button"
         className={styles.sideButton}
         onClick={onClick}
+        aria-label={button.label}
         aria-expanded={expanded}
       >
         {face}
@@ -169,7 +175,7 @@ function SideButtonLink({
     );
   }
   return button.href ? (
-    <Link href={button.href} className={styles.sideButton}>
+    <Link href={button.href} className={styles.sideButton} aria-label={button.label}>
       {face}
     </Link>
   ) : (

@@ -1,17 +1,7 @@
 /*
- * Fuse Units stage (M4-06D, RESOLVED-80) per legacy/ART_GUIDE_BFR.md -> UI -> Fusion stage. The page, title bar,
- * pills, pedestals, stat plate, and strip come from ../squad/squad.module.css and
- * ../units/units.module.css; this file places the six pedestals. Sizes use the menu's --u.
+ * Legacy fly-in stage (kept until M8-21 SAM playback) and the existing tap/hold fodder picker.
+ * Preparation and result use original-fusion.module.css (M8-07).
  */
-
-.titlePlate {
-  width: calc(var(--u) * 220);
-}
-
-.barButton {
-  width: calc(var(--u) * 140);
-  font-size: calc(var(--u) * 19);
-}
 
 /* ---------- The stage: 640 x 560 logical ---------- */
 
@@ -80,107 +70,6 @@
   text-align: center;
   font-size: calc(var(--u) * 18);
   color: #ffe34a;
-  pointer-events: none;
-}
-
-/* An empty stone's mark: "+" for fodder, "Base" for the centre. */
-.emptyMark {
-  --stroke: 3;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--u) * 82);
-  text-align: center;
-  font-size: calc(var(--u) * 30);
-  color: #fbe39a;
-  pointer-events: none;
-}
-
-.base .emptyMark {
-  font-size: calc(var(--u) * 24);
-  top: calc(var(--u) * 92);
-}
-
-.stage button:disabled .emptyMark {
-  opacity: 0.4;
-}
-
-.stage button:not(:disabled):hover .emptyMark,
-.stage button:not(:disabled):focus-visible .emptyMark {
-  color: #fff;
-}
-
-/* ---------- Fuse bar, confirm, and status panels ---------- */
-
-.fuseBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: calc(var(--u) * 12);
-  margin: calc(var(--u) * 10) calc(var(--u) * 8) 0;
-}
-
-.zelPlate {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 8);
-  min-width: calc(var(--u) * 180);
-  height: calc(var(--u) * 48);
-  padding-inline: calc(var(--u) * 8);
-  font-size: calc(var(--u) * 20);
-}
-
-.zelIcon {
-  width: calc(var(--u) * 30);
-  height: calc(var(--u) * 30);
-}
-
-.fodderCount {
-  font-size: calc(var(--u) * 20);
-}
-
-.fusePill {
-  width: calc(var(--u) * 160);
-}
-
-.panel {
-  margin: calc(var(--u) * 10) calc(var(--u) * 8) calc(var(--u) * 16);
-  padding: calc(var(--u) * 8) calc(var(--u) * 12);
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 17);
-  line-height: 1.4;
-  color: #fff;
-}
-
-.panel p {
-  margin: calc(var(--u) * 2) 0;
-}
-
-.note {
-  color: #f6d88a;
-  font-size: calc(var(--u) * 15);
-}
-
-.panelButtons {
-  display: flex;
-  gap: calc(var(--u) * 10);
-  margin-top: calc(var(--u) * 8);
-}
-
-.panelPill {
-  width: calc(var(--u) * 130);
-}
-
-/* ---------- Fodder pedestal slot count (M4-01F, RESOLVED-90) ---------- */
-
-/* A filled fodder pedestal's ×N, white and outlined at the stone's top right. */
-.pedestalCount {
-  --stroke: 4;
-  position: absolute;
-  top: calc(var(--u) * 40);
-  right: calc(var(--u) * 34);
-  font-size: calc(var(--u) * 26);
-  color: #fff;
   pointer-events: none;
 }
 
@@ -286,6 +175,10 @@
 }
 
 /* ---------- Fusion animation (M4-06E): fodder flies into the base, then a flash ---------- */
+
+.fusingPage {
+  position: relative;
+}
 
 .fusingPage .stage {
   overflow: hidden;
@@ -393,82 +286,6 @@
   width: calc(var(--u) * 150);
 }
 
-/* ---------- Fusion result (M4-06E, legacy/ART_GUIDE_BFR.md -> UI -> Fusion result) ---------- */
-
-.resultPage {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: calc(var(--u) * 16) calc(var(--u) * 16) 0;
-  background: #000;
-}
-
-.resultHeader {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 10);
-}
-
-.resultOrb {
-  width: calc(var(--u) * 40);
-  height: calc(var(--u) * 40);
-}
-
-.resultName {
-  margin: 0;
-  font-size: calc(var(--u) * 34);
-  color: #ffd75a;
-}
-
-/* The gold-rimmed table: Lv./HP/BB Lv. left, Atk/Def/Rec right. */
-.resultTable {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(var(--u) * 6) calc(var(--u) * 24);
-  width: 100%;
-  max-width: calc(var(--u) * 600);
-  margin-top: calc(var(--u) * 14);
-  padding: calc(var(--u) * 10) calc(var(--u) * 16);
-  border: calc(var(--u) * 3) solid #c99a3a;
-  border-radius: calc(var(--u) * 10);
-  background: rgb(30 22 8 / 0.75);
-  box-shadow: inset 0 0 0 calc(var(--u) * 1) #fbe39a;
-}
-
-.resultColumn {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 6);
-}
-
-.resultRow {
-  --stroke: 3;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: calc(var(--u) * 21);
-}
-
-.resultRow dt {
-  color: #fbe39a;
-}
-
-.resultRow dd {
-  margin: 0;
-  display: flex;
-  gap: calc(var(--u) * 6);
-}
-
-.resultArrow {
-  color: #fbe39a;
-  font-size: 0.7em;
-  align-self: center;
-}
-
 .srOnly {
   position: absolute;
   width: 1px;
@@ -476,97 +293,4 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-.risen {
-  color: #5fc4ff;
-}
-
-.nextLevel {
-  --stroke: 3;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: calc(var(--u) * 600);
-  margin-top: calc(var(--u) * 10);
-  padding-inline: calc(var(--u) * 4);
-  font-size: calc(var(--u) * 21);
-}
-
-.resultExpBar {
-  width: 100%;
-  max-width: calc(var(--u) * 600);
-  margin-top: calc(var(--u) * 6);
-}
-
-.successText {
-  --stroke: 3;
-  margin: calc(var(--u) * 12) 0 0;
-  font-size: calc(var(--u) * 26);
-  color: #ffe34a;
-}
-
-/* LEVEL UP!! in code (owner choice, 2026-10-02): gold-to-orange fill, dark outline, warm glow. */
-.levelUp {
-  margin: calc(var(--u) * 10) 0 0;
-  font-family: var(--font-menu), system-ui, sans-serif;
-  font-size: calc(var(--u) * 58);
-  line-height: 1.05;
-  letter-spacing: calc(var(--u) * 2);
-  background: linear-gradient(180deg, #fff3a8 0%, #ffd23c 40%, #ff9a1f 75%, #e8560c 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-stroke: calc(var(--u) * 3) #3a1a04;
-  paint-order: stroke fill;
-  filter: drop-shadow(0 0 calc(var(--u) * 10) rgb(255 170 50 / 0.75))
-    drop-shadow(0 calc(var(--u) * 3) 0 #2a1204);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .levelUp {
-    animation: level-up-pop 400ms ease-out;
-  }
-
-  @keyframes level-up-pop {
-    from {
-      transform: scale(0.6);
-      opacity: 0;
-    }
-  }
-}
-
-/* The idle sprite standing on result-halo (560 x 198 at 2x). */
-.haloStage {
-  position: relative;
-  width: calc(var(--u) * 280);
-  height: calc(var(--u) * 200);
-  margin-top: calc(var(--u) * 8);
-}
-
-.halo {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: calc(var(--u) * 280);
-  height: auto;
-}
-
-.haloStage .resultSprite {
-  left: calc(var(--u) * 52);
-  top: auto;
-  bottom: calc(var(--u) * 26);
-  width: calc(var(--u) * 176);
-  height: calc(var(--u) * 176);
-}
-
-.quote {
-  max-width: calc(var(--u) * 560);
-  margin: calc(var(--u) * 10) 0 0;
-  font-family: system-ui, sans-serif;
-  font-size: calc(var(--u) * 18);
-  line-height: 1.4;
-  text-align: center;
-  white-space: pre-line;
-  color: #fff;
 }

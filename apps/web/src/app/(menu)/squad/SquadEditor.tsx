@@ -3,13 +3,17 @@
 import type { Element, Stats } from "@bfr/data";
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode, useState, useTransition } from "react";
+import { type ReactNode, useRef, useState, useTransition } from "react";
 import { LoadingGlyph } from "../../../components/loading/LoadingGlyph.tsx";
-import menu from "../../../components/menu/menu.module.css";
-import { textBoxStyle } from "../../../components/menu/text-box.ts";
-import { UiImage } from "../../../components/menu/UiImage.tsx";
-import { THUMB_ART_SIZE } from "../../../components/menu/ui-assets.ts";
-import { SkillRow } from "../../../components/units/SkillRow.tsx";
+import kit from "../../../components/menu/kit.module.css";
+import { OriginalImage } from "../../../components/menu/OriginalImage.tsx";
+import {
+  OriginalButton,
+  OriginalTicker,
+  OriginalTitleBar,
+  OriginalWindow,
+} from "../../../components/menu/OriginalKit.tsx";
+import { SkillText } from "../../../components/units/SkillRow.tsx";
 import { UnitPicker } from "../../../components/units/UnitPicker.tsx";
 import {
   draftProblem,
@@ -23,11 +27,11 @@ import {
   stepSquadSlot,
   toggleSquadUnit,
 } from "../../../lib/squad/squad-editor.ts";
+import { SQUAD_ASSETS } from "../../../lib/squad/squad-screen.ts";
 import { leaderSkillDisplay } from "../../../lib/units/unit-skills.ts";
 import type { CollectionEntry } from "../../../lib/units/unit-stacks.ts";
-import units from "../units/units.module.css";
 import { saveSquad } from "./actions.ts";
-import squad from "./squad.module.css";
+import squad from "./original-squad.module.css";
 
 /** The slice of an owned unit the editor draws. */
 export type EditorUnit = {
@@ -54,13 +58,7 @@ const PEDESTAL_SPOTS = ["centre", "tl", "tr", "bl", "br"] as const;
 
 const SLOT_NUMBERS: readonly number[] = Array.from({ length: SQUAD_SLOTS }, (_, i) => i);
 
-/**
- * The squad editor (M3-03B) as the original's Manage Squad (M3-03F, legacy/ART_GUIDE_BFR.md → UI → Units,
- * Squad, and Unit detail screens): five pedestals over `bg-olive` with the leader in the centre
- * under the leader ribbon, squad arrows and page dots for the ten squads, the Leader Skill bar,
- * and below them the unit picker. Tapping a squad member removes it; with
- * Leader lit, tapping one makes it the leader. Saving goes through the `save_squad` RPC.
- */
+/** Original Manage Squad pieces around the existing draft and server-authorized save flow. */
 export function SquadEditor({
   slot,
   units: owned,
@@ -72,9 +70,11 @@ export function SquadEditor({
   pickerUnits: readonly CollectionEntry[];
   saved: SquadDraft;
 }): ReactNode {
+  const skillDialog = useRef<HTMLDialogElement>(null);
   const [draft, setDraft] = useState<SquadDraft>(saved);
   const [choosingLeader, setChoosingLeader] = useState(false);
   const [filling, setFilling] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -86,10 +86,6 @@ export function SquadEditor({
   function update(next: SquadDraft): void {
     setDraft(next);
     setStatus(null);
-  }
-
-  function pick(unitId: string): void {
-    update(toggleSquadUnit(draft, unitId));
   }
 
   function tapMember(position: number, unit: EditorUnit): void {
@@ -136,46 +132,79 @@ export function SquadEditor({
     );
   }
 
+  const skill = leaderSkillDisplay(leader);
   return (
-    <div className={squad.page}>
-      <header className={units.titleBar}>
-        <Link href="/home" className={`${units.pill} ${units.backButton}`}>
-          <span className={units.outline}>Back</span>
-        </Link>
-        <div className={`${units.titlePlate} ${squad.titlePlate}`}>
-          <UiImage name="title-plate" className={units.titlePlateArt} />
-          <div className={units.titleText} style={textBoxStyle("title-plate")}>
-            <h1 className={units.outline}>Manage Squad</h1>
-          </div>
-        </div>
+    <div className={`${kit.page} ${squad.page}`}>
+      <OriginalTitleBar title="Manage Squad" backHref="/units">
         <button
           type="button"
-          className={`${units.pill} ${squad.barButton} ${choosingLeader ? squad.barButtonLit : ""}`}
+          className={`${kit.button} ${squad.leaderControl}`}
           onClick={() => setChoosingLeader((on) => !on)}
+          aria-label="Change Leader"
           aria-pressed={choosingLeader}
-          disabled={draft.unitIds.length === 0}
+          disabled={pending || draft.unitIds.length === 0}
         >
-          <span className={units.outline}>Leader</span>
+          <OriginalImage asset={SQUAD_ASSETS.baseNormal} className={`${kit.normal} ${kit.layer}`} />
+          <OriginalImage
+            asset={SQUAD_ASSETS.basePressed}
+            className={`${kit.pressed} ${kit.layer}`}
+          />
+          <OriginalImage
+            asset={SQUAD_ASSETS.leaderNormal}
+            className={`${kit.normal} ${kit.layer}`}
+          />
+          <OriginalImage
+            asset={SQUAD_ASSETS.leaderPressed}
+            className={`${kit.pressed} ${kit.layer}`}
+          />
         </button>
         <button
           type="button"
-          className={`${units.pill} ${squad.barButton} ${dirty && !problem ? squad.barButtonLit : ""}`}
-          onClick={save}
-          disabled={pending || problem !== null || !dirty}
+          className={`${kit.button} ${squad.detailControl}`}
+          onClick={() => setShowDetails((on) => !on)}
+          aria-label="View Details"
+          aria-pressed={showDetails}
         >
-          <span className={units.outline}>{pending ? <LoadingGlyph /> : "Save"}</span>
+          <OriginalImage asset={SQUAD_ASSETS.baseNormal} className={`${kit.normal} ${kit.layer}`} />
+          <OriginalImage
+            asset={SQUAD_ASSETS.basePressed}
+            className={`${kit.pressed} ${kit.layer}`}
+          />
+          <OriginalImage
+            asset={SQUAD_ASSETS.detailNormal}
+            className={`${kit.normal} ${kit.layer}`}
+          />
+          <OriginalImage
+            asset={SQUAD_ASSETS.detailPressed}
+            className={`${kit.pressed} ${kit.layer}`}
+          />
         </button>
-      </header>
-
-      <div className={squad.body}>
+      </OriginalTitleBar>
+      <div className={`${kit.body} ${squad.body}`}>
         <section
           className={`${squad.stage} ${choosingLeader ? squad.stageChoosing : ""}`}
           aria-label={`Squad ${slot + 1}`}
         >
-          <div className={`${squad.plate} ${squad.namePlate}`}>
-            <span className={units.outline}>Squad {slot + 1}</span>
-          </div>
-
+          <OriginalImage asset={SQUAD_ASSETS.cost} className={squad.cost} />
+          <button
+            type="button"
+            className={`${kit.button} ${squad.save}`}
+            onClick={save}
+            disabled={pending || problem !== null || !dirty}
+            aria-label="Save squad"
+          >
+            <OriginalImage
+              asset="common/button/sub_m_green_btn1.png"
+              className={`${kit.normal} ${squad.saveArt}`}
+            />
+            <OriginalImage
+              asset="common/button/sub_m_green_btn2.png"
+              className={`${kit.pressed} ${squad.saveArt}`}
+            />
+            <span className={`${kit.caption} ${kit.text}`}>
+              {pending ? <LoadingGlyph /> : "Save"}
+            </span>
+          </button>
           {pedestalOrder(draft).map((position, i) => {
             const unit = byId.get(draft.unitIds[position] ?? "");
             return (
@@ -184,6 +213,7 @@ export function SquadEditor({
                 spot={PEDESTAL_SPOTS[i] ?? "centre"}
                 unit={unit}
                 isLeader={i === 0 && unit !== undefined}
+                showDetails={showDetails}
                 action={
                   unit
                     ? choosingLeader
@@ -194,31 +224,31 @@ export function SquadEditor({
                       : "Add units to the squad"
                 }
                 onTap={
-                  unit
-                    ? () => tapMember(position, unit)
-                    : choosingLeader
-                      ? undefined
-                      : () => setFilling(true)
+                  pending
+                    ? undefined
+                    : unit
+                      ? () => tapMember(position, unit)
+                      : choosingLeader
+                        ? undefined
+                        : () => setFilling(true)
                 }
               />
             );
           })}
-
           <Link
             href={`/squad?slot=${stepSquadSlot(slot, -1)}`}
             className={`${squad.arrow} ${squad.arrowLeft}`}
             aria-label="Previous squad"
           >
-            <UiImage name="squad-arrow" className={squad.arrowArt} />
+            <OriginalImage asset={SQUAD_ASSETS.arrowLeft} />
           </Link>
           <Link
             href={`/squad?slot=${stepSquadSlot(slot, 1)}`}
             className={`${squad.arrow} ${squad.arrowRight}`}
             aria-label="Next squad"
           >
-            <UiImage name="squad-arrow" className={squad.arrowArt} />
+            <OriginalImage asset={SQUAD_ASSETS.arrowRight} />
           </Link>
-
           <nav className={squad.dots} aria-label="Squad slots">
             {SLOT_NUMBERS.map((i) => (
               <Link
@@ -228,111 +258,89 @@ export function SquadEditor({
                 aria-label={`Squad ${i + 1}`}
                 aria-current={i === slot ? "page" : undefined}
               >
-                <UiImage name={i === slot ? "dot-on" : "dot-off"} className={squad.dotArt} />
+                <OriginalImage
+                  asset={i === slot ? SQUAD_ASSETS.dotOn : SQUAD_ASSETS.dotOff}
+                  className={squad.dotArt}
+                />
               </Link>
             ))}
           </nav>
-
-          <div className={squad.squadTab}>
-            <span className={units.outline}>Squad {slot + 1}</span>
-          </div>
+          <span className={`${squad.squadTab} ${kit.text}`}>Squad {slot + 1}</span>
         </section>
-
-        <SkillRow skill={leaderSkillDisplay(leader)} className={squad.leaderBar} />
-
-        <p
-          className={`${squad.plate} ${squad.strip} ${status && !status.ok ? squad.stripError : ""}`}
-          role="status"
+        <button
+          type="button"
+          className={squad.skill}
+          aria-label="Leader Skill"
+          aria-haspopup="dialog"
+          onClick={() => skillDialog.current?.showModal()}
         >
-          {strip}
-        </p>
-
-        <section className={squad.picker} aria-label="Units">
-          <h2 className={`${squad.pickerTitle} ${units.outline}`}>Your units</h2>
-          {owned.length === 0 ? (
-            <p className={squad.pickerNote}>
-              You have no units yet. Your starters join you as you clear the story.
-            </p>
-          ) : (
-            <ul className={units.grid}>
-              {owned.map((unit) => {
-                const inSquad = draft.unitIds.includes(unit.id);
-                return (
-                  <li key={unit.id}>
-                    <UnitIcon
-                      unit={unit}
-                      tag={inSquad ? "PARTY" : null}
-                      chosen={inSquad}
-                      onClick={() => pick(unit.id)}
-                      label={`${unit.name}, ${unit.rarityLabel}, Lv ${unit.level}${inSquad ? ", in squad" : ""}`}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+          <OriginalImage asset={SQUAD_ASSETS.skill} className={squad.skillArt} />
+          <span className={`${squad.skillName} ${kit.text}`}>{skill?.name ?? "None"}</span>
+          <div className={squad.skillEffects}>
+            <SkillText text={skill?.effects.join(" · ") ?? "No Leader Skill"} />
+          </div>
+        </button>
       </div>
-
-      <p className={menu.ticker}>
-        {choosingLeader
-          ? "Tap a squad member to make it the leader."
-          : "Tap a squad member to remove it."}
-      </p>
+      <dialog ref={skillDialog} className={squad.skillDialog} aria-label="Leader Skill details">
+        <OriginalWindow variant="system">
+          <h2 className={kit.text}>{skill?.name ?? "None"}</h2>
+          <p>{skill?.effects.join(" · ") ?? "No Leader Skill"}</p>
+          <OriginalButton size="sub_m_btn" onClick={() => skillDialog.current?.close()}>
+            Close
+          </OriginalButton>
+        </OriginalWindow>
+      </dialog>
+      <div className={squad.status} role="status">
+        <OriginalTicker>
+          {choosingLeader ? "Tap a squad member to make it the leader." : strip}
+        </OriginalTicker>
+      </div>
     </div>
   );
 }
 
-/** One pedestal: the idle sprite on the stone, its stat plate, and the element orb. */
+/** Idle sprite over its imported table; the centre stays the leader under BFR's saved rule. */
 function Pedestal({
   spot,
   unit,
   isLeader,
+  showDetails,
   action,
   onTap,
 }: {
   spot: (typeof PEDESTAL_SPOTS)[number];
   unit: EditorUnit | undefined;
   isLeader: boolean;
+  showDetails: boolean;
   action: string | undefined;
   onTap: (() => void) | undefined;
 }): ReactNode {
   const body = (
     <>
-      <UiImage name="squad-pedestal" className={squad.pedestalArt} />
-      {unit ? (
-        unit.sprite ? (
-          <Image
-            src={unit.sprite}
-            alt=""
-            width={128}
-            height={128}
-            className={squad.sprite}
-            unoptimized
-            draggable={false}
-          />
-        ) : (
-          <span className={`${squad.noSprite} ${units.outline}`}>{unit.name.charAt(0)}</span>
-        )
-      ) : null}
-      {isLeader ? (
-        <span className={squad.ribbon}>
-          <UiImage name="leader-ribbon" className={units.titlePlateArt} />
-          <span
-            className={`${squad.ribbonText} ${units.outline}`}
-            style={textBoxStyle("leader-ribbon")}
-          >
-            LEADER
-          </span>
-        </span>
-      ) : null}
-      {unit ? <StatPlate unit={unit} /> : null}
+      <OriginalImage asset={SQUAD_ASSETS.pedestal} className={squad.pedestalArt} />
+      {unit?.sprite ? (
+        <Image
+          src={unit.sprite}
+          alt=""
+          width={128}
+          height={128}
+          className={squad.sprite}
+          unoptimized
+          draggable={false}
+        />
+      ) : unit ? (
+        <span className={`${squad.initial} ${kit.text}`}>{unit.name.charAt(0)}</span>
+      ) : (
+        <span className={`${squad.empty} ${kit.text}`}>+</span>
+      )}
+      {isLeader ? <span className={`${squad.leaderTag} ${kit.text}`}>LEADER</span> : null}
+      {unit && showDetails ? <StatPlate unit={unit} /> : null}
     </>
   );
   return onTap ? (
     <button
       type="button"
-      className={`${squad.pedestal} ${unit ? "" : squad.pedestalEmpty}`}
+      className={squad.pedestal}
       data-spot={spot}
       onClick={onTap}
       aria-label={action}
@@ -340,95 +348,41 @@ function Pedestal({
       {body}
     </button>
   ) : (
-    <div className={`${squad.pedestal} ${squad.pedestalEmpty}`} data-spot={spot}>
+    <div className={squad.pedestal} data-spot={spot}>
       {body}
     </div>
   );
 }
 
-/** "Lv. N  HP N" over "ATK N  DEF N  REC N", with the element orb on the top-left corner. */
 function StatPlate({ unit }: { unit: EditorUnit }): ReactNode {
-  const s = unit.stats;
-  const value = (n: number | undefined) => (n === undefined ? "–" : String(n));
+  const stats = unit.stats;
+  const value = (n: number | undefined): string => (n === undefined ? "–" : String(n));
   return (
-    <span className={`${squad.plate} ${squad.statPlate}`}>
-      {unit.element ? <UiImage name={`orb-${unit.element}`} className={squad.orb} /> : null}
-      <span className={squad.statLine}>
-        <Stat label="Lv." value={String(unit.level)} />
-        <Stat label="HP" value={value(s?.hp)} />
-      </span>
-      <span className={squad.statLine}>
-        <Stat label="ATK" value={value(s?.atk)} />
-        <Stat label="DEF" value={value(s?.def)} />
-        <Stat label="REC" value={value(s?.rec)} />
-      </span>
-    </span>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }): ReactNode {
-  return (
-    <span className={`${squad.stat} ${units.outline}`}>
-      <span className={squad.statLabel}>{label}</span> {value}
-    </span>
-  );
-}
-
-/** A picker icon: the thumb in its element frame, the level across the bottom, a tag on top. */
-function UnitIcon({
-  unit,
-  tag = null,
-  chosen = false,
-  onClick,
-  label,
-}: {
-  unit: EditorUnit;
-  tag?: string | null;
-  chosen?: boolean;
-  onClick: () => void;
-  label: string;
-}): ReactNode {
-  const level =
-    unit.maxLevel !== null && unit.level >= unit.maxLevel ? "Lv.MAX" : `Lv.${unit.level}`;
-  return (
-    <button
-      type="button"
-      className={`${units.icon} ${squad.pickIcon} ${chosen ? squad.pickChosen : ""}`}
-      data-element={unit.element ?? undefined}
-      onClick={onClick}
-      aria-pressed={chosen}
-      aria-label={label}
-    >
-      <span className={units.iconArt}>
-        {unit.thumb ? (
-          <Image
-            src={unit.thumb}
-            alt=""
-            width={THUMB_ART_SIZE.width}
-            height={THUMB_ART_SIZE.height}
-            className={units.thumb}
-            unoptimized
-            draggable={false}
-          />
-        ) : unit.sprite ? (
-          <Image
-            src={unit.sprite}
-            alt=""
-            width={128}
-            height={128}
-            className={units.sprite}
-            unoptimized
-            draggable={false}
-          />
-        ) : (
-          <span className={units.iconInitial}>{unit.name.charAt(0)}</span>
-        )}
-      </span>
+    <span className={squad.statPlate}>
+      <OriginalImage asset={SQUAD_ASSETS.frameCenter} className={squad.frameCenter} />
+      <OriginalImage asset={SQUAD_ASSETS.frameLeft} className={squad.frameLeft} />
+      <OriginalImage asset={SQUAD_ASSETS.frameRight} className={squad.frameRight} />
       {unit.element ? (
-        <UiImage name={`unit-frame-${unit.element}`} className={units.iconFrame} />
+        <OriginalImage
+          asset={`common/attribute_mark_M/${unit.element}.png`}
+          className={squad.orb}
+        />
       ) : null}
-      {tag ? <span className={`${units.party} ${units.outline}`}>{tag}</span> : null}
-      <span className={`${units.level} ${units.outline}`}>{level}</span>
-    </button>
+      <span className={`${squad.statLine} ${kit.text}`}>
+        <span>
+          <OriginalImage asset={SQUAD_ASSETS.level} className={squad.statLabel} alt="Lv." />{" "}
+          {unit.level}
+        </span>
+        <span>
+          <OriginalImage asset={SQUAD_ASSETS.hp} className={squad.statLabel} alt="HP" />{" "}
+          {value(stats?.hp)}
+        </span>
+      </span>
+      <span className={`${squad.statLine} ${kit.text}`}>
+        <span>ATK {value(stats?.atk)}</span>
+        <span>DEF {value(stats?.def)}</span>
+        <span>REC {value(stats?.rec)}</span>
+      </span>
+    </span>
   );
 }

@@ -1,7 +1,9 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ORIGINAL_ASSETS } from "../../../lib/original/original-assets.ts";
 import { fillSquadSlots, type SquadDraft } from "../../../lib/squad/squad-editor.ts";
+import { SQUAD_ASSETS } from "../../../lib/squad/squad-screen.ts";
 import { toOwnedUnitView } from "../../../lib/units/owned-units.ts";
 import { saveSquad } from "./actions.ts";
 import { type EditorUnit, SquadEditor } from "./SquadEditor.tsx";
@@ -40,6 +42,10 @@ beforeEach(() => {
 });
 
 describe("squad multi-pick integration (M4-06F)", () => {
+  it("imports every Manage Squad piece", () => {
+    for (const asset of Object.values(SQUAD_ASSETS))
+      expect(asset in ORIGINAL_ASSETS, asset).toBe(true);
+  });
   it("renders three accessible empty-pedestal buttons and filled-slot removal controls", () => {
     const html = renderToStaticMarkup(
       createElement(SquadEditor, {

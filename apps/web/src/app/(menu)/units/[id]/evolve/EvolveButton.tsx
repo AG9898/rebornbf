@@ -2,22 +2,16 @@
 
 import { type ReactNode, useState, useTransition } from "react";
 import { LoadingGlyph } from "../../../../../components/loading/LoadingGlyph.tsx";
-import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
-import { UiImage } from "../../../../../components/menu/UiImage.tsx";
+import kit from "../../../../../components/menu/kit.module.css";
+import { OriginalImage } from "../../../../../components/menu/OriginalImage.tsx";
 import type { EvolveBlocker } from "../../../../../lib/units/evolution.ts";
-import units from "../../units.module.css";
+import { EVOLVE_ASSETS } from "../../../../../lib/units/evolve-screen.ts";
 import { evolveUnit } from "./actions.ts";
 import type { EvolveCinematicView } from "./EvolveCinematic.tsx";
 import { usePlayEvolveCinematic } from "./EvolveHost.tsx";
 import evolve from "./evolve.module.css";
 
-/**
- * The evolve screen's bottom bar (M4-06L): the blue `btn-hub` Evolve button, the Zel Cost plate,
- * and a red status strip naming what is short (or the RPC's refusal). The button runs the
- * evolution through the `evolveUnit` Server Action behind the full-screen LoadingGlyph, then plays the
- * evolve cinematic (M4-06M), whose tap or Skip opens the new form's unit page. A refusal shows in
- * the strip instead.
- */
+/** Original Evolve action strip; server authority and cinematic snapshot stay unchanged. */
 export function EvolveButton({
   unitId,
   materialIds,
@@ -56,23 +50,33 @@ export function EvolveButton({
   return (
     <div className={evolve.bottom}>
       {strip ? (
-        <p className={`${evolve.strip} ${units.outline}`} role={error ? "alert" : "status"}>
+        <p className={`${evolve.strip} ${kit.text}`} role={error ? "alert" : "status"}>
           {strip}
         </p>
       ) : null}
       <div className={evolve.bar}>
-        <button type="button" className={evolve.button} onClick={run} disabled={disabled}>
-          <UiImage name="btn-hub" className={evolve.buttonArt} />
-          <span className={`${evolve.buttonText} ${units.outline}`} style={textBoxStyle("btn-hub")}>
-            {label}
-          </span>
+        <OriginalImage asset={EVOLVE_ASSETS.plate} className={evolve.barArt} />
+        <button
+          type="button"
+          className={`${kit.button} ${evolve.button}`}
+          aria-label={label}
+          onClick={run}
+          disabled={disabled}
+        >
+          <OriginalImage asset={EVOLVE_ASSETS.normal} className={`${kit.normal} ${kit.layer}`} />
+          <OriginalImage asset={EVOLVE_ASSETS.pressed} className={`${kit.pressed} ${kit.layer}`} />
+          <OriginalImage
+            asset={EVOLVE_ASSETS.labelNormal}
+            className={`${kit.normal} ${kit.layer}`}
+          />
+          <OriginalImage
+            asset={EVOLVE_ASSETS.labelPressed}
+            className={`${kit.pressed} ${kit.layer}`}
+          />
         </button>
-        <div className={evolve.zelPlate}>
-          <span className={`${evolve.zelLabel} ${units.outline}`}>Zel Cost</span>
-          <span className={evolve.zelValue}>
-            <UiImage name="icon-zel" alt="Zel" className={evolve.zelIcon} />
-            <span className={units.outline}>{zel.toLocaleString("en-US")}</span>
-          </span>
+        <div className={`${evolve.zelPlate} ${kit.text}`}>
+          <span className={evolve.zelLabel}>Zel Cost</span>
+          <span className={evolve.zelValue}>{zel.toLocaleString("en-US")}</span>
         </div>
       </div>
       {pending ? <LoadingGlyph variant="screen" /> : null}

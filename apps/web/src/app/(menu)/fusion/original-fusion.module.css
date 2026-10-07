@@ -1,0 +1,381 @@
+/* Archive Fusion CSV positions on 640×1136; content starts at y304 under kit title. */
+.artButton:disabled {
+  filter: grayscale(0.7) brightness(0.65);
+  cursor: default;
+}
+.squareButton {
+  width: calc(var(--u) * 105);
+  height: calc(var(--u) * 83);
+}
+.wideButton {
+  width: calc(var(--u) * 204);
+  height: calc(var(--u) * 84);
+}
+.changeBase.changeBase,
+.displayStatus.displayStatus {
+  position: absolute;
+  top: calc(var(--u) * 55);
+}
+.changeBase {
+  left: calc(var(--u) * 424);
+}
+.displayStatus {
+  left: calc(var(--u) * 531);
+}
+.stage {
+  overflow: hidden;
+  position: relative;
+  height: calc(var(--u) * 680);
+  color: #fff;
+}
+.pedestal {
+  position: absolute;
+  width: calc(var(--u) * 190);
+  height: calc(var(--u) * 180);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.pedestal:disabled {
+  cursor: default;
+}
+.table {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 128);
+}
+.sprite {
+  position: absolute;
+  left: calc(var(--u) * 31);
+  top: 0;
+  width: calc(var(--u) * 128);
+  height: calc(var(--u) * 128);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.noSprite {
+  position: absolute;
+  inset: calc(var(--u) * 35) 0 auto;
+  text-align: center;
+  font-size: calc(var(--u) * 50);
+}
+.base {
+  left: calc(var(--u) * 215);
+  top: calc(var(--u) * 199);
+  width: calc(var(--u) * 216);
+  height: calc(var(--u) * 236);
+}
+.base .table {
+  left: calc(var(--u) * 13);
+}
+.base .sprite {
+  left: calc(var(--u) * 44);
+}
+.fodder[data-spot="tl"] {
+  left: calc(var(--u) * 86);
+  top: calc(var(--u) * 107);
+}
+.fodder[data-spot="tr"] {
+  left: calc(var(--u) * 381);
+  top: calc(var(--u) * 107);
+}
+.fodder[data-spot="bl"] {
+  left: calc(var(--u) * 10);
+  top: calc(var(--u) * 265);
+}
+.fodder[data-spot="br"] {
+  left: calc(var(--u) * 441);
+  top: calc(var(--u) * 265);
+}
+.fodder[data-spot="bc"] {
+  left: calc(var(--u) * 225);
+  top: calc(var(--u) * 344);
+}
+.emptyMark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 134);
+  text-align: center;
+  color: #ffe9a1;
+  font-size: calc(var(--u) * 25);
+}
+.pedestal:disabled .emptyMark {
+  opacity: 0.4;
+}
+.statPlate {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 184);
+  width: 100%;
+  font-size: calc(var(--u) * 17);
+  text-shadow: 0 1px 2px #000;
+}
+.statLine {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u) * 8);
+}
+.statLabel {
+  color: #ffd74d;
+}
+.orb {
+  position: absolute;
+  left: calc(var(--u) * -25);
+  top: 0;
+}
+.fodderLevel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 173);
+  text-align: center;
+  color: #ffe34a;
+  font-size: calc(var(--u) * 18);
+}
+.pedestalCount {
+  position: absolute;
+  top: calc(var(--u) * 115);
+  right: calc(var(--u) * 10);
+  font-size: calc(var(--u) * 25);
+  text-shadow: 0 2px 2px #000;
+}
+.fodderCount {
+  position: absolute;
+  right: calc(var(--u) * 15);
+  top: calc(var(--u) * 543);
+  font-size: calc(var(--u) * 20);
+}
+.fuseBar {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 591);
+  width: 100%;
+  height: calc(var(--u) * 94);
+  font-size: calc(var(--u) * 20);
+}
+.costPlate {
+  position: absolute;
+  left: calc(var(--u) * -2);
+  top: 0;
+}
+.fuseButton.fuseButton {
+  position: absolute;
+  left: calc(var(--u) * 218);
+  top: calc(var(--u) * 8);
+}
+.cost,
+.gain {
+  position: absolute;
+  right: calc(var(--u) * 15);
+  width: calc(var(--u) * 175);
+  text-align: right;
+}
+.cost {
+  top: calc(var(--u) * 17);
+}
+.gain {
+  top: calc(var(--u) * 55);
+}
+.nextExp {
+  position: absolute;
+  left: calc(var(--u) * 96);
+  top: calc(var(--u) * 9);
+  width: calc(var(--u) * 119);
+  text-align: right;
+}
+.gauge {
+  position: relative;
+  width: calc(var(--u) * 213);
+  height: calc(var(--u) * 26);
+}
+.gaugeClip {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+}
+.gaugeClip img {
+  width: calc(var(--u) * 213);
+  max-width: none;
+}
+.stageGauge.stageGauge {
+  position: absolute;
+  left: calc(var(--u) * 6);
+  top: calc(var(--u) * 46);
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgb(0 0 0 / 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--u) * 20);
+}
+.panel {
+  width: 100%;
+  max-height: 95%;
+  overflow-y: auto;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 21);
+  line-height: 1.35;
+}
+.panel p {
+  margin: calc(var(--u) * 8) 0;
+}
+.panelButtons {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u) * 20);
+  margin-top: calc(var(--u) * 18);
+}
+.note {
+  color: #ffdc8a;
+  font-size: calc(var(--u) * 17);
+}
+/* Result CSV screen y less 164; the engine/RPC before/after values remain runtime text. */
+.resultPage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: #000;
+  color: #fff;
+  text-shadow: 0 2px 2px #000;
+}
+.resultHeader {
+  position: absolute;
+  left: calc(var(--u) * 20);
+  top: calc(var(--u) * 34);
+  width: calc(var(--u) * 600);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+}
+.resultName {
+  margin: 0;
+  color: #ffd75a;
+  font-size: calc(var(--u) * 32);
+}
+.resultTable {
+  position: absolute;
+  top: calc(var(--u) * 93);
+  left: calc(var(--u) * 16);
+  width: calc(var(--u) * 608);
+  height: calc(var(--u) * 154);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: calc(var(--u) * 27) calc(var(--u) * 24);
+  gap: calc(var(--u) * 24);
+}
+.resultWindow {
+  position: absolute;
+  inset: 0;
+}
+.resultColumn {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 7);
+}
+.resultRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(var(--u) * 22);
+}
+.resultRow dt {
+  color: #ffdc8a;
+}
+.resultRow dd {
+  margin: 0;
+  display: flex;
+  gap: calc(var(--u) * 10);
+}
+.resultArrow {
+  color: #ffe99b;
+}
+.risen {
+  color: #5fc4ff;
+}
+.nextLevel {
+  position: absolute;
+  top: calc(var(--u) * 247);
+  left: calc(var(--u) * 136);
+  width: calc(var(--u) * 368);
+  text-align: center;
+  margin: 0;
+  font-size: calc(var(--u) * 24);
+}
+.resultGauge.resultGauge {
+  position: absolute;
+  top: calc(var(--u) * 282);
+  left: calc(var(--u) * 136);
+  width: calc(var(--u) * 368);
+  height: calc(var(--u) * 45);
+}
+.resultGauge img {
+  width: calc(var(--u) * 368);
+  max-width: none;
+}
+.successText {
+  position: absolute;
+  top: calc(var(--u) * 327);
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  color: #ffe34a;
+  font-size: calc(var(--u) * 28);
+}
+.levelUp {
+  position: absolute;
+  top: calc(var(--u) * 378);
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  color: #ffca38;
+  font-size: calc(var(--u) * 60);
+  -webkit-text-stroke: calc(var(--u) * 2) #7a3000;
+  paint-order: stroke fill;
+}
+.resultStage {
+  position: absolute;
+  left: calc(var(--u) * 225);
+  top: calc(var(--u) * 436);
+  width: calc(var(--u) * 190);
+  height: calc(var(--u) * 220);
+}
+.resultTableArt {
+  position: absolute;
+  top: calc(var(--u) * 160);
+}
+.resultSprite {
+  position: absolute;
+  left: calc(var(--u) * 7);
+  top: 0;
+  width: calc(var(--u) * 176);
+  height: calc(var(--u) * 176);
+  image-rendering: pixelated;
+}
+.quote {
+  position: absolute;
+  left: calc(var(--u) * 20);
+  top: calc(var(--u) * 672);
+  width: calc(var(--u) * 490);
+  margin: 0;
+  white-space: pre-line;
+  font-size: calc(var(--u) * 21);
+  line-height: 1.35;
+  text-align: center;
+}
+.skipButton.skipButton {
+  position: absolute;
+  left: calc(var(--u) * 530);
+  bottom: calc(var(--u) * 12);
+}

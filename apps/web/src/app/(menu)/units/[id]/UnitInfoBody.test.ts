@@ -1,7 +1,9 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { ORIGINAL_ASSETS } from "../../../../lib/original/original-assets.ts";
 import { toUnitDetailView } from "../../../../lib/units/owned-units.ts";
+import { UNIT_INFO_ASSETS, unitInfoSkillLabel } from "../../../../lib/units/unit-info-screen.ts";
 import { unitSkillDisplays } from "../../../../lib/units/unit-skills.ts";
 import { UnitInfoBody } from "./UnitInfoBody.tsx";
 
@@ -31,7 +33,16 @@ function render(burstList = bursts): string {
   );
 }
 
-describe("Unit Info body (reworked 2026-10-06)", () => {
+describe("Unit Info body (M8-05)", () => {
+  it("imports every original status, socket, and skill piece the screen names", () => {
+    const pieces = Object.values(UNIT_INFO_ASSETS).flatMap((value) =>
+      typeof value === "string" ? [value] : Object.values(value),
+    );
+    for (const piece of pieces) expect(piece in ORIGINAL_ASSETS).toBe(true);
+    expect(unitInfoSkillLabel("sbb")).toBe(UNIT_INFO_ASSETS.sbb);
+    expect(unitInfoSkillLabel("ubb")).toBe(UNIT_INFO_ASSETS.ubb);
+    expect(unitInfoSkillLabel("bb")).toBeNull();
+  });
   it("pins only the Leader Skill and the first burst, with the burst's colour tag", () => {
     const html = render();
     expect(bursts.map((burst) => burst.key)).toEqual(["bb", "sbb", "ubb"]);
@@ -39,7 +50,7 @@ describe("Unit Info body (reworked 2026-10-06)", () => {
     expect(html).toContain(`Brave Burst: ${find("bb")?.name}`);
     expect(html).not.toContain(`Super Brave Burst: ${find("sbb")?.name}`);
     expect(html).not.toContain(`Extra Skill: ${find("extra")?.name}`);
-    expect(html).toContain("skill-tag-blue.webp");
+    expect(html).toContain("common/leader_burst_label/bb.png");
   });
 
   it("offers Switch only when the form has more than one burst tier", () => {

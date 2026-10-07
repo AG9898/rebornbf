@@ -2,12 +2,16 @@
 
 import Image from "next/image";
 import { type ReactNode, useEffect, useState } from "react";
+import { OriginalImage } from "../../../components/menu/OriginalImage.tsx";
 import { UiImage } from "../../../components/menu/UiImage.tsx";
 import type { FusionResultRow, FusionResultView } from "../../../lib/units/fusion-result.ts";
+import { FUSION_ASSETS as art } from "../../../lib/units/fusion-screen.ts";
 import type { FODDER_SPOTS } from "../../../lib/units/fusion-stage.ts";
 import squad from "../squad/squad.module.css";
 import units from "../units/units.module.css";
+import { FusionButton, FusionGauge } from "./FusionPieces.tsx";
 import styles from "./fusion.module.css";
+import screen from "./original-fusion.module.css";
 
 /** One fodder pedestal's sprite as it flies into the base. */
 export type FlyingFodder = {
@@ -19,13 +23,7 @@ export type FlyingFodder = {
 /** Longest the fly-in may hold the screen if no `animationend` arrives (animations disabled). */
 const ANIMATION_FALLBACK_MS = 2500;
 
-/**
- * The fusion animation and result screen (M4-06E; legacy/ART_GUIDE_BFR.md → UI → Fusion stage and Fusion
- * result). First the fodder sprites fly from their pedestals into the base and a flash covers it;
- * the flash's end opens the result: element orb and name, the before ▶ after table, Next Lv. with
- * the EXP bar, the Great/Super Success line when rolled, LEVEL UP!! when the level rose, the idle
- * sprite on `result-halo`, and the quote. Skip, in either phase, returns to the stage.
- */
+/** BFR fly-in retained until SAM playback; original result pieces display the returned outcome. */
 export function FusionResult({
   baseSprite,
   baseName,
@@ -48,13 +46,13 @@ export function FusionResult({
   }, [phase]);
 
   const skip = (
-    <button
-      type="button"
-      className={`${units.pill} ${units.pillButton} ${styles.skipPill}`}
+    <FusionButton
+      label="Skip"
+      normal={art.skipNormal}
+      pressed={art.skipPressed}
+      className={screen.skipButton}
       onClick={onSkip}
-    >
-      <span className={units.outline}>Skip</span>
-    </button>
+    />
   );
 
   if (phase === "animation") {
@@ -90,61 +88,61 @@ export function FusionResult({
   }
 
   return (
-    <div className={styles.resultPage}>
-      <header className={styles.resultHeader}>
+    <div className={screen.resultPage}>
+      <header className={screen.resultHeader}>
         {result.element ? (
-          <UiImage name={`orb-${result.element}`} className={styles.resultOrb} />
+          <OriginalImage asset={`common/attribute_mark_M/${result.element}.png`} />
         ) : null}
-        <h1 className={`${styles.resultName} ${units.outline}`}>{result.name}</h1>
+        <h1 className={screen.resultName}>{result.name}</h1>
       </header>
-
-      <div className={styles.resultTable}>
+      <div className={screen.resultTable}>
+        <OriginalImage asset={art.resultWindow} className={screen.resultWindow} />
         <ResultColumn rows={result.left} />
         <ResultColumn rows={result.right} />
       </div>
-
-      <div className={styles.nextLevel}>
-        <span className={units.outline}>Next Lv.</span>
-        <span className={units.outline}>
-          {result.expToNext !== null ? result.expToNext.toLocaleString("en-US") : "MAX"}
-        </span>
-      </div>
-      <div className={`${units.expBar} ${styles.resultExpBar}`} aria-hidden>
-        <span style={{ width: `${result.expProgress * 100}%` }} />
-      </div>
-
+      <p className={screen.nextLevel}>
+        Next Lv. {result.expToNext?.toLocaleString("en-US") ?? "MAX"}
+      </p>
+      <FusionGauge progress={result.expProgress} className={screen.resultGauge} />
       {result.successText ? (
-        <p className={`${styles.successText} ${units.outline}`} role="status">
+        <p className={screen.successText} role="status">
           {result.successText}
         </p>
       ) : null}
-      {result.levelUp ? <p className={styles.levelUp}>LEVEL UP!!</p> : null}
-
-      <div className={styles.haloStage}>
-        <UiImage name="result-halo" className={styles.halo} />
-        <Sprite src={result.sprite} name={result.name} className={styles.resultSprite} />
+      {result.levelUp ? <p className={screen.levelUp}>LEVEL UP!!</p> : null}
+      <div className={screen.resultStage}>
+        <OriginalImage asset={art.table} className={screen.resultTableArt} />
+        {result.sprite ? (
+          <Image
+            src={result.sprite}
+            alt=""
+            width={128}
+            height={128}
+            className={screen.resultSprite}
+            unoptimized
+            draggable={false}
+          />
+        ) : null}
       </div>
-
-      {result.quote ? <p className={styles.quote}>{result.quote}</p> : null}
-
-      <div className={styles.skipRow}>{skip}</div>
+      {result.quote ? <p className={screen.quote}>{result.quote}</p> : null}
+      {skip}
     </div>
   );
 }
 
 function ResultColumn({ rows }: { rows: FusionResultRow[] }): ReactNode {
   return (
-    <dl className={styles.resultColumn}>
+    <dl className={screen.resultColumn}>
       {rows.map((row) => (
-        <div key={row.label} className={styles.resultRow}>
-          <dt className={units.outline}>{row.label}</dt>
-          <dd className={units.outline}>
+        <div key={row.label} className={screen.resultRow}>
+          <dt>{row.label}</dt>
+          <dd>
             <span>{row.before}</span>
-            <span className={styles.resultArrow}>
+            <span className={screen.resultArrow}>
               <span aria-hidden>▶</span>
               <span className={styles.srOnly}> to </span>
             </span>
-            <span className={row.rose ? styles.risen : undefined}>{row.after}</span>
+            <span className={row.rose ? screen.risen : undefined}>{row.after}</span>
           </dd>
         </div>
       ))}

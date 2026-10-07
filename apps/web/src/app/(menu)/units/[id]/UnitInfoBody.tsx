@@ -8,9 +8,15 @@ import {
   useRef,
   useState,
 } from "react";
-import { SkillRow } from "../../../../components/units/SkillRow.tsx";
+import kit from "../../../../components/menu/kit.module.css";
+import { OriginalImage } from "../../../../components/menu/OriginalImage.tsx";
+import { SkillText } from "../../../../components/units/SkillRow.tsx";
+import {
+  UNIT_INFO_ASSETS as A,
+  unitInfoSkillLabel,
+} from "../../../../lib/units/unit-info-screen.ts";
 import type { SkillDisplay } from "../../../../lib/units/unit-skills.ts";
-import styles from "../units.module.css";
+import styles from "./unit-info.module.css";
 
 /** A press held this long opens the skill panels; releasing closes them, as in the original. */
 export const SKILL_HOLD_MS = 300;
@@ -18,7 +24,7 @@ export const SKILL_HOLD_MS = 300;
 type PanelSet = "leader" | "burst";
 
 /**
- * Unit Info's body (legacy/ART_GUIDE_BFR.md → Units, Squad, and Unit detail screens): the hero the server built
+ * Unit Info's body (ART_GUIDE → UI → Unit Info): the hero the server built
  * (splash, stat column, spheres) with the right column of actions and Switch, then the two pinned
  * skill rows, Leader Skill and one burst. Switch cycles the burst row BB → SBB → UBB through the
  * tiers the form has; the tag follows (blue / gold / red).
@@ -64,26 +70,30 @@ export function UnitInfoBody({
   const panels = open === "leader" ? [leader, extra] : open === "burst" ? bursts : [];
 
   return (
-    <div className={styles.infoBody}>
-      <section className={styles.infoHero}>
+    <div className={styles.body}>
+      <section className={styles.hero}>
         {hero}
-        <div className={styles.infoRight}>
+        <div className={styles.right}>
           {actions}
           {bursts.length > 1 ? (
             <button
               type="button"
-              className={`${styles.infoButton} ${styles.infoSwitch}`}
+              className={`${kit.button} ${styles.action}`}
               onClick={() => setTier((index) => (index + 1) % bursts.length)}
               aria-label={`Switch burst (showing ${burst?.label ?? "none"})`}
             >
-              <span className={styles.outline}>Switch</span>
+              <OriginalImage asset="common/button/sub_ss_btn1.png" className={kit.normal} />
+              <OriginalImage asset="common/button/sub_ss_btn2.png" className={kit.pressed} />
+              <span className={`${kit.caption} ${kit.text}`}>
+                <span className={styles.actionLabel}>Switch</span>
+              </span>
             </button>
           ) : null}
         </div>
         {open ? (
           // biome-ignore lint/a11y/useKeyWithClickEvents: Escape closes it (window listener above).
           <div
-            className={styles.infoPanels}
+            className={styles.panels}
             role="dialog"
             aria-label={open === "leader" ? "Leader and Extra Skill" : "Brave Bursts"}
             onClick={() => setOpen(null)}
@@ -93,15 +103,53 @@ export function UnitInfoBody({
         ) : null}
       </section>
 
-      <section className={styles.infoSkills} aria-label="Skills">
-        <SkillRow skill={leader} label="Leader Skill" press={leaderPress} />
-        {burst ? <SkillRow key={burst.key} skill={burst} press={burstPress} /> : null}
+      <section className={styles.skills} aria-label="Skills">
+        <OriginalSkillRow skill={leader} label="Leader Skill" press={leaderPress} />
+        {burst ? <OriginalSkillRow key={burst.key} skill={burst} press={burstPress} /> : null}
       </section>
     </div>
   );
 }
 
-/** The gold tab only fits a short label, as the original's "LEADER SKILL". */
+/** Full-width original strips, with runtime names and engine-scaled descriptions. */
+function OriginalSkillRow({
+  skill,
+  label = skill?.label ?? "Leader Skill",
+  press,
+}: {
+  skill: SkillDisplay | null;
+  label?: string;
+  press: ButtonHTMLAttributes<HTMLButtonElement>;
+}): ReactNode {
+  const overlay = skill ? unitInfoSkillLabel(skill.key) : null;
+  return (
+    <button
+      type="button"
+      className={styles.skillRow}
+      disabled={!skill}
+      aria-label={`${label}: ${skill?.name ?? "None"}. Show full effects`}
+      aria-haspopup="dialog"
+      {...press}
+    >
+      <OriginalImage
+        asset={skill?.key === "leader" || label === "Leader Skill" ? A.leader : A.bb}
+        className={styles.skillBase}
+      />
+      {overlay ? <OriginalImage asset={overlay} className={styles.skillLabel} /> : null}
+      <span className={`${styles.skillName} ${styles.text}`}>
+        <SkillText text={skill?.name ?? "None"} />
+      </span>
+      {skill?.level !== undefined ? (
+        <span className={`${styles.skillLevel} ${styles.text}`}>Lv.{skill.level}</span>
+      ) : null}
+      <span className={styles.skillEffects}>
+        <SkillText text={skill?.effects.join(" · ") ?? "No Leader Skill"} />
+      </span>
+    </button>
+  );
+}
+
+/** Short labels for the skill panels. */
 const TAB_LABELS: Record<SkillDisplay["key"], string> = {
   leader: "Leader Skill",
   extra: "Extra Skill",
@@ -117,11 +165,16 @@ function SkillPanel({ skill }: { skill: SkillDisplay }): ReactNode {
     skill.cost !== undefined ? `BC ${skill.cost}` : null,
   ].filter(Boolean);
   return (
-    <article className={styles.skillPanel} data-key={skill.key} aria-label={skill.label}>
-      <p className={styles.skillPanelTab}>{TAB_LABELS[skill.key]}</p>
-      <h2 className={styles.outline}>{skill.name}</h2>
-      {meta.length ? <p className={styles.skillPanelCost}>{meta.join(" · ")}</p> : null}
-      <p className={styles.skillPanelText} title={skill.effects.join(" · ")}>
+    <article className={styles.panel} data-key={skill.key} aria-label={skill.label}>
+      <OriginalImage asset={A.panel} className={styles.panelArt} />
+      {skill.key === "extra" ? (
+        <OriginalImage asset={A.extra} className={styles.panelExtraArt} alt="Extra Skill" />
+      ) : (
+        <p className={styles.panelLabel}>{TAB_LABELS[skill.key]}</p>
+      )}
+      <h2 className={styles.text}>{skill.name}</h2>
+      {meta.length ? <p className={styles.panelCost}>{meta.join(" · ")}</p> : null}
+      <p className={styles.panelText} title={skill.effects.join(" · ")}>
         {skill.effects.join(" · ")}
       </p>
     </article>

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { itemIcon } from "../../../../../components/menu/item-icon.ts";
-import menu from "../../../../../components/menu/menu.module.css";
-import { textBoxStyle } from "../../../../../components/menu/text-box.ts";
+import kit from "../../../../../components/menu/kit.module.css";
+import { OriginalImage } from "../../../../../components/menu/OriginalImage.tsx";
+import { OriginalTicker, OriginalTitleBar } from "../../../../../components/menu/OriginalKit.tsx";
 import { UiImage } from "../../../../../components/menu/UiImage.tsx";
 import { THUMB_ART_SIZE } from "../../../../../components/menu/ui-assets.ts";
 import { SIGN_IN_PATH } from "../../../../../lib/supabase/routes.ts";
@@ -20,6 +20,7 @@ import {
   type SquadUseRow,
 } from "../../../../../lib/units/evolution.ts";
 import { evolveRarityWord, evolveTheme } from "../../../../../lib/units/evolve-cinematic.ts";
+import { EVOLVE_ASSETS } from "../../../../../lib/units/evolve-screen.ts";
 import {
   isOwnedUnitId,
   OWNED_UNIT_COLUMNS,
@@ -44,8 +45,11 @@ function Plates({ rows, label }: { rows: readonly PlateRow[]; label: string }): 
     <dl className={evolve.plates} aria-label={label}>
       {rows.map(([name, value]) => (
         <div key={name} className={evolve.plate}>
-          <dt className={`${evolve.plateLabel} ${units.outline}`}>{name}</dt>
-          <dd className={`${evolve.plateValue} ${units.outline}`}>{value}</dd>
+          <OriginalImage asset={EVOLVE_ASSETS.frameLeft} className={evolve.frameLeft} />
+          <OriginalImage asset={EVOLVE_ASSETS.frameCenter} className={evolve.frameCenter} />
+          <OriginalImage asset={EVOLVE_ASSETS.frameRight} className={evolve.frameRight} />
+          <dt className={`${evolve.plateLabel} ${kit.text}`}>{name}</dt>
+          <dd className={`${evolve.plateValue} ${kit.text}`}>{value}</dd>
         </div>
       ))}
     </dl>
@@ -64,16 +68,22 @@ function FormSprite({
 }): ReactNode {
   return (
     <figure className={evolve.sprite} data-silhouette={silhouette || undefined}>
+      <OriginalImage asset={EVOLVE_ASSETS.table} className={evolve.table} />
       {form.sprite ? (
-        <Image src={form.sprite} alt={alt} width={256} height={256} unoptimized />
+        <Image
+          src={form.sprite}
+          alt={alt}
+          width={256}
+          height={256}
+          className={evolve.formArt}
+          unoptimized
+        />
       ) : (
         <span className={evolve.spriteInitial} role="img" aria-label={alt}>
           {silhouette ? "?" : form.name.charAt(0)}
         </span>
       )}
-      <figcaption className={`${evolve.spriteRarity} ${units.outline}`}>
-        {form.rarityLabel}
-      </figcaption>
+      <figcaption className={`${evolve.spriteRarity} ${kit.text}`}>{form.rarityLabel}</figcaption>
     </figure>
   );
 }
@@ -126,8 +136,8 @@ function MaterialIcon({ need }: { need: MaterialUnitNeed | MaterialItemNeed }): 
 }
 
 /**
- * The Evolve Unit screen (M4-02C; restyled as the original's Evolve Unit in M4-06L, ART_GUIDE → UI
- * → Evolve screen): the current form's idle sprite with its Lv/HP/ATK/DEF/REC plates, a gold arrow,
+ * Original Evolve preparation (M8-08, ART_GUIDE → UI → Evolve preparation):
+ * the current form's idle sprite with its stat plates, a gold arrow,
  * the next form as a white silhouette with ???? plates, the Evolution Materials panel with "Have N"
  * per material, and a bottom bar with the Evolve button, Zel Cost, and a red status strip when
  * blocked. Owned units, stacks (spent first, M4-05C), squads, items, and Zel are read under RLS;
@@ -203,6 +213,7 @@ export default async function EvolvePage({
     ["ATK", fmt(stats?.atk)],
     ["DEF", fmt(stats?.def)],
     ["REC", fmt(stats?.rec)],
+    ["Cost", "–"],
   ];
   const nextPlates: PlateRow[] = [
     ["Lv.", "??/??"],
@@ -210,6 +221,7 @@ export default async function EvolvePage({
     ["ATK", "????"],
     ["DEF", "????"],
     ["REC", "????"],
+    ["Cost", "??"],
   ];
   const blockers = plan ? evolveBlockers(plan) : [];
   const cinematic: EvolveCinematicView | null = plan
@@ -239,18 +251,8 @@ export default async function EvolvePage({
     : null;
 
   return (
-    <EvolveHost unitId={id} reducedMotion={settings.reducedMotion} className={units.listPage}>
-      <header className={units.titleBar}>
-        <Link href={`/units/${id}`} className={`${units.pill} ${units.backButton}`}>
-          <span className={units.outline}>Back</span>
-        </Link>
-        <div className={units.titlePlate}>
-          <UiImage name="title-plate" className={units.titlePlateArt} />
-          <div className={units.titleText} style={textBoxStyle("title-plate")}>
-            <h1 className={units.outline}>Evolve Unit</h1>
-          </div>
-        </div>
-      </header>
+    <EvolveHost unitId={id} reducedMotion={settings.reducedMotion} className={kit.page}>
+      <OriginalTitleBar title="Evolve Unit" backHref={`/units/${id}`} />
 
       {loadFailed ? (
         <div className={evolve.body}>
@@ -266,7 +268,7 @@ export default async function EvolvePage({
             <section className={evolve.stage} aria-label={`${name} evolution`}>
               <Plates rows={currentPlates} label={`${name}, current stats`} />
               <FormSprite form={plan.from} alt={`${name}, ${plan.from.rarityLabel} form`} />
-              <span className={evolve.arrow} aria-hidden />
+              <OriginalImage asset={EVOLVE_ASSETS.arrow} className={evolve.arrow} />
               <FormSprite
                 form={plan.next}
                 alt={`${name}, unknown ${plan.next.rarityLabel} form`}
@@ -276,9 +278,17 @@ export default async function EvolvePage({
             </section>
 
             <section className={evolve.panel} aria-labelledby="evolve-materials">
-              <h2 id="evolve-materials" className={`${evolve.panelTitle} ${units.outline}`}>
-                Evolution Materials
+              <OriginalImage asset={EVOLVE_ASSETS.materialPanel} className={evolve.panelArt} />
+              <h2 id="evolve-materials" className={evolve.panelTitle}>
+                <OriginalImage asset={EVOLVE_ASSETS.materials} alt="Evolution Materials" />
               </h2>
+              {blockers.length === 0 ? (
+                <OriginalImage
+                  asset={EVOLVE_ASSETS.possible}
+                  alt="Evolve Possible"
+                  className={evolve.possible}
+                />
+              ) : null}
               <ul className={evolve.materials}>
                 {plan.units.map((need) => (
                   <MaterialIcon key={need.unitId} need={need} />
@@ -293,11 +303,7 @@ export default async function EvolvePage({
                     <li key={problem}>{problem}</li>
                   ))}
                 </ul>
-              ) : (
-                <p className={evolve.problems}>
-                  The materials above are spent. {name} returns to level 1 in the new form.
-                </p>
-              )}
+              ) : null}
             </section>
           </div>
 
@@ -313,9 +319,13 @@ export default async function EvolvePage({
         </>
       )}
 
-      <p className={menu.ticker}>
-        {plan ? "Gather the materials and Zel to evolve." : "Select a unit to evolve."}
-      </p>
+      <OriginalTicker>
+        {!plan
+          ? "Select a unit to evolve."
+          : blockers.length > 0
+            ? "Gather the materials and Zel to evolve."
+            : "Evolving spends the materials and resets to Lv.1."}
+      </OriginalTicker>
     </EvolveHost>
   );
 }

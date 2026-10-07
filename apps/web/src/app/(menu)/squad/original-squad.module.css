@@ -1,0 +1,266 @@
+/* M8-06: 640×1136 screen, less the shared 164 px header and 304 px body origin. */
+.page {
+  color: white;
+}
+.leaderControl.leaderControl,
+.detailControl.detailControl {
+  position: absolute;
+  top: calc(var(--u) * 55);
+  width: calc(var(--u) * 105);
+  height: calc(var(--u) * 83);
+}
+.leaderControl {
+  left: calc(var(--u) * 420);
+}
+.detailControl {
+  left: calc(var(--u) * 530);
+}
+.leaderControl[aria-pressed="true"] {
+  filter: drop-shadow(0 0 calc(var(--u) * 5) #ffdc62);
+}
+.leaderControl:disabled,
+.save:disabled {
+  filter: grayscale(0.65) brightness(0.7);
+  cursor: default;
+}
+.body {
+  scrollbar-width: thin;
+}
+.stage {
+  position: relative;
+  height: calc(var(--u) * 586);
+}
+.cost {
+  position: absolute;
+  left: calc(var(--u) * 222);
+  top: calc(var(--u) * 22);
+}
+.save.save {
+  position: absolute;
+  left: calc(var(--u) * 502);
+  top: calc(var(--u) * 7);
+  font-size: calc(var(--u) * 24);
+  width: calc(var(--u) * 122);
+  height: calc(var(--u) * 50);
+}
+.saveArt {
+  width: 100%;
+  height: 100%;
+}
+.pedestal {
+  position: absolute;
+  width: calc(var(--u) * 216);
+  height: calc(var(--u) * 190);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: white;
+  font: inherit;
+  text-align: left;
+}
+.pedestal[data-spot="tl"] {
+  left: calc(var(--u) * 45);
+  top: calc(var(--u) * 75);
+}
+.pedestal[data-spot="tr"] {
+  left: calc(var(--u) * 379);
+  top: calc(var(--u) * 75);
+}
+.pedestal[data-spot="centre"] {
+  left: calc(var(--u) * 212);
+  top: calc(var(--u) * 197);
+}
+.pedestal[data-spot="bl"] {
+  left: calc(var(--u) * 45);
+  top: calc(var(--u) * 319);
+}
+.pedestal[data-spot="br"] {
+  left: calc(var(--u) * 379);
+  top: calc(var(--u) * 319);
+}
+.pedestalArt {
+  position: absolute;
+  left: calc(var(--u) * 11);
+  top: calc(var(--u) * 52);
+}
+.sprite {
+  position: absolute;
+  left: calc(var(--u) * 44);
+  top: 0;
+  width: calc(var(--u) * 128);
+  height: calc(var(--u) * 128);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.initial,
+.empty {
+  position: absolute;
+  inset: calc(var(--u) * 22) 0 auto;
+  text-align: center;
+  font-size: calc(var(--u) * 56);
+}
+.empty {
+  top: calc(var(--u) * 50);
+  opacity: 0.75;
+}
+.leaderTag {
+  position: absolute;
+  left: calc(var(--u) * 100);
+  top: calc(var(--u) * 105);
+  font-size: calc(var(--u) * 24);
+  color: #ffda78;
+  font-style: italic;
+}
+.pedestal:focus-visible {
+  outline: calc(var(--u) * 3) solid #fbe39a;
+  border-radius: calc(var(--u) * 12);
+}
+.stageChoosing .pedestalArt {
+  filter: drop-shadow(0 0 calc(var(--u) * 7) #ffdc62);
+}
+.statPlate {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 130);
+  width: 100%;
+  height: calc(var(--u) * 60);
+  padding: calc(var(--u) * 5) calc(var(--u) * 5);
+}
+.frameLeft,
+.frameRight,
+.frameCenter {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+.frameLeft {
+  left: 0;
+}
+.frameRight {
+  right: 0;
+}
+.frameCenter {
+  left: calc(var(--u) * 9);
+  width: calc(100% - var(--u) * 18);
+}
+.orb {
+  position: absolute;
+  left: calc(var(--u) * -12);
+  top: calc(var(--u) * -18);
+}
+.statLine {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: calc(var(--u) * 25);
+  white-space: nowrap;
+  font-size: calc(var(--u) * 17);
+  -webkit-text-stroke-width: calc(var(--u) * 2);
+}
+.statLine:first-of-type {
+  font-size: calc(var(--u) * 21);
+}
+.statLabel {
+  display: inline-block;
+  width: calc(var(--u) * 32);
+  height: calc(var(--u) * 17);
+  max-width: none;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.arrow {
+  position: absolute;
+  top: calc(var(--u) * 362);
+  width: calc(var(--u) * 40);
+  height: calc(var(--u) * 80);
+}
+.arrowLeft {
+  left: calc(var(--u) * 9);
+}
+.arrowRight {
+  right: calc(var(--u) * 9);
+}
+.arrow:active {
+  filter: brightness(0.65);
+}
+.dots {
+  position: absolute;
+  left: calc(var(--u) * 185);
+  top: calc(var(--u) * 548);
+  display: flex;
+  gap: calc(var(--u) * 6);
+}
+.dot {
+  width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
+}
+.dotArt {
+  width: 100%;
+  height: 100%;
+}
+.squadTab {
+  position: absolute;
+  right: calc(var(--u) * 9);
+  bottom: 0;
+  font-size: calc(var(--u) * 24);
+  background: #152a38;
+  border-radius: calc(var(--u) * 18) 0 0;
+  padding: calc(var(--u) * 9) calc(var(--u) * 16);
+}
+.skill {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: white;
+  text-align: left;
+  position: relative;
+  height: calc(var(--u) * 94);
+}
+.skillArt {
+  position: absolute;
+  inset: 0;
+}
+.skillName.skillName {
+  position: absolute;
+  left: calc(var(--u) * 217);
+  right: calc(var(--u) * 18);
+  top: calc(var(--u) * 7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: calc(var(--u) * 27);
+  color: #ffc62c;
+}
+.skillEffects {
+  position: absolute;
+  left: calc(var(--u) * 19);
+  right: calc(var(--u) * 19);
+  top: calc(var(--u) * 46);
+  font-size: calc(var(--u) * 23);
+  line-height: calc(var(--u) * 38);
+}
+.status {
+  flex: none;
+}
+
+.skillDialog {
+  width: calc(var(--u) * 580);
+  max-height: 70dvh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: calc(var(--u) * 25);
+}
+.skillDialog::backdrop {
+  background: rgb(0 0 0 / 0.65);
+}
+.skillDialog h2 {
+  font-size: calc(var(--u) * 30);
+}
+.skillDialog p {
+  margin-block: calc(var(--u) * 20);
+}
