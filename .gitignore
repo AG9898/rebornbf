@@ -7,6 +7,8 @@ coverage/
 *.tsbuildinfo
 .env
 .env*.local
+# Tester session cookies from `pnpm tester:login` (secrets)
+.auth/
 !.env.example
 supabase/.branches/
 supabase/.temp/
