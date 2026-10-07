@@ -10,17 +10,28 @@
   -webkit-text-stroke: calc(var(--u) * 4) #10131c;
 }
 
-/* Outrank OriginalImage's `.piece { display: block }` in any stylesheet order. */
+/*
+ * Normal and pressed art overlap and swap by opacity, never display or visibility: iOS Safari
+ * treats a piece that turns visible during a tap as a hover reveal and swallows the click, so a
+ * display swap made every button need two taps. `:where` keeps the overlap at zero specificity so
+ * a screen's own position class (`.layer`, a label offset) still wins.
+ */
+:where(.pressed) {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
 .pressed.pressed {
-  display: none;
+  opacity: 0;
 }
 
 :active > .normal {
-  display: none;
+  opacity: 0;
 }
 
 :active > .pressed {
-  display: block;
+  opacity: 1;
 }
 
 /* A sub-screen: title bar, the page's content, ticker. */

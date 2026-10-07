@@ -21,6 +21,8 @@ type OriginalImageProps = {
  * One imported original piece (RESOLVED-98). Pieces are 1x for the original 640-wide screen, so
  * each is drawn at its own pixel size in logical units (--u) unless `className` overrides it.
  * Its base CSS uses zero specificity so screen size and visibility classes always take precedence.
+ * Pieces load eagerly: they are small screen chrome, and a lazy pressed piece would only start
+ * downloading on the first press, so the button blanked out on a slow phone connection.
  */
 export function OriginalImage({
   asset,
@@ -39,6 +41,7 @@ export function OriginalImage({
       className={className ? `${styles.piece} ${className}` : styles.piece}
       style={{ "--w": width, ...style } as CSSProperties}
       priority={priority}
+      loading={priority ? undefined : "eager"}
       unoptimized
       draggable={false}
     />
