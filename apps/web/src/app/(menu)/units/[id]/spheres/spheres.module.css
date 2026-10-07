@@ -221,3 +221,11 @@
   color: #ffe08a;
   -webkit-text-stroke-width: calc(var(--u) * 3);
 }
+
+/* Subtitle rarity: Unit Info's original stars / Omni mark, sized to the 24-unit subtitle line. */
+.subtitleRarity.subtitleRarity {
+  --rarity-star: 20;
+  --rarity-omni: 24;
+  margin-left: calc(var(--u) * 4);
+  vertical-align: calc(var(--u) * -3);
+}

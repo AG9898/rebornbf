@@ -3,7 +3,7 @@ export type SupabasePublicEnv = { url: string; publishableKey: string };
 /**
  * The browser-safe Supabase settings, or null when the deployment has none (M0–M2 builds and any
  * Vercel environment that has not been given Supabase variables yet). Callers treat null as
- * "sign-in unavailable" rather than crashing, so the offline demo battle keeps working.
+ * "sign-in unavailable" rather than crashing, so public pages keep working.
  *
  * `process.env.NEXT_PUBLIC_*` must be read by its literal name so Next.js can inline it.
  */

@@ -1,7 +1,6 @@
 "use client";
 
 import type { Stage } from "@bfr/data";
-import type { BattleEvent } from "@bfr/engine";
 import type Phaser from "phaser";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -17,18 +16,13 @@ import styles from "./battle.module.css";
 
 /**
  * Mounts the battle scene for `spec`; the parent keeps `spec` stable for the page's lifetime.
- * `onEvents` and `onResult` let a client-only battle (the tutorial) follow the fight, and
- * `children` draw over the canvas in a layer sized to it (a size container, so they can use
- * `cqw`/`cqh`). The battle always fills the screen; no page header sits above it.
+ * The battle always fills the screen; no page header sits above it.
  */
 export default function PhaserBattle({
   spec,
   sessionId,
   stage,
   back = { href: "/quests", label: "Back to quests" },
-  onEvents,
-  onResult,
-  children,
 }: {
   spec: BattleSpec;
   sessionId?: string;
@@ -36,9 +30,6 @@ export default function PhaserBattle({
   stage?: Pick<Stage, "name" | "story" | "trial">;
   /** Where the result flow and give-up link back to (the Trials page for a trial). */
   back?: { href: string; label: string };
-  onEvents?: (events: readonly BattleEvent[]) => void;
-  onResult?: (result: "win" | "lose") => void;
-  children?: ReactNode;
 }): ReactNode {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -48,11 +39,6 @@ export default function PhaserBattle({
   const [continuing, setContinuing] = useState(false);
   const [continueError, setContinueError] = useState<string>();
   const submitted = useRef<string | undefined>(undefined);
-  // Read through refs so new callbacks never remount the game.
-  const callbacks = useRef({ onEvents, onResult });
-  useEffect(() => {
-    callbacks.current = { onEvents, onResult };
-  });
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -61,9 +47,7 @@ export default function PhaserBattle({
 
     const bridge: BattleBridge = {
       onReady: () => setReady(true),
-      onEvents: (events) => callbacks.current.onEvents?.(events),
       onComplete: (result, log, resume) => {
-        callbacks.current.onResult?.(result);
         if (!sessionId) return;
         if (result === "lose") {
           setEnding("lost");
@@ -175,7 +159,6 @@ export default function PhaserBattle({
         ref={canvasRef}
         className={`${styles.canvasHost} relative shrink-0 overflow-hidden shadow-[0_0_24px_rgba(0,0,0,0.6)]`}
       >
-        {children && <div className={styles.overlay}>{children}</div>}
         {sessionId && stage && ending && (
           <div className={styles.overlay}>
             <BattleEnding

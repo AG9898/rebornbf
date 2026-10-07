@@ -17,7 +17,6 @@ describe("title tap destination", () => {
 
   it("sends an unfinished player to their next onboarding step", () => {
     expect(titleTapDestination({ signedIn: true, step: "name" })).toBe("/onboarding/name");
-    expect(titleTapDestination({ signedIn: true, step: "tutorial" })).toBe("/onboarding/tutorial");
     expect(titleTapDestination({ signedIn: true, step: "starter" })).toBe("/onboarding/starter");
   });
 
@@ -52,8 +51,9 @@ describe("menu page onboarding redirect", () => {
 });
 
 describe("isOnboardingStep", () => {
-  it("accepts only the four enum values", () => {
+  it("accepts only the three enum values", () => {
     expect(isOnboardingStep("done")).toBe(true);
+    expect(isOnboardingStep("tutorial")).toBe(false);
     expect(isOnboardingStep("home")).toBe(false);
     expect(isOnboardingStep(null)).toBe(false);
   });
@@ -62,12 +62,12 @@ describe("isOnboardingStep", () => {
 describe("onboarding page redirect", () => {
   it("shows the page at its own step", () => {
     expect(onboardingPageRedirect({ signedIn: true, step: "name" }, "name")).toBeNull();
-    expect(onboardingPageRedirect({ signedIn: true, step: "tutorial" }, "tutorial")).toBeNull();
+    expect(onboardingPageRedirect({ signedIn: true, step: "starter" }, "starter")).toBeNull();
   });
 
   it("sends a player at another step to that step's page", () => {
-    expect(onboardingPageRedirect({ signedIn: true, step: "tutorial" }, "name")).toBe(
-      "/onboarding/tutorial",
+    expect(onboardingPageRedirect({ signedIn: true, step: "starter" }, "name")).toBe(
+      "/onboarding/starter",
     );
     expect(onboardingPageRedirect({ signedIn: true, step: "name" }, "starter")).toBe(
       "/onboarding/name",

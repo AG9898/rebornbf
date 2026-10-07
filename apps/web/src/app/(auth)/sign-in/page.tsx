@@ -33,7 +33,7 @@ type SignInPageProps = {
 /**
  * The sign-in screen (legacy/ART_GUIDE_BFR.md → Sign-in and Account screens): the onboarding backdrop and
  * wordmark, the six starters' Omni cards in a raised row, and a gold-trimmed panel with the Google
- * and Discord buttons on `btn-pill` plates. The demo battle link plays without an account.
+ * and Discord buttons on `btn-pill` plates.
  */
 export default async function SignInPage({ searchParams }: SignInPageProps): Promise<ReactNode> {
   const params = await searchParams;
@@ -108,13 +108,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps): Pro
                 </button>
               ))}
             </form>
-
-            <p className={authStyles.divider}>
-              <span>or</span>
-            </p>
-            <Link href="/battle" prefetch={false} className={authStyles.demo}>
-              Try a demo battle
-            </Link>
           </OnboardingPanel>
         </div>
 

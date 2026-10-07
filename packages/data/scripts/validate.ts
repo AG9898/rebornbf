@@ -24,7 +24,6 @@ import {
   validateStageFile,
   validateStory,
   validateTrials,
-  validateTutorials,
   validateUnitFile,
 } from "../src/validate.ts";
 
@@ -139,8 +138,6 @@ errors.push(...validateFirstClearUnits(stages, new Map(units.map((unit) => [unit
 errors.push(...validateFirstClearSpheres(stages, sphereIds));
 // Trial numbers are unique and each trial opens on a story stage's first clear.
 errors.push(...validateTrials(stages));
-// The tutorial's preset squad names unit forms, and its enemies may drop nothing granted.
-errors.push(...validateTutorials(stages, new Map(units.map((unit) => [unit.id, unit])), enemies));
 // Banners reference unit forms; unreadable unit files are reported above and skipped here.
 const unitForms = new Map<string, Set<string>>();
 for (const file of jsonFiles("units")) {

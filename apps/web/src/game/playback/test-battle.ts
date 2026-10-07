@@ -124,7 +124,7 @@ export const TEST_BATTLE_SETUP: BattleSetup = {
 export interface TestBattleOptions {
   /**
    * Start every unit with its BB cost in its gauge, so a burst is possible on the first turn (the
-   * scripted demo in `DEMO_INPUTS` needs it). The battle route starts with empty gauges.
+   * scripted opening in `SCRIPTED_INPUTS` needs it). The battle route starts with empty gauges.
    */
   readonly charged?: boolean;
 }
@@ -152,7 +152,7 @@ export const TEST_BATTLE_SPEC: BattleSpec = {
  * (their hits spark), then Rook bursts (self-sparks and crits). Garrick and Solen are left
  * unacted. Used by tests.
  */
-export const DEMO_INPUTS: readonly BattleInput[] = [
+export const SCRIPTED_INPUTS: readonly BattleInput[] = [
   { type: "attack", tick: 45, actor: "p0" },
   { type: "attack", tick: 45, actor: "p1" },
   { type: "burst", tick: 150, actor: "p2", tier: "bb" },

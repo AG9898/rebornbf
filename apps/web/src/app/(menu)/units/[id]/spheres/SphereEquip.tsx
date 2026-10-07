@@ -22,13 +22,15 @@ import type {
   SphereView,
 } from "../../../../../lib/units/spheres.ts";
 import units from "../../units.module.css";
+import { RarityMark } from "../RarityMark.tsx";
 import { sphereIcon } from "../SphereSocketFace.tsx";
 import { equipSphere } from "./actions.ts";
 import styles from "./spheres.module.css";
 
 export type SphereEquipUnit = {
   name: string;
-  subtitle: string;
+  rarity: OwnedUnitView["rarity"];
+  rarityLabel: string;
   thumb: string | null;
   element: OwnedUnitView["element"];
 };
@@ -77,7 +79,22 @@ export function SphereEquip({
   const held = socket?.sphere ?? null;
   return (
     <>
-      <OriginalTitleBar title="Equip Sphere" subtitle={unit.subtitle} backHref={`/units/${unitId}`}>
+      <OriginalTitleBar
+        title="Equip Sphere"
+        subtitle={
+          <>
+            {unit.name}
+            {unit.rarity !== null ? (
+              <RarityMark
+                rarity={unit.rarity}
+                label={unit.rarityLabel}
+                className={styles.subtitleRarity}
+              />
+            ) : null}
+          </>
+        }
+        backHref={`/units/${unitId}`}
+      >
         <button
           type="button"
           className={`${kit.button} ${styles.square} ${styles.remove}`}

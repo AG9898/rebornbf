@@ -69,15 +69,14 @@ export default async function EquipSpherePage({
   );
 
   const unit = toUnitDetailView(row);
-  const stars =
-    unit.rarity === null ? "" : ` ${"★".repeat(unit.rarity === "omni" ? 7 : unit.rarity)}`;
   return (
     <div className={kit.page}>
       <SphereEquip
         unitId={id}
         unit={{
           name: unit.name,
-          subtitle: `${unit.name}${stars}`,
+          rarity: unit.rarity,
+          rarityLabel: unit.rarityLabel,
           thumb: unit.thumb,
           element: unit.element,
         }}

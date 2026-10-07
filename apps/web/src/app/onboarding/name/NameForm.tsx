@@ -13,7 +13,7 @@ import { type SaveNameState, saveDisplayName } from "./actions.ts";
 /**
  * The name field, its 1–32 character count, the error line, and Confirm. An invalid name shows
  * its error here and is never sent; a valid one goes to `saveDisplayName`, which redirects to the
- * tutorial on success.
+ * starter pick on success.
  */
 export function NameForm({ initialName }: { initialName: string }): ReactNode {
   const [name, setName] = useState(initialName);

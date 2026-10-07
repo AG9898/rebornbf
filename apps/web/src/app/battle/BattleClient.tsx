@@ -8,7 +8,6 @@ import { LoadingGlyph } from "../../components/loading/LoadingGlyph.tsx";
 import { stageBackground, stageEnemyArt } from "../../game/assets/stage-art.ts";
 import type { BattleSpec } from "../../game/playback/battle-scene.ts";
 import { stageBossWaves } from "../../game/playback/cues.ts";
-import { DEMO_BATTLE_SPEC } from "../../game/playback/demo-battle.ts";
 import { stageNames } from "../../game/playback/stage-names.ts";
 import { questReturn } from "../../lib/battle/result-screen.ts";
 import type { SessionBattle } from "../../lib/battle/session-battle.ts";
@@ -43,17 +42,17 @@ function sessionSpec(battle: SessionBattle): BattleSpec {
 export type BattlePreferences = Pick<BattleSpec, "initialSpeed" | "reducedMotion" | "volume">;
 
 /**
- * Plays `battle` when the page started from a session, else the offline demo, with the player's
- * saved default speed, reduced-motion setting, and music/SFX volumes. Spark assist is not here: it is part of the
- * session's engine setup, so the server replay uses the same value.
+ * Plays the session's `battle` with the player's saved default speed, reduced-motion setting, and
+ * music/SFX volumes. Spark assist is not here: it is part of the session's engine setup, so the
+ * server replay uses the same value.
  */
 export default function BattleClient({
   battle,
   sessionId,
   preferences,
 }: {
-  battle?: SessionBattle;
-  sessionId?: string;
+  battle: SessionBattle;
+  sessionId: string;
   preferences?: BattlePreferences;
 }): ReactNode {
   const speed = preferences?.initialSpeed;
@@ -62,14 +61,14 @@ export default function BattleClient({
   const sfx = preferences?.volume?.sfx;
   const spec = useMemo(
     (): BattleSpec => ({
-      ...(battle ? sessionSpec(battle) : DEMO_BATTLE_SPEC),
+      ...sessionSpec(battle),
       ...(speed ? { initialSpeed: speed } : {}),
       ...(reducedMotion ? { reducedMotion } : {}),
       ...(music !== undefined && sfx !== undefined ? { volume: { music, sfx } } : {}),
     }),
     [battle, speed, reducedMotion, music, sfx],
   );
-  const stage = battle?.stage;
-  const back = stage ? questReturn(stage) : undefined;
+  const stage = battle.stage;
+  const back = questReturn(stage);
   return <PhaserBattle spec={spec} sessionId={sessionId} stage={stage} back={back} />;
 }

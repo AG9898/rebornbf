@@ -304,7 +304,7 @@ describe("session battle (M3-04B)", () => {
   });
 
   it("rejects stages and units this build does not have", () => {
-    expect(sessionBattle(row({ stage_id: "demo-stage" })).ok).toBe(false);
+    expect(sessionBattle(row({ stage_id: "no-such-stage" })).ok).toBe(false);
     const unknown = row({
       squad: { leader_index: 0, units: [snap("nobody", "nobody-3")], ally: null },
     });

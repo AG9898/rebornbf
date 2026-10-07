@@ -27,7 +27,7 @@ export function seriesName(series: string): string {
 
 /**
  * The panel names for a stage: the story chapter's title, the dungeon series' name, or "Trial";
- * any other stage (the demo, the tutorial) shows its own title as the area too.
+ * any other stage shows its own title as the area too.
  */
 export function stageNames(stage: Pick<Stage, "name" | "story" | "dungeon" | "trial">): StageNames {
   const area = stage.story

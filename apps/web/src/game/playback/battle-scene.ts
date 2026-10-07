@@ -533,12 +533,10 @@ export class BattleScene extends Phaser.Scene {
   private showEvents(events: readonly BattleEvent[]): void {
     this.heldEvents = [];
     if (events.length === 0) return;
-    let shown = events.length;
     for (const [index, event] of events.entries()) {
       if (event.type === "SquadEntered" && this.squadSwap === undefined) {
         // The next squad waits for the swap's enter beat (M6-01L); the wiped party leaves first.
         this.heldEvents = events.slice(index);
-        shown = index;
         this.startSquadSwap(event.squad);
         break;
       }
@@ -556,22 +554,17 @@ export class BattleScene extends Phaser.Scene {
       for (const cue of eventCues(event, this.cueContext(), sparkCritical)) this.play(cue);
       if (event.type === "BurstUsed") {
         this.heldEvents = events.slice(index + 1);
-        shown = index + 1;
         break;
       }
       if (event.type === "WaveCleared" || event.type === "FormChanged") {
         // The next wave waits for the transition's enter beat.
         this.heldEvents = events.slice(index + 1);
-        shown = index + 1;
         this.startWaveTransition(
           event.type === "FormChanged" ? "form-change" : "clear",
           event.wave,
         );
         break;
       }
-    }
-    if (shown > 0) {
-      this.bridge.onEvents?.(shown === events.length ? events : events.slice(0, shown));
     }
     this.hudView.render(this.hud);
     this.overlay.render(this.hud);

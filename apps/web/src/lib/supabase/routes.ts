@@ -12,6 +12,7 @@ export const PROTECTED_PATH_PREFIXES: readonly string[] = [
   "/conclave",
   "/items",
   "/gifts",
+  "/battle",
 ];
 
 export const SIGN_IN_PATH = "/sign-in";

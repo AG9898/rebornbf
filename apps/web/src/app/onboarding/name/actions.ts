@@ -10,8 +10,8 @@ export type SaveNameState = { error: string | null };
 
 /**
  * Saves the display name through `set_display_name` (M3-06A) as the signed-in player, then moves
- * on to the tutorial step. The RPC derives the player from `auth.uid()`, re-validates the name,
- * and advances `name` → `tutorial`; this pre-check only keeps obviously bad names off the wire.
+ * on to the starter pick. The RPC derives the player from `auth.uid()`, re-validates the name,
+ * and advances `name` → `starter`; this pre-check only keeps obviously bad names off the wire.
  */
 export async function saveDisplayName(
   _previous: SaveNameState,
@@ -39,5 +39,5 @@ export async function saveDisplayName(
 
   // The status bar reads the name in the menu layout.
   revalidatePath("/", "layout");
-  redirect(ONBOARDING_PATHS.tutorial);
+  redirect(ONBOARDING_PATHS.starter);
 }

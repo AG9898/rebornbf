@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { STORY_STAGES } from "../../lib/quests/quest-map.ts";
-import { DEMO_STAGE } from "./demo-battle.ts";
 import { seriesName, stageNames } from "./stage-names.ts";
 
 describe("stageNames", () => {
@@ -21,9 +20,12 @@ describe("stageNames", () => {
     expect(seriesName("unknown")).toBe("Dungeon");
   });
 
-  it("names trials and the demo", () => {
+  it("names trials, and any other stage by its own title", () => {
     const trial = { name: "Trial 1: Captain Locke", trial: { number: 1, gate: "x" } };
     expect(stageNames(trial)).toEqual({ area: "Trial", stage: "Trial 1: Captain Locke" });
-    expect(stageNames(DEMO_STAGE)).toEqual({ area: DEMO_STAGE.name, stage: DEMO_STAGE.name });
+    expect(stageNames({ name: "Training Grounds" })).toEqual({
+      area: "Training Grounds",
+      stage: "Training Grounds",
+    });
   });
 });

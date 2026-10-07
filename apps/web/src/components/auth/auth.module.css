@@ -182,7 +182,6 @@
 }
 
 .provider:focus-visible,
-.demo:focus-visible,
 .footerLinks a:focus-visible {
   outline: 0.6cqw solid #fbe39a;
   outline-offset: 0.6cqw;
@@ -192,46 +191,6 @@
 .provider:disabled {
   filter: grayscale(0.7) brightness(0.7);
   cursor: default;
-}
-
-/* "— or —" between gold rules. */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 2.5cqw;
-  margin: -0.5cqw 0;
-  font-size: 3.2cqw;
-  color: rgb(255 246 200 / 0.6);
-}
-
-.divider::before,
-.divider::after {
-  content: "";
-  flex: 1;
-  height: 0.3cqw;
-  background: linear-gradient(90deg, transparent, rgb(246 195 66 / 0.7));
-}
-
-.divider::after {
-  background: linear-gradient(90deg, rgb(246 195 66 / 0.7), transparent);
-}
-
-.demo {
-  align-self: center;
-  font-size: 4.2cqw;
-  color: #fbe39a;
-  text-decoration: none;
-  paint-order: stroke fill;
-  -webkit-text-stroke: 0.6cqw #2a1606;
-}
-
-.demo::after {
-  content: " ›";
-}
-
-.demo:hover {
-  color: #fff6c8;
-  text-decoration: underline;
 }
 
 /* The title screen's footer, docked to the bottom of the stage. */

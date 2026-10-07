@@ -12,7 +12,8 @@ select results_eq(
   $$select count(*)::int from public.content_items$$, 'item_count matches the seeded rows');
 select ok(exists (select 1 from public.content_items where kind = 'unit' and id = 'brand'
   and data ->> 'id' = 'brand'), 'unit kits are seeded by file id');
-select ok(exists (select 1 from public.content_items where kind = 'stage' and id = 'demo-stage'),
+select ok(exists (select 1 from public.content_items where kind = 'stage'
+  and id = 'story-01-brightmere-outskirts'),
   'stages are seeded');
 select ok(exists (select 1 from public.content_items where kind = 'banner' and id = 'launch-summon'
   and data ->> 'id' = 'launch-summon' and jsonb_array_length(data -> 'featured') = 2),

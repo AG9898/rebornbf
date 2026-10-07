@@ -1,4 +1,5 @@
 /** Original Unit Info pieces (M8-05); art/original/layouts/unit_info.json owns the positions. */
+import type { Rarity } from "@bfr/data";
 import type { OriginalAsset } from "../original/original-assets.ts";
 import type { SkillDisplay } from "./unit-skills.ts";
 
@@ -41,4 +42,14 @@ export const UNIT_INFO_ASSETS = {
 
 export function unitInfoSkillLabel(key: SkillDisplay["key"]): OriginalAsset | null {
   return key === "extra" || key === "sbb" || key === "ubb" ? UNIT_INFO_ASSETS[key] : null;
+}
+
+/**
+ * The original rarity mark, shared by Unit Info and Equip Sphere: `star_rare` once per star (1–7),
+ * or the single rainbow Omni mark.
+ */
+export function rarityMarkPieces(rarity: Rarity): readonly OriginalAsset[] {
+  return rarity === "omni"
+    ? [UNIT_INFO_ASSETS.omni]
+    : Array.from({ length: rarity }, () => UNIT_INFO_ASSETS.star);
 }

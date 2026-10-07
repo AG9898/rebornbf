@@ -1,0 +1,19 @@
+/* Original rarity mark (RarityMark.tsx); sizes default to the Unit Info title line. */
+.mark {
+  --rarity-star: 22;
+  --rarity-omni: 40;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  vertical-align: middle;
+}
+.star {
+  width: calc(var(--u) * var(--rarity-star));
+  height: calc(var(--u) * var(--rarity-star));
+  margin-right: calc(var(--u) * var(--rarity-star) / -11);
+}
+/* rarity_omni is 69×65. */
+.omni {
+  width: calc(var(--u) * var(--rarity-omni) * 69 / 65);
+  height: calc(var(--u) * var(--rarity-omni));
+}

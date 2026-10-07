@@ -1,41 +1,66 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { StageSchema } from "@bfr/data";
+import { type Enemy, EnemySchema, type Stage, StageSchema, type Unit, UnitSchema } from "@bfr/data";
 import story01 from "@bfr/data/content/stages/story-01-brightmere-outskirts.json";
 import {
   type ActiveEffect,
   type BattleInput,
   type BattleState,
   canBurst,
+  createBattle,
   isPassiveSource,
   playTurn,
 } from "@bfr/engine";
 import { describe, expect, it } from "vitest";
-import { stageBackground, stageEnemyArt } from "../assets/stage-art.ts";
+import { stageBackground } from "../assets/stage-art.ts";
 import { applyHudEvents, initHud } from "../hud/model.ts";
 import { toCues } from "./cues.ts";
-import { createDemoBattle, DEMO_BATTLE_SPEC, DEMO_PARTY_ART, DEMO_STAGE } from "./demo-battle.ts";
 
-describe("demo battle (M2-05B)", () => {
-  it("uses the plains background for the demo and chapter 1, with wave enemy art", () => {
-    expect(stageBackground(DEMO_STAGE)).toBe("plains");
+// HUD badges and weakness arrows over a real stage: chapter 1's boss stage, fought by the six B0
+// starters at Omni (Brand leading, Morrick as the guest ally).
+
+const CONTENT = join(import.meta.dirname, "../../../../../packages/data/content");
+
+function load(path: string): unknown {
+  return JSON.parse(readFileSync(join(CONTENT, path), "utf8"));
+}
+
+const STAGE: Stage = StageSchema.parse(load("stages/story-08-beacon-hollow.json"));
+
+function enemy(id: string) {
+  const { drops, ...rest }: Enemy = EnemySchema.parse(load(`enemies/${id}.json`));
+  return drops.bcResistance === undefined ? rest : { ...rest, bcResistance: drops.bcResistance };
+}
+
+function omni(id: string) {
+  const unit: Unit = UnitSchema.parse(load(`units/${id}.json`));
+  const form = unit.forms.find((f) => f.id === `${id}-omni`);
+  if (!form) throw new Error(`${id}-omni is missing`);
+  return { unit, formId: form.id, stats: form.stats.max };
+}
+
+function createStageBattle(seed: number): BattleState {
+  return createBattle(
+    {
+      squad: ["brand", "maren", "garrick", "rook", "solen"].map(omni),
+      leaderIndex: 0,
+      ally: { ...omni("morrick"), kind: "guest" },
+      waves: STAGE.waves.map((wave) => wave.enemies.map((slot) => enemy(slot.enemy))),
+    },
+    seed,
+  );
+}
+
+describe("stage backgrounds", () => {
+  it("uses the plains background for chapter 1", () => {
     expect(stageBackground(StageSchema.parse(story01))).toBe("plains");
-    expect(DEMO_BATTLE_SPEC.enemyWaves).toEqual(stageEnemyArt(DEMO_STAGE));
-    expect(DEMO_BATTLE_SPEC.enemyWaves?.[2]).toEqual([
-      {
-        id: "demo-ashen-warden",
-        size: 256,
-        url: "/assets/enemies/demo-ashen-warden/battle-idle.png",
-      },
-    ]);
   });
 
   // Farming-dungeon stages get the chapter 1 dungeon background and their sprites in M6-07M
   // (RESOLVED-72); until then they have no battle art and are skipped here.
   it("resolves a background for every bundled non-dungeon stage", () => {
-    const dir = join(import.meta.dirname, "../../../../../packages/data/content/stages");
-    for (const file of readdirSync(dir).filter((name) => name.endsWith(".json"))) {
-      const stage = StageSchema.parse(JSON.parse(readFileSync(join(dir, file), "utf8")));
+    for (const file of readdirSync(join(CONTENT, "stages")).filter((n) => n.endsWith(".json"))) {
+      const stage = StageSchema.parse(load(`stages/${file}`));
       if (stage.dungeon) continue;
       // Trials share the trial hall and chapter 2 is on the coast; everything else is on the plains.
       const expected = stage.trial
@@ -45,30 +70,6 @@ describe("demo battle (M2-05B)", () => {
           : "plains";
       expect(stageBackground(stage), file).toBe(expected);
     }
-  });
-  it("fields the six B0 starters at Omni, Brand leading and Morrick as the guest ally", () => {
-    const state = createDemoBattle(1);
-    expect(state.party.map((unit) => [unit.slot, unit.unitId, unit.form.id])).toEqual([
-      ["p0", "brand", "brand-omni"],
-      ["p1", "maren", "maren-omni"],
-      ["p2", "garrick", "garrick-omni"],
-      ["p3", "rook", "rook-omni"],
-      ["p4", "solen", "solen-omni"],
-      ["ally", "morrick", "morrick-omni"],
-    ]);
-    // Each party slot wears its own unit's art.
-    expect(DEMO_PARTY_ART).toEqual(state.party.map((unit) => unit.unitId));
-  });
-
-  it("opens on the demo stage's first wave with a HUD card per unit", () => {
-    const state = DEMO_BATTLE_SPEC.create(7);
-    expect(state.waveIndex).toBe(0);
-    expect(state.enemies.map((enemy) => enemy.enemyId)).toEqual([
-      "demo-thornling",
-      "demo-thornling",
-      "demo-rillwisp",
-    ]);
-    expect(initHud(state).units).toHaveLength(6);
   });
 });
 
@@ -91,9 +92,9 @@ function activeIds(effects: readonly ActiveEffect[]): string[] {
   return [...new Set(effects.filter((e) => !isPassiveSource(e.source)).map((e) => e.id))].sort();
 }
 
-describe("status badges in the demo battle (M2-07B)", () => {
+describe("status badges in a stage battle (M2-07B)", () => {
   it("track apply and expiry events: the HUD's effect IDs match the engine after every turn", () => {
-    let state = createDemoBattle(3);
+    let state = createStageBattle(3);
     let hud = initHud(state);
     let applied = 0;
     let ended = 0;
@@ -116,9 +117,9 @@ describe("status badges in the demo battle (M2-07B)", () => {
   });
 });
 
-describe("weakness arrows in the demo battle", () => {
+describe("weakness arrows in a stage battle", () => {
   it("draws weak arrows on the first turn's hits from the events' element relation", () => {
-    const state = createDemoBattle(3);
+    const state = createStageBattle(3);
     const { events } = playTurn(state, autoInputs(state));
     const arrows = toCues(events).flatMap((cue) =>
       (cue.kind === "damage" || cue.kind === "unit-damage") && cue.arrow ? [cue.arrow] : [],

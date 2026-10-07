@@ -194,8 +194,7 @@ pnpm check                    # lint, typecheck, unit tests, content validation
 pnpm --filter @bfr/web dev    # web app on http://localhost:3000
 ```
 
-The offline battle demo at `/battle` needs no configuration. For sign-in and saved progress, run
-Supabase locally and fill in `.env.local` from `.env.example`:
+To sign in and play, run Supabase locally and fill in `.env.local` from `.env.example`:
 
 ```bash
 cp .env.example .env.local

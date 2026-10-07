@@ -19,10 +19,10 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000005a1', 'starter-a@example.test'),
   ('00000000-0000-0000-0000-0000000005b1', 'starter-b@example.test');
 
--- A is at the starter step; B is still at the tutorial step.
+-- A is at the starter step; B is still at the name step.
 update public.profiles set onboarding_step = 'starter'
 where id = '00000000-0000-0000-0000-0000000005a1';
-update public.profiles set onboarding_step = 'tutorial'
+update public.profiles set onboarding_step = 'name'
 where id = '00000000-0000-0000-0000-0000000005b1';
 
 -- Player B: not at the starter step ------------------------------------------------------------

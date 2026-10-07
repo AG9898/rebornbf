@@ -40,7 +40,7 @@ interface SquadMemberBase {
   readonly selectedEnhancements?: EnhancementSelection;
 }
 
-/** A member whose base stats are given as-is (demo squads, guests, tests). */
+/** A member whose base stats are given as-is (guests, tests). */
 export interface ResolvedStatsMember extends SquadMemberBase {
   readonly stats: Stats;
   readonly level?: never;

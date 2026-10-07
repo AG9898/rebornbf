@@ -63,7 +63,7 @@ describe("quest map (M3-04A)", () => {
   });
 
   it("marks every stage cleared once the chapter is done, ignoring unknown IDs", () => {
-    const cleared = clearedStageIds([...ids, "demo-stage"].map((stage_id) => ({ stage_id })));
+    const cleared = clearedStageIds([...ids, "no-such-stage"].map((stage_id) => ({ stage_id })));
     const [chapter] = buildQuestMap(cleared);
     expect(chapter?.stages.every((s) => s.state === "cleared")).toBe(true);
     expect(chapter?.cleared).toBe(8);

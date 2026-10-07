@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -9,7 +8,6 @@ import { DocsDrawer } from "../../../../../components/site/docs/DocsDrawer.tsx";
 import { DocsPager } from "../../../../../components/site/docs/DocsPager.tsx";
 import { DocsSidebar } from "../../../../../components/site/docs/DocsSidebar.tsx";
 import { DocsToc } from "../../../../../components/site/docs/DocsToc.tsx";
-import styles from "../../../../../components/site/docs/docs.module.css";
 import { docsPages, docsStem } from "../../../../../components/site/docs/nav.ts";
 import { extractToc } from "../../../../../components/site/docs/toc.ts";
 import { SITE_TITLE, SOURCE_URL } from "../../../../../components/site/site.ts";
@@ -92,35 +90,6 @@ export default async function DocsPage(
         <aside className="hidden w-[240px] shrink-0 xl:block">
           <div className="sticky top-[68px] flex flex-col gap-[26px] pt-[52px] pr-7">
             <DocsToc entries={toc} />
-            <div
-              className={`${styles.slate} flex flex-col gap-2.5 rounded-xl border border-[#2c3450] p-4`}
-            >
-              <div className="flex gap-2">
-                <Image
-                  src="/assets/ui/crystal-bc.webp"
-                  alt=""
-                  width={48}
-                  height={70}
-                  className="h-[22px] w-auto"
-                />
-                <Image
-                  src="/assets/ui/crystal-hc.webp"
-                  alt=""
-                  width={48}
-                  height={70}
-                  className="h-[22px] w-auto"
-                />
-              </div>
-              <span className="text-[14px] leading-[1.5] text-[#c9c6d8]">
-                Try it in the demo battle. No sign-in needed.
-              </span>
-              <Link
-                href="/battle"
-                className="text-[14px] font-extrabold text-[#f3cf7a] hover:text-[#ffe7ae]"
-              >
-                Open the demo
-              </Link>
-            </div>
           </div>
         </aside>
       </div>

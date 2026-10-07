@@ -3,7 +3,7 @@
   "backgrounds": {
     "plains": {
       "chapters": [1],
-      "stages": ["demo-stage", "placeholder-stage", "tutorial"]
+      "stages": ["placeholder-stage"]
     },
     "trial-hall": {
       "chapters": [],
@@ -42,15 +42,6 @@
     }
   },
   "enemies": {
-    "tut-thistle-sprout": {
-      "canvas": 128
-    },
-    "tut-puddle-imp": {
-      "canvas": 128
-    },
-    "tut-training-golem": {
-      "canvas": 128
-    },
     "ch1-bramble-pup": {
       "canvas": 128
     },
@@ -67,15 +58,6 @@
       "canvas": 128
     },
     "ch1-gravemaw": {
-      "canvas": 256
-    },
-    "demo-thornling": {
-      "canvas": 128
-    },
-    "demo-rillwisp": {
-      "canvas": 128
-    },
-    "demo-ashen-warden": {
       "canvas": 256
     },
     "trial1-locke": {

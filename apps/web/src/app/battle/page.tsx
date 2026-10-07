@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { questReturn } from "../../lib/battle/result-screen.ts";
 import {
@@ -56,10 +57,10 @@ async function loadSession(sessionId: string): Promise<Loaded> {
 
 /**
  * The battle route. With `?session=<id>` it plays a story battle issued by `start_battle`
- * (M3-04B): the session's stage, squad snapshot, and server-rolled seed. Without one it plays the
- * offline demo (M2-05B): no sign-in, no rewards; the whole battle runs client-side. Both play at
- * the player's saved default speed and reduced-motion setting (M7-01_2) and music/SFX volumes
- * (M7-01_4); defaults when signed out.
+ * (M3-04B): the session's stage, squad snapshot, and server-rolled seed, at the player's saved
+ * default speed and reduced-motion setting (M7-01_2) and music/SFX volumes (M7-01_4). Without a
+ * session there is nothing to play, so it redirects to the quest map. The route is signed-in only
+ * (`PROTECTED_PATH_PREFIXES`).
  * The battle fills the whole screen with no page header; only a load error shows a way back.
  */
 export default async function BattlePage({
@@ -69,27 +70,19 @@ export default async function BattlePage({
 }): Promise<ReactNode> {
   const { session } = await searchParams;
   const sessionId = typeof session === "string" ? session : undefined;
-  const [loaded, { settings }] = await Promise.all([
-    sessionId ? loadSession(sessionId) : undefined,
-    loadPlayerSettings(),
-  ]);
+  if (!sessionId) redirect("/quests");
+  const [loaded, { settings }] = await Promise.all([loadSession(sessionId), loadPlayerSettings()]);
   const preferences: BattlePreferences = {
     initialSpeed: settings.battleSpeed,
     reducedMotion: settings.reducedMotion,
     volume: audioLevels(settings),
   };
-  const stage = loaded !== undefined && "battle" in loaded ? loaded.battle.stage : undefined;
-  const back = !sessionId
-    ? { href: "/home", label: "Home" }
-    : stage
-      ? questReturn(stage)
-      : { href: "/quests", label: "Quest" };
+  const stage = "battle" in loaded ? loaded.battle.stage : undefined;
+  const back = stage ? questReturn(stage) : { href: "/quests", label: "Quest" };
 
   return (
     <main className="flex min-h-dvh flex-col bg-[#0b0d17] text-[#e8e6f0]">
-      {loaded === undefined ? (
-        <BattleClient preferences={preferences} />
-      ) : "battle" in loaded ? (
+      {"battle" in loaded ? (
         <BattleClient battle={loaded.battle} sessionId={sessionId} preferences={preferences} />
       ) : (
         <div role="alert" className="m-auto flex max-w-sm flex-col gap-3 px-4 text-center text-sm">

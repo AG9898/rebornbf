@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
 import { type Stage, StageSchema } from "./schemas/stage.ts";
-import { type Unit, UnitSchema } from "./schemas/unit.ts";
+import { UnitSchema } from "./schemas/unit.ts";
 import {
   chapterFirstClearGems,
   formatPath,
@@ -20,7 +20,6 @@ import {
   validateStageFile,
   validateStory,
   validateTrials,
-  validateTutorials,
   validateUnitFile,
 } from "./validate.ts";
 
@@ -659,48 +658,5 @@ describe("trials (M6-01A)", () => {
         waves: [{ enemies: [{ enemy: "x", boss: true }] }],
       }).success,
     ).toBe(false);
-  });
-});
-
-describe("tutorial stage (M3-06D)", () => {
-  const tutorial = StageSchema.parse(loadContent("stages/tutorial.json"));
-  const preset = tutorial.tutorial;
-  if (!preset) throw new Error("stages/tutorial.json has no tutorial block");
-  const units = new Map<string, Unit>(
-    [...preset.units, ...(preset.ally ? [preset.ally] : [])].map((id) => [
-      id,
-      UnitSchema.parse(loadContent(`units/${id}.json`)),
-    ]),
-  );
-  const enemies = new Map<string, Enemy>(
-    tutorial.waves
-      .flatMap((wave) => wave.enemies.map((slot) => slot.enemy))
-      .map((id) => [id, EnemySchema.parse(loadContent(`enemies/${id}.json`))]),
-  );
-
-  it("is valid and grants nothing", () => {
-    expect(tutorial.story ?? tutorial.dungeon ?? tutorial.firstClear).toBeUndefined();
-    expect(validateTutorials([tutorial], units, enemies)).toEqual([]);
-  });
-
-  it("rejects a tutorial with a reward", () => {
-    const result = StageSchema.safeParse({ ...tutorial, firstClear: { gems: 5 } });
-    expect(result.success).toBe(false);
-  });
-
-  it("reports unknown units, missing forms, levels past max, and rewarding enemies", () => {
-    const grunt = EnemySchema.parse(loadContent("enemies/placeholder-grunt.json"));
-    const broken: Stage = {
-      ...tutorial,
-      tutorial: { ...preset, units: ["brand", "nobody"], rarity: 3, level: 41 },
-      waves: [{ enemies: [{ enemy: "rich" }] }],
-    };
-    const rich: Enemy = { ...grunt, id: "rich", drops: { zel: { rate: 50, amount: 10 } } };
-    expect(validateTutorials([broken], units, new Map([["rich", rich]]))).toEqual([
-      "stages/tutorial.json: tutorial.level: above brand-3's max level 40",
-      'stages/tutorial.json: tutorial.units[1]: unknown unit "nobody"',
-      "stages/tutorial.json: tutorial.level: above morrick-3's max level 40",
-      'stages/tutorial.json: waves[0].enemies[0].enemy: "rich" drops rewards; the tutorial grants none',
-    ]);
   });
 });

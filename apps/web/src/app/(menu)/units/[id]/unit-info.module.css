@@ -59,20 +59,6 @@
   width: calc(var(--u) * 28);
   height: calc(var(--u) * 28);
 }
-.stars {
-  display: flex;
-  flex: none;
-}
-.star {
-  width: calc(var(--u) * 22);
-  height: calc(var(--u) * 22);
-  margin-right: calc(var(--u) * -2);
-}
-.omni {
-  flex: none;
-  width: calc(var(--u) * 42);
-  height: calc(var(--u) * 40);
-}
 .left {
   position: absolute;
   left: calc(var(--u) * 16);

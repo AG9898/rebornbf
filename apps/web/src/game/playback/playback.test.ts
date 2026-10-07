@@ -12,7 +12,6 @@ import {
   toCues,
   waveBanners,
 } from "./cues.ts";
-import { DEMO_STAGE } from "./demo-battle.ts";
 import {
   BANDS,
   bossEnemyRect,
@@ -34,7 +33,7 @@ import {
   queueInput,
   startLive,
 } from "./live.ts";
-import { createTestBattle, DEMO_INPUTS } from "./test-battle.ts";
+import { createTestBattle, SCRIPTED_INPUTS } from "./test-battle.ts";
 
 const FRAME_MS = 1000 / 60;
 const BATTLE_HALF = 320;
@@ -253,7 +252,7 @@ describe("eventCues", () => {
       { piece: "banner-wave", title: "Battle 3/3" },
       { piece: "banner-boss", title: "Boss Battle" },
     ]);
-    expect(stageBossWaves(DEMO_STAGE)).toEqual([]);
+    expect(stageBossWaves({ waves: [{ enemies: [{}] }, { enemies: [{}] }] })).toEqual([]);
     expect(
       stageBossWaves({
         waves: [{ enemies: [{}] }, { enemies: [{}, { boss: true }] }],
@@ -335,8 +334,10 @@ describe("live battle clock", () => {
   });
 });
 
-describe("test battle demo", () => {
-  const { live, events } = playOut(startLive(createTestBattle(1, { charged: true }), DEMO_INPUTS));
+describe("test battle script", () => {
+  const { live, events } = playOut(
+    startLive(createTestBattle(1, { charged: true }), SCRIPTED_INPUTS),
+  );
   const landed = hits(events);
 
   it("plays taps that spark each other", () => {
@@ -359,9 +360,9 @@ describe("test battle demo", () => {
   });
 
   it("is deterministic for a seed", () => {
-    expect(playOut(startLive(createTestBattle(1, { charged: true }), DEMO_INPUTS)).events).toEqual(
-      events,
-    );
+    expect(
+      playOut(startLive(createTestBattle(1, { charged: true }), SCRIPTED_INPUTS)).events,
+    ).toEqual(events);
   });
 
   it("ends the turn once the last unit acts", () => {

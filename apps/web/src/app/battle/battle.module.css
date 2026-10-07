@@ -12,7 +12,7 @@
   filter: blur(24px) brightness(0.45);
 }
 
-/* A layer over the canvas, the canvas's size, for DOM drawn on the battle (tutorial prompts). */
+/* A layer over the canvas, the canvas's size, for DOM drawn on the battle (the result flow). */
 .overlay {
   position: absolute;
   inset: 0;

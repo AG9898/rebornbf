@@ -2,7 +2,6 @@
  * The original's Menu screen at /other (M8-02, RESOLVED-98; ART_GUIDE → UI → Menu screen).
  * Positions are measured in art/original/layouts/menu.json on the 640x1136 screen.
  */
-import { TUTORIAL_REPLAY_PATH } from "../../lib/onboarding/routing.ts";
 
 /** One round menu button: a `main_s_btn` base with a `content/menu/` label overlay. */
 export type MenuTile = {
@@ -35,9 +34,3 @@ export const MENU_NEWS = {
   art: "menu/notice_btn_label",
   href: "/news?from=menu",
 } as const;
-
-/** BFR-only links kept under the grid on kit `sub_m_btn` buttons. */
-export const MENU_EXTRAS: readonly { label: string; href: string }[] = [
-  { label: "Demo battle", href: "/battle" },
-  { label: "Replay tutorial", href: TUTORIAL_REPLAY_PATH },
-];

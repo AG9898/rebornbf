@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ORIGINAL_ASSETS } from "../../lib/original/original-assets.ts";
-import { MENU_EXTRAS, MENU_NEWS, MENU_TILES } from "./menu-screen-data.ts";
+import { MENU_NEWS, MENU_TILES } from "./menu-screen-data.ts";
 
 const imported = (asset: string): boolean => asset in ORIGINAL_ASSETS;
 
@@ -32,13 +32,11 @@ describe("menu screen", () => {
     }
   });
 
-  it("links live buttons to BFR routes and keeps the BFR extras", () => {
+  it("links live buttons to BFR routes", () => {
     const live = Object.fromEntries(MENU_TILES.map((t) => [t.label, t.href]));
     expect(live["Player Info"]).toBe("/account");
     expect(live.Settings).toBe("/settings");
     expect(live.Credits).toBeNull();
     expect(MENU_NEWS.href).toBe("/news?from=menu");
-    expect(MENU_EXTRAS.map((e) => e.href)).toContain("/battle");
-    expect(MENU_EXTRAS.some((e) => e.href.startsWith("/onboarding/tutorial"))).toBe(true);
   });
 });

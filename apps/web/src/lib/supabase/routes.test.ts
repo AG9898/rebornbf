@@ -41,6 +41,7 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/itemsx")).toBe(false);
     expect(isProtectedPath("/gifts")).toBe(true);
     expect(isProtectedPath("/gifts/presents")).toBe(true);
+    expect(isProtectedPath("/battle")).toBe(true);
   });
 
   it("protects Reinforcement and Begin Quest without matching unrelated prefixes", () => {
@@ -57,7 +58,7 @@ describe("isProtectedPath", () => {
   it("leaves public pages open", () => {
     for (const path of [
       "/",
-      "/battle",
+      "/battles",
       "/sign-in",
       "/auth/callback",
       "/accounts",

@@ -27,10 +27,22 @@ function load(path: string): unknown {
   return JSON.parse(readFileSync(new URL(path, CONTENT), "utf8"));
 }
 
+/**
+ * Stat multipliers that lift chapter 1's enemies to an Omni squad's level (its boss to about 1M
+ * HP): unscaled, the fight is over before the OD gauge fills, and the advanced-settings test needs a
+ * full gauge and a UBB.
+ */
+const SCALE = { hp: 40, atk: 12, def: 8 };
+
 function enemySetup(id: string): EnemySetup {
   const enemy: Enemy = EnemySchema.parse(load(`enemies/${id}.json`));
   const { drops, ...rest } = enemy;
-  return drops.bcResistance === undefined ? rest : { ...rest, bcResistance: drops.bcResistance };
+  const { hp, atk, def } = rest.stats;
+  const stats = { ...rest.stats, hp: hp * SCALE.hp, atk: atk * SCALE.atk, def: def * SCALE.def };
+  const sturdy = { ...rest, stats };
+  return drops.bcResistance === undefined
+    ? sturdy
+    : { ...sturdy, bcResistance: drops.bcResistance };
 }
 
 function omni(id: string): SquadMemberSetup {
@@ -40,8 +52,9 @@ function omni(id: string): SquadMemberSetup {
   return { unit, formId: form.id, stats: form.stats.max };
 }
 
-function demoSetup(autoSettings?: AutoSettings): BattleSetup {
-  const stage = StageSchema.parse(load("stages/demo-stage.json"));
+/** Chapter 1's boss stage (story 8) with sturdier enemies, fought by the six B0 starters at Omni. */
+function stageSetup(autoSettings?: AutoSettings): BattleSetup {
+  const stage = StageSchema.parse(load("stages/story-08-beacon-hollow.json"));
   return {
     squad: ["brand", "maren", "garrick", "rook", "solen"].map(omni),
     leaderIndex: 0,
@@ -88,14 +101,14 @@ function autoPlay(start: BattleState, maxTurns = 40) {
 
 describe("autoInputs (M1-08A)", () => {
   it("gives every living unit an action in squad order, ally last, at the current tick", () => {
-    const state = createBattle(demoSetup(), 1);
+    const state = createBattle(stageSetup(), 1);
     const inputs = autoInputs(state);
     expect(inputs.map((i) => i.actor)).toEqual(["p0", "p1", "p2", "p3", "p4", "ally"]);
     expect(inputs.every((i) => i.type === "attack" && i.tick === state.tick)).toBe(true);
   });
 
   it("autoBurstTier reports the highest charged tier: UBB in Overdrive Mode, then SBB, then BB", () => {
-    const start = createBattle(demoSetup(), 1);
+    const start = createBattle(stageSetup(), 1);
     const p0 = unitAt(start, "p0");
     const full = threshold(p0, "sbb");
     expect(autoBurstTier({ ...p0, bc: threshold(p0, "bb") })).toBe("bb");
@@ -108,7 +121,7 @@ describe("autoInputs (M1-08A)", () => {
   });
 
   it("attacks instead of bursting when Cursed, and skips paralyzed, dead, and acted units", () => {
-    let state = createBattle(demoSetup(), 1);
+    let state = createBattle(stageSetup(), 1);
     const full = threshold(unitAt(state, "p0"), "sbb");
     state = patch(state, "p0", { bc: full, effects: [ailment("curse")] });
     state = patch(state, "p1", { effects: [ailment("paralysis")] });
@@ -122,15 +135,15 @@ describe("autoInputs (M1-08A)", () => {
   });
 
   it("passes the selected target and returns nothing once the battle is over", () => {
-    const state = createBattle(demoSetup(), 1);
+    const state = createBattle(stageSetup(), 1);
     expect(
       autoInputs(state, { target: "e1" }).every((i) => "target" in i && i.target === "e1"),
     ).toBe(true);
     expect(autoInputs({ ...state, result: "win" })).toEqual([]);
   });
 
-  it("finishes the demo stage headlessly, and no auto input is rejected", () => {
-    const { state, log } = autoPlay(createBattle(demoSetup(), 7));
+  it("finishes chapter 1's boss stage headlessly, and no auto input is rejected", () => {
+    const { state, log } = autoPlay(createBattle(stageSetup(), 7));
     expect(state.result).toBe("win");
     expect(log.some((e) => e.type === "BurstUsed")).toBe(true);
     expect(log.filter((e) => e.type === "ActionRejected")).toEqual([]);
@@ -138,8 +151,8 @@ describe("autoInputs (M1-08A)", () => {
 
   it("auto inputs replay identically from the seed", () => {
     const seed = 2024;
-    const live = autoPlay(createBattle(demoSetup(), seed));
-    let state = createBattle(demoSetup(), seed);
+    const live = autoPlay(createBattle(stageSetup(), seed));
+    let state = createBattle(stageSetup(), seed);
     const replay: BattleEvent[] = [];
     for (const inputs of live.turns) {
       const turn = playTurn(state, inputs);
@@ -151,7 +164,7 @@ describe("autoInputs (M1-08A)", () => {
   });
 
   it("covers only units that have not acted mid-phase", () => {
-    const start = createBattle(demoSetup(), 3);
+    const start = createBattle(stageSetup(), 3);
     const first = step(start, [{ type: "attack", tick: start.tick, actor: "p0" }]);
     expect(autoInputs(first.state).map((i) => i.actor)).toEqual(["p1", "p2", "p3", "p4", "ally"]);
   });
@@ -166,7 +179,7 @@ describe("autoInputs advanced settings (M1-08E)", () => {
     p0: { bc?: "bb" | "sbb" | "ubb" | "none"; overdrive?: boolean } = {},
     odFull = false,
   ): BattleState {
-    let state = createBattle(demoSetup(settings), 1);
+    let state = createBattle(stageSetup(settings), 1);
     const unit = unitAt(state, "p0");
     const bc = p0.bc === undefined || p0.bc === "none" ? 0 : threshold(unit, p0.bc);
     state = patch(state, "p0", {
@@ -276,10 +289,10 @@ describe("autoInputs advanced settings (M1-08E)", () => {
   });
 
   it("createBattle validates the settings and stores them only when given", () => {
-    expect(createBattle(demoSetup(), 1).autoSettings).toBeUndefined();
+    expect(createBattle(stageSetup(), 1).autoSettings).toBeUndefined();
     const settings: AutoSettings = { modes: { p0: "guard", ally: "ubb" }, sbbPriority: true };
-    expect(createBattle(demoSetup(settings), 1).autoSettings).toEqual(settings);
-    const bad = (s: unknown) => () => createBattle(demoSetup(s as AutoSettings), 1);
+    expect(createBattle(stageSetup(settings), 1).autoSettings).toEqual(settings);
+    const bad = (s: unknown) => () => createBattle(stageSetup(s as AutoSettings), 1);
     expect(bad({ modes: { p0: "heal" } })).toThrow(/unknown mode/);
     expect(bad({ modes: { p9: "bb" } })).toThrow(/no party unit/);
     expect(bad({ forcedBbPriority: "yes" })).toThrow(/must be a boolean/);
@@ -292,13 +305,13 @@ describe("autoInputs advanced settings (M1-08E)", () => {
       odUbbPriority: true,
     };
     const seed = 99;
-    const live = autoPlay(createBattle(demoSetup(settings), seed));
+    const live = autoPlay(createBattle(stageSetup(settings), seed));
     expect(live.log.filter((e) => e.type === "ActionRejected")).toEqual([]);
     expect(live.turns.flat().some((i) => i.actor === "ally" && i.type === "guard")).toBe(true);
     // p0 (Auto, OD & UBB Priority) takes the first full OD gauge and lands its UBB.
     expect(live.log.some((e) => e.type === "OverdriveActivated" && e.actor === "p0")).toBe(true);
     expect(live.log.some((e) => e.type === "BurstUsed" && e.tier === "ubb")).toBe(true);
-    let state = createBattle(demoSetup(settings), seed);
+    let state = createBattle(stageSetup(settings), seed);
     const replay: BattleEvent[] = [];
     for (const inputs of live.turns) {
       const turn = playTurn(state, inputs);

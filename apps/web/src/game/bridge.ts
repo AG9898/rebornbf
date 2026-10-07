@@ -29,11 +29,6 @@ export function canvasDisplaySize(
 /** The renderer's callbacks into React. */
 export interface BattleBridge {
   onReady(): void;
-  /**
-   * The engine events the scene has just shown, in order (the tutorial's prompt sequencer reads
-   * them). Called once per frame that shows events.
-   */
-  onEvents?(events: readonly import("@bfr/engine").BattleEvent[]): void;
   onComplete?(
     result: "win" | "lose",
     log: readonly import("../lib/battle/replay.ts").LoggedTurn[],

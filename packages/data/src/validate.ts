@@ -300,48 +300,6 @@ export function validateTrials(stages: readonly Stage[]): string[] {
 }
 
 /**
- * Cross-file tutorial checks over every parsed stage (GAME_DESIGN §8 → New player flow): each
- * preset unit (in `units`, by ID) has a form at the tutorial's rarity whose max level reaches the
- * tutorial's level, and every wave enemy (in `enemies`, by ID) drops nothing that is granted
- * (no Zel, Karma, items, or capture), since the tutorial grants nothing.
- */
-export function validateTutorials(
-  stages: readonly Stage[],
-  units: ReadonlyMap<string, Unit>,
-  enemies: ReadonlyMap<string, Enemy>,
-): string[] {
-  const errors: string[] = [];
-  for (const stage of stages) {
-    const tutorial = stage.tutorial;
-    if (!tutorial) continue;
-    const file = `stages/${stage.id}.json`;
-    const members: Array<[string, string]> = tutorial.units.map((id, i) => [`units[${i}]`, id]);
-    if (tutorial.ally) members.push(["ally", tutorial.ally]);
-    for (const [path, id] of members) {
-      const unit = units.get(id);
-      const form = unit?.forms.find((f) => f.rarity === tutorial.rarity);
-      if (!unit) {
-        errors.push(`${file}: tutorial.${path}: unknown unit "${id}"`);
-      } else if (!form) {
-        errors.push(`${file}: tutorial.${path}: "${id}" has no ${tutorial.rarity}★ form`);
-      } else if (tutorial.level > form.maxLevel) {
-        errors.push(`${file}: tutorial.level: above ${form.id}'s max level ${form.maxLevel}`);
-      }
-    }
-    stage.waves.forEach((wave, w) => {
-      wave.enemies.forEach((slot, e) => {
-        const drops = enemies.get(slot.enemy)?.drops;
-        if (drops && (drops.zel || drops.karma || drops.items?.length || drops.capture)) {
-          const path = formatPath(["waves", w, "enemies", e, "enemy"]);
-          errors.push(`${file}: ${path}: "${slot.enemy}" drops rewards; the tutorial grants none`);
-        }
-      });
-    });
-  }
-  return errors;
-}
-
-/**
  * Validates one parsed stage file. Every wave enemy must be one of `enemyIds` (the IDs of the
  * files in `content/enemies/`).
  */

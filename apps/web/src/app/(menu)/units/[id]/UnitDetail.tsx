@@ -10,6 +10,7 @@ import type { SphereSocketView } from "../../../../lib/units/spheres.ts";
 import { UNIT_INFO_ASSETS as A } from "../../../../lib/units/unit-info-screen.ts";
 import { type SkillDisplay, unitSkillDisplays } from "../../../../lib/units/unit-skills.ts";
 import { SplitButton } from "../stack/[stackId]/SplitButton.tsx";
+import { RarityMark } from "./RarityMark.tsx";
 import { sphereIcon } from "./SphereSocketFace.tsx";
 import { UnitInfoBody } from "./UnitInfoBody.tsx";
 import styles from "./unit-info.module.css";
@@ -210,27 +211,6 @@ export function UnitTitleBar({
       subtitle={unit.formName ?? "Unit Info"}
       backHref={backHref}
     />
-  );
-}
-
-/** Original rarity: one `star_rare` per star (1–7), or the rainbow Omni mark. */
-function RarityMark({
-  rarity,
-  label,
-}: {
-  rarity: NonNullable<UnitDetailView["rarity"]>;
-  label: string;
-}): ReactNode {
-  if (rarity === "omni") {
-    return <OriginalImage asset={A.omni} alt={label} className={styles.omni} />;
-  }
-  return (
-    <span className={styles.stars} role="img" aria-label={label}>
-      {Array.from({ length: rarity }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: identical stars, fixed order.
-        <OriginalImage key={index} asset={A.star} className={styles.star} />
-      ))}
-    </span>
   );
 }
 

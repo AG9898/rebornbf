@@ -8,18 +8,14 @@ import { SIGN_IN_PATH } from "../supabase/routes.ts";
 export const TITLE_PATH = "/";
 export const HOME_PATH = "/home";
 
-export const ONBOARDING_STEPS = ["name", "tutorial", "starter", "done"] as const;
+export const ONBOARDING_STEPS = ["name", "starter", "done"] as const;
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
 /** The page for each unfinished onboarding step. */
 export const ONBOARDING_PATHS: Readonly<Record<Exclude<OnboardingStep, "done">, string>> = {
   name: "/onboarding/name",
-  tutorial: "/onboarding/tutorial",
   starter: "/onboarding/starter",
 };
-
-/** The tutorial replayed from `/other`: shown at any step, grants nothing, changes no progress. */
-export const TUTORIAL_REPLAY_PATH = `${ONBOARDING_PATHS.tutorial}?replay=1`;
 
 export function isOnboardingStep(value: unknown): value is OnboardingStep {
   return typeof value === "string" && (ONBOARDING_STEPS as readonly string[]).includes(value);

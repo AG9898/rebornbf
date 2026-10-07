@@ -12,7 +12,6 @@ export * from "./events.ts";
 export * from "./formulas/index.ts";
 export * from "./gauge/index.ts";
 export * from "./rng.ts";
-export * from "./stages/tutorial.ts";
 export * from "./state/index.ts";
 export * from "./step.ts";
 export * from "./timeline/index.ts";
