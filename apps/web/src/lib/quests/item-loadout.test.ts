@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   BATTLE_ITEMS,
+  fillUpSlots,
   itemLoadoutKey,
   parseItemLoadout,
   restoreItemSlots,
+  setSlot,
+  slotChoices,
+  slotMax,
 } from "./item-loadout.ts";
 
 describe("Begin Quest item loadout (M3-04K)", () => {
@@ -59,5 +63,40 @@ describe("Begin Quest item loadout (M3-04K)", () => {
   it("remembers each saved squad independently and separates accounts", () => {
     expect(itemLoadoutKey("alice", 0)).not.toBe(itemLoadoutKey("alice", 1));
     expect(itemLoadoutKey("alice", 0)).not.toBe(itemLoadoutKey("bob", 0));
+  });
+});
+
+describe("Manage Items loadout edits (M8-10_1)", () => {
+  const stock = [
+    { item_id: "bitterleaf", count: 4 },
+    { item_id: "bright-tonic", count: 25 },
+    { item_id: "dew-tonic", count: 0 },
+    { item_id: "crown-shard", count: 9 },
+  ];
+  it("fills each set slot up to what is owned, at most 10, and drops spent items", () => {
+    const slots = [
+      { item: "bitterleaf", count: 1 },
+      null,
+      { item: "bright-tonic", count: 3 },
+      { item: "dew-tonic", count: 2 },
+      null,
+    ];
+    expect(fillUpSlots(slots, stock)).toEqual([
+      { item: "bitterleaf", count: 4 },
+      null,
+      { item: "bright-tonic", count: 10 },
+      null,
+      null,
+    ]);
+    expect(slotMax(stock, "bright-tonic")).toBe(10);
+    expect(slotMax(stock, "grand-tonic")).toBe(0);
+  });
+  it("offers owned battle items not already in another slot", () => {
+    const slots = setSlot(Array(5).fill(null), 1, { item: "bitterleaf", count: 2 });
+    expect(slotChoices(slots, stock, 0).map((item) => item.id)).toEqual(["bright-tonic"]);
+    expect(slotChoices(slots, stock, 1).map((item) => item.id)).toEqual([
+      "bitterleaf",
+      "bright-tonic",
+    ]);
   });
 });

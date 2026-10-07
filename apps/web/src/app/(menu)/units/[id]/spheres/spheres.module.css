@@ -1,0 +1,223 @@
+/*
+ * Equip Sphere (M8-09) on the original 640x1136 grid; positions from layouts/spheres.json.
+ * Title-bar children use bar coordinates (screen y less 164). A row's frame piece sits at screen
+ * y 282 + 120·i; inside a row, coordinates are the frame piece's less 22 (the body starts at 304).
+ */
+
+/* Remove: blue sub_square2 base at screen (530, 215); the 188x64 English label at 0.8. */
+.square {
+  position: absolute;
+  width: calc(var(--u) * 105);
+  height: calc(var(--u) * 83);
+}
+
+.square:disabled {
+  cursor: default;
+  filter: grayscale(0.6) brightness(0.75);
+}
+
+.square:focus-visible {
+  outline: calc(var(--u) * 3) solid #ffe29d;
+}
+
+.remove {
+  left: calc(var(--u) * 530);
+  top: calc(var(--u) * 51);
+}
+
+.removeLabel.removeLabel {
+  position: absolute;
+  left: calc(var(--u) * -22);
+  top: calc(var(--u) * 16);
+  width: calc(var(--u) * 150);
+  height: auto;
+  max-width: none;
+}
+
+/* Two unlocked slots: a band choosing the slot that Equip and Remove act on. */
+.slots {
+  flex: none;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--u) * 8);
+  padding: calc(var(--u) * 4) calc(var(--u) * 16);
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  min-width: 0;
+  height: calc(var(--u) * 58);
+  padding: 0 calc(var(--u) * 6);
+  border: calc(var(--u) * 2) solid #7a6230;
+  border-radius: calc(var(--u) * 8);
+  background: #120d06cc;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.slot[aria-pressed="true"] {
+  border-color: #ffd86b;
+  box-shadow: 0 0 calc(var(--u) * 8) #ffcf4a99;
+}
+
+.slot:disabled {
+  cursor: default;
+}
+
+.socket {
+  position: relative;
+  flex: none;
+  width: calc(var(--u) * 46);
+  height: calc(var(--u) * 46);
+}
+
+.socket > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.socket > .emptySphere,
+.socket > .sphereIcon {
+  inset: 18%;
+  width: 64%;
+  height: 64%;
+}
+
+.slotText {
+  min-width: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 20);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+/* ---------- Sphere list (screen y 304–984) ---------- */
+
+.body {
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+.message {
+  margin: calc(var(--u) * 30);
+  font-family: system-ui, sans-serif;
+  font-size: calc(var(--u) * 22);
+  color: #fff;
+}
+
+.list {
+  margin: 0;
+  padding: calc(var(--u) * 2) 0 calc(var(--u) * 12);
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  height: calc(var(--u) * 120);
+}
+
+.rowFrame,
+.thumb,
+.typeIcon,
+.name,
+.desc,
+.holder,
+.equip {
+  position: absolute;
+}
+
+.rowFrame {
+  left: 0;
+  top: calc(var(--u) * -22);
+  pointer-events: none;
+}
+
+.initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 44);
+}
+
+.thumb {
+  left: calc(var(--u) * 20);
+  top: calc(var(--u) * 4);
+  width: calc(var(--u) * 102);
+  height: calc(var(--u) * 102);
+}
+
+.thumb > .sphereIcon,
+.thumb > .initial {
+  position: absolute;
+  left: calc(var(--u) * 11);
+  top: calc(var(--u) * 11);
+  width: calc(var(--u) * 80);
+  height: calc(var(--u) * 80);
+}
+
+.typeIcon {
+  left: calc(var(--u) * 125);
+  top: calc(var(--u) * 10);
+  width: calc(var(--u) * 30);
+  height: calc(var(--u) * 30);
+}
+
+.name {
+  left: calc(var(--u) * 158);
+  top: calc(var(--u) * 6);
+  width: calc(var(--u) * 340);
+  margin: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 26);
+  line-height: calc(var(--u) * 34);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desc {
+  left: calc(var(--u) * 129);
+  top: calc(var(--u) * 44);
+  width: calc(var(--u) * 370);
+  margin: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 19);
+  line-height: calc(var(--u) * 23);
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+.equip {
+  left: calc(var(--u) * 508);
+  top: calc(var(--u) * 13);
+}
+
+.equipLabel.equipLabel {
+  position: absolute;
+  left: calc(var(--u) * -2);
+  top: calc(var(--u) * -2);
+}
+
+.holder {
+  left: calc(var(--u) * 512);
+  top: calc(var(--u) * 6);
+  width: calc(var(--u) * 98);
+}
+
+.holderSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--u) * -2);
+  font-size: calc(var(--u) * 20);
+  text-align: center;
+  color: #ffe08a;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}

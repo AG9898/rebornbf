@@ -37,7 +37,7 @@ describe("menu screen", () => {
     expect(live["Player Info"]).toBe("/account");
     expect(live.Settings).toBe("/settings");
     expect(live.Credits).toBeNull();
-    expect(MENU_NEWS.href).toBe("/news");
+    expect(MENU_NEWS.href).toBe("/news?from=menu");
     expect(MENU_EXTRAS.map((e) => e.href)).toContain("/battle");
     expect(MENU_EXTRAS.some((e) => e.href.startsWith("/onboarding/tutorial"))).toBe(true);
   });

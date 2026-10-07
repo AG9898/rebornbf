@@ -26,11 +26,14 @@ export const MENU_TILES: readonly MenuTile[] = [
   { label: "Record", art: "menu/menu_archive_btn", href: null },
 ];
 
-/** The red News button in the title bar (`sub_s_r_btn` with the `notice_btn_label` overlay). */
+/**
+ * The red News button in the title bar (`sub_s_r_btn` with the `notice_btn_label` overlay). It
+ * opens Info with `?from=menu`, so the window's Close returns to the Menu (M8-13).
+ */
 export const MENU_NEWS = {
   base: "common/button/sub_s_r_btn",
   art: "menu/notice_btn_label",
-  href: "/news",
+  href: "/news?from=menu",
 } as const;
 
 /** BFR-only links kept under the grid on kit `sub_m_btn` buttons. */

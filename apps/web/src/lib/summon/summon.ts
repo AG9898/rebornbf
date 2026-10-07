@@ -2,6 +2,7 @@ import { type Banner, BannerSchema, RATE_TOTAL_BP, type Rarity } from "@bfr/data
 import launchSummon from "@bfr/data/content/banners/launch-summon.json";
 import { formArtFile, rarityLabel, unitContent } from "../units/owned-units.ts";
 import type { SummonCount, SummonTreatment } from "./constants.ts";
+import { SUMMON_BANNER_ART, type SummonBannerArt } from "./summon-screen.ts";
 
 export * from "./constants.ts";
 
@@ -12,13 +13,9 @@ export function isSummonCount(value: unknown): value is SummonCount {
 /** The banners on the summon screen, in carousel order. Launch has one (M5-01B). */
 export const SUMMON_BANNERS: readonly Banner[] = [BannerSchema.parse(launchSummon)];
 
-/** Each banner's key art piece (RESOLVED-86: one illustration per summon batch). */
-const BANNER_ART: Readonly<Record<string, "summon-banner-launch">> = {
-  "launch-summon": "summon-banner-launch",
-};
-
-export function bannerArt(bannerId: string): "summon-banner-launch" | null {
-  return BANNER_ART[bannerId] ?? null;
+/** Each banner's original banner and door art (M8-11; summon-screen.ts). */
+export function bannerArt(bannerId: string): SummonBannerArt | null {
+  return SUMMON_BANNER_ART[bannerId] ?? null;
 }
 
 export function summonBanner(bannerId: string): Banner | undefined {
@@ -69,7 +66,7 @@ export function featuredNames(banner: Banner): string[] {
 export type SummonBannerView = {
   id: string;
   name: string;
-  art: "summon-banner-launch" | null;
+  art: SummonBannerArt | null;
   featured: string[];
   rates: BannerRateRow[];
   pityLimit: number;

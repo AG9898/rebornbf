@@ -183,7 +183,7 @@ export function UnitDetail({
   );
 }
 
-/** Shared with Equip Sphere; the screen kit supplies the one Back button and title plate. */
+/** Unit Info's title bar; the screen kit supplies the one Back button and title plate. */
 export function UnitTitleBar({
   unit,
   backHref,

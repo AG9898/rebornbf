@@ -1,15 +1,16 @@
 /*
- * Summon screen and sequence (legacy/ART_GUIDE_BFR.md → Summon screen, gate, and reveal). Sizes are logical px
- * (--u); pieces are exported at 2x. `.page` stays unpositioned so `.stage`, the loading glyph,
- * and `.modal` (position: absolute) cover the whole menu column, status bar and nav included.
+ * Summon screen (M8-11; ART_GUIDE -> UI -> Summon) and BFR's summon sequence. Logical px (--u).
+ * The banner art is placed in page coordinates (screen y less 164); everything in `.body` uses
+ * screen y less 304 (164 px header + 140 px title bar), from art/original/layouts/summon.json and
+ * summon_confirm.json. `.shell` stays unpositioned so `.stage`, the loading glyph, and `.modal`
+ * (position: absolute) cover the whole menu column, header and footer included.
  */
 
-.page {
+.shell {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  background: #2b2412 url("/assets/ui/bg-summon.webp") center top / cover no-repeat;
 }
 
 .fill {
@@ -19,7 +20,7 @@
   height: 100%;
 }
 
-/* App text over UI art: menu font, outlined; --stroke scales the outline with the text. */
+/* App text over BFR's sequence art: menu font, outlined; --stroke scales the outline. */
 .outline {
   --stroke: 4;
   color: #fff;
@@ -29,19 +30,7 @@
   line-height: 1;
 }
 
-/* ---------- Title bar ---------- */
-
-.titleBar {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 6);
-  height: calc(var(--u) * 74);
-  padding-inline: calc(var(--u) * 8);
-  background: linear-gradient(rgb(20 14 4 / 0.55), rgb(20 14 4 / 0.2));
-  box-shadow: 0 calc(var(--u) * 2) 0 rgb(0 0 0 / 0.35);
-}
-
+/* BFR's pill buttons, used only by the summon sequence until the SAM player (M8-21). */
 .pill {
   flex: none;
   display: flex;
@@ -56,110 +45,8 @@
   cursor: pointer;
 }
 
-.pill:hover,
 .pill:focus-visible {
   background-image: url("/assets/ui/btn-pill-lit.webp");
-}
-
-.backButton {
-  width: calc(var(--u) * 86);
-}
-
-.titlePlate {
-  position: relative;
-  flex: none;
-  width: calc(var(--u) * 334);
-  aspect-ratio: 640 / 111;
-}
-
-.titleText {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  padding-left: calc(var(--u) * 8);
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.titleText h1 {
-  font-size: calc(var(--u) * 26);
-  font-weight: 400;
-}
-
-/* ---------- Banner and info panel ---------- */
-
-.body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-bottom: calc(var(--u) * 16);
-}
-
-.banner {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1280 / 853;
-  box-shadow: 0 calc(var(--u) * 4) calc(var(--u) * 12) rgb(0 0 0 / 0.6);
-}
-
-.bannerArt {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.bannerTitle {
-  position: absolute;
-  top: calc(var(--u) * 18);
-  inset-inline: 0;
-  text-align: center;
-  font-size: calc(var(--u) * 52);
-  font-weight: 400;
-  background: linear-gradient(#fff6c8 10%, #f6c342 45%, #c9811c 75%, #fbe39a 100%);
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 calc(var(--u) * 3) 0 #3a1c05) drop-shadow(0 0 calc(var(--u) * 3) #3a1c05);
-}
-
-.arrowLeft,
-.arrowRight {
-  position: absolute;
-  top: 45%;
-  width: calc(var(--u) * 52);
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-}
-
-.arrowLeft {
-  left: calc(var(--u) * 8);
-}
-
-.arrowRight {
-  right: calc(var(--u) * 8);
-  transform: scaleX(-1);
-}
-
-.arrowLeft img,
-.arrowRight img {
-  width: 100%;
-  height: auto;
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--u) * 10);
-  margin: calc(var(--u) * -28) calc(var(--u) * 20) 0;
-  padding: calc(var(--u) * 30) calc(var(--u) * 34) calc(var(--u) * 26);
-  position: relative;
-  background: url("/assets/ui/summon-panel.webp") center / 100% 100% no-repeat;
-  font-size: calc(var(--u) * 20);
-  line-height: 1.3;
-  text-align: center;
-  color: #f4ead2;
 }
 
 .panelTitle {
@@ -168,82 +55,233 @@
   color: #fff;
 }
 
-.featured {
-  color: #fbe39a;
+.closeButton {
+  width: calc(var(--u) * 120);
 }
 
-.small {
-  font-size: calc(var(--u) * 16);
-  color: #cfc3a4;
+/* Highlight colours in the original's description text. */
+.gold {
+  color: #ffd84a;
 }
 
-.gemLine strong {
-  color: #8fe3ff;
-  font-weight: 400;
+.yellow {
+  color: #f6e64a;
 }
 
-.buttons {
-  display: flex;
-  gap: calc(var(--u) * 14);
+.mint {
+  color: #78e6b8;
 }
 
-.summonButton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(var(--u) * 4);
-  width: calc(var(--u) * 230);
-  height: calc(var(--u) * 92);
-  border: 0;
-  background: url("/assets/ui/btn-hub.webp") center / 100% 100% no-repeat;
-  font: inherit;
-  font-size: calc(var(--u) * 26);
-  cursor: pointer;
+/* ---------- Banner page (screen layout: layouts/summon.json) ---------- */
+
+/* The 640x632 banner from screen y 220, under the title bar (page y 56). */
+.bannerArt.bannerArt {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 56);
+  width: calc(var(--u) * 640);
+  height: calc(var(--u) * 632);
+  pointer-events: none;
 }
 
-.summonButton:hover:not(:disabled),
-.summonButton:focus-visible {
-  filter: brightness(1.15);
+/* The body is a fixed 680 px stage (screen y 304-984); nothing scrolls. */
+.body.body {
+  overflow: hidden;
 }
 
-.summonButton:disabled {
-  filter: grayscale(0.7) brightness(0.7);
-  cursor: default;
+.bannerPage {
+  position: absolute;
+  inset: 0;
 }
 
-.ticketButton {
-  width: calc(var(--u) * 474);
+/* "1/1" at screen (26, 316). */
+.pageCounter {
+  position: absolute;
+  left: calc(var(--u) * 26);
+  top: calc(var(--u) * 12);
+  margin: 0;
+  font-size: calc(var(--u) * 34);
+  line-height: 1;
 }
 
-.cost {
-  --stroke: 3;
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 4);
-  font-size: calc(var(--u) * 20);
-}
-
-.gemIcon {
-  width: calc(var(--u) * 24);
-  height: auto;
-}
-
-.alert {
-  color: #ff9a8a;
-}
-
-.ratesLink {
+.arrow {
+  position: absolute;
+  top: calc(var(--u) * 210);
+  width: calc(var(--u) * 40);
+  height: calc(var(--u) * 80);
+  padding: 0;
   border: 0;
   background: none;
-  font: inherit;
-  font-size: calc(var(--u) * 18);
-  color: #8fd0ff;
-  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.arrowLeft {
+  left: calc(var(--u) * 36);
+}
+
+.arrowRight {
+  left: calc(var(--u) * 564);
+}
+
+/* The gold Summon button at screen (226, 636), 188x80. */
+.bannerSummon.bannerSummon {
+  position: absolute;
+  left: calc(var(--u) * 226);
+  top: calc(var(--u) * 332);
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 80);
+}
+
+/* A system window with the original's gold flourishes (screen deco offsets -2, -3 and -7, -11). */
+.decoratedFill.decoratedFill {
+  position: absolute;
+  inset: 0;
+}
+
+.decoTopLeft.decoTopLeft,
+.decoBottomRight.decoBottomRight {
+  position: absolute;
+  width: calc(var(--u) * 61);
+  height: calc(var(--u) * 63);
+  pointer-events: none;
+}
+
+.decoTopLeft.decoTopLeft {
+  left: calc(var(--u) * -2);
+  top: calc(var(--u) * -3);
+}
+
+.decoBottomRight.decoBottomRight {
+  right: calc(var(--u) * -7);
+  bottom: calc(var(--u) * -11);
+}
+
+/* The description frame at screen (36, 729), 568x158. */
+.descWindow {
+  position: absolute;
+  left: calc(var(--u) * 36);
+  top: calc(var(--u) * 425);
+  width: calc(var(--u) * 568);
+  height: calc(var(--u) * 158);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.descText {
+  position: relative;
+  margin: 0;
+  padding: 0 calc(var(--u) * 34);
+  font-size: calc(var(--u) * 23);
+  line-height: 1.3;
+  text-align: center;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+/* ---------- Confirm window (screen layout: layouts/summon_confirm.json) ---------- */
+
+/* The banner's door at 0.94 scale, screen (127, 320). */
+.door.door {
+  position: absolute;
+  left: calc(var(--u) * 127);
+  top: calc(var(--u) * 16);
+  width: calc(var(--u) * 391);
+  height: calc(var(--u) * 572);
+  pointer-events: none;
+}
+
+/* The window at screen (36, 348), 568x519; children are in window coordinates. */
+.confirmWindow {
+  position: absolute;
+  left: calc(var(--u) * 36);
+  top: calc(var(--u) * 44);
+  width: calc(var(--u) * 568);
+  height: calc(var(--u) * 519);
+}
+
+.confirmTitle,
+.confirmIntro,
+.confirmCost,
+.confirmCount {
+  position: absolute;
+  left: calc(var(--u) * 24);
+  right: calc(var(--u) * 24);
+  margin: 0;
+  text-align: center;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+/* The banner name, centred on screen y 404. */
+.confirmTitle {
+  top: calc(var(--u) * 32);
+  font-size: calc(var(--u) * 34);
+  line-height: calc(var(--u) * 48);
+  white-space: nowrap;
+}
+
+.confirmIntro {
+  top: calc(var(--u) * 92);
+  font-size: calc(var(--u) * 23);
+  line-height: 1.3;
+}
+
+/* Cost lines from screen y 588 (the recording's "Summon once for ..." sits at 625). */
+.confirmCost {
+  top: calc(var(--u) * 240);
+  font-size: calc(var(--u) * 23);
+  line-height: calc(var(--u) * 35);
+}
+
+/* "You can summon N time(s)." centred on screen y 720. */
+.confirmCount {
+  top: calc(var(--u) * 354);
+  font-size: calc(var(--u) * 23);
+  line-height: calc(var(--u) * 36);
+}
+
+/* The free-ticket option replaces the summon count while a ticket is held. */
+.ticket.ticket {
+  position: absolute;
+  left: calc(var(--u) * 90);
+  top: calc(var(--u) * 348);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 14);
+  height: calc(var(--u) * 66);
   cursor: pointer;
 }
 
-/* ---------- Overlays (cover the whole column) ---------- */
+.ticketArt.ticketArt {
+  width: calc(var(--u) * 66);
+  height: calc(var(--u) * 66);
+}
+
+.ticketText {
+  font-size: calc(var(--u) * 22);
+  line-height: 1.25;
+  text-align: left;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+/* Summon (gold) at screen (84, 770) and Multi Summon (silver) at (369, 770), 188x80. */
+.confirmSingle.confirmSingle,
+.confirmMulti.confirmMulti {
+  position: absolute;
+  top: calc(var(--u) * 422);
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 80);
+}
+
+.confirmSingle.confirmSingle {
+  left: calc(var(--u) * 48);
+}
+
+.confirmMulti.confirmMulti {
+  left: calc(var(--u) * 333);
+}
+
+/* ---------- Rates (covers the whole column) ---------- */
 
 .modal {
   position: absolute;
@@ -255,18 +293,19 @@
   background: rgb(0 0 0 / 0.55);
 }
 
-.ratesPanel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--u) * 12);
-  width: calc(var(--u) * 560);
+.ratesWindow.ratesWindow {
+  width: calc(var(--u) * 580);
   max-height: 80%;
   overflow-y: auto;
-  padding: calc(var(--u) * 30);
-  background: url("/assets/ui/summon-panel.webp") center / 100% 100% no-repeat;
-  color: #f4ead2;
-  font-size: calc(var(--u) * 19);
+  color: #fff;
+  font-size: calc(var(--u) * 20);
+}
+
+.ratesTitle {
+  margin: 0 0 calc(var(--u) * 10);
+  font-size: calc(var(--u) * 28);
+  text-align: center;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
 }
 
 .rates {
@@ -287,8 +326,18 @@
   text-align: right;
 }
 
-.closeButton {
-  width: calc(var(--u) * 120);
+.ratesNote {
+  margin: calc(var(--u) * 10) 0;
+  font-size: calc(var(--u) * 16);
+  color: #d6d0c0;
+  text-align: center;
+}
+
+.ratesClose.ratesClose {
+  display: block;
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+  margin: 0 auto;
 }
 
 /* ---------- Summon sequence ---------- */

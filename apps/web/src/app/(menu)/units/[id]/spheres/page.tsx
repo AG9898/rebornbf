@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import menu from "../../../../../components/menu/menu.module.css";
+import kit from "../../../../../components/menu/kit.module.css";
 import { SIGN_IN_PATH } from "../../../../../lib/supabase/routes.ts";
 import { createSupabaseServerClient } from "../../../../../lib/supabase/server.ts";
 import {
@@ -18,17 +18,15 @@ import {
   UNIT_SPHERE_COLUMNS,
   type UnitSphereRow,
 } from "../../../../../lib/units/spheres.ts";
-import styles from "../../units.module.css";
-import { UnitTitleBar } from "../UnitDetail.tsx";
 import { SphereEquip } from "./SphereEquip.tsx";
 
 export const metadata: Metadata = { title: "Equip Sphere · BFR" };
 
 /**
- * The Equip Sphere screen (M4-06J; legacy/ART_GUIDE_BFR.md → UI → Equip Sphere): the unit detail's title bar, the
- * unit's sphere sockets (the second only once unlocked, M4-04D), and the player's owned spheres.
- * The unit, its equipment, and the spheres are read under RLS; changes go through `equip_sphere`
- * (M4-04A) in a Server Action. Protected by `src/proxy.ts`.
+ * The Equip Sphere screen (M4-06J, rebuilt from original pieces in M8-09; ART_GUIDE → UI → Equip
+ * Sphere): the unit's unlocked sphere slots (the second only once unlocked, M4-04D) and the
+ * player's owned spheres. The unit, its equipment, and the spheres are read under RLS; changes go
+ * through `equip_sphere` (M4-04A) in a Server Action. Protected by `src/proxy.ts`.
  */
 export default async function EquipSpherePage({
   params,
@@ -71,21 +69,21 @@ export default async function EquipSpherePage({
   );
 
   const unit = toUnitDetailView(row);
+  const stars =
+    unit.rarity === null ? "" : ` ${"★".repeat(unit.rarity === "omni" ? 7 : unit.rarity)}`;
   return (
-    <div className={styles.detailPage} data-element={unit.element ?? undefined}>
-      <UnitTitleBar unit={unit} backHref={`/units/${id}`} />
-      {failed ? (
-        <div className={styles.equipBody}>
-          <p className={styles.detailNote}>Your spheres could not be loaded. Try again later.</p>
-        </div>
-      ) : (
-        <SphereEquip
-          unitId={id}
-          sockets={sockets}
-          spheres={ownedSphereEntries(id, equipment, owned)}
-        />
-      )}
-      <p className={menu.ticker}>Select a sphere slot, then a sphere to equip.</p>
+    <div className={kit.page}>
+      <SphereEquip
+        unitId={id}
+        unit={{
+          name: unit.name,
+          subtitle: `${unit.name}${stars}`,
+          thumb: unit.thumb,
+          element: unit.element,
+        }}
+        sockets={sockets}
+        spheres={failed ? null : ownedSphereEntries(id, equipment, owned)}
+      />
     </div>
   );
 }

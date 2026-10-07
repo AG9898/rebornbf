@@ -13,7 +13,9 @@
   height: calc(var(--u) * 680);
 }
 
-.tile {
+/* Doubled so it beats kit.module.css's `.button { position: relative }` in any stylesheet order:
+   a client navigation from a page that loads the kit later (Info) re-inserts it after this one. */
+.tile.tile {
   position: absolute;
   width: calc(var(--u) * 180);
   height: calc(var(--u) * 156);

@@ -58,3 +58,41 @@ export function restoreItemSlots(
 export function itemLoadoutKey(userId: string, slot: number): string {
   return `bfr:item-loadout:${userId}:${slot}`;
 }
+
+export type ItemSlots = (LoadoutEntry | null)[];
+
+function ownedCount(stock: readonly ItemStock[], itemId: string): number {
+  return Number(stock.find((row) => row.item_id === itemId)?.count ?? 0);
+}
+
+/** The most of an item one slot can carry: what the player owns, at most 10. */
+export function slotMax(stock: readonly ItemStock[], itemId: string): number {
+  return Math.min(10, ownedCount(stock, itemId));
+}
+
+/** Manage Items' Fill Up (M8-10_1): every filled slot carries as many as it can. */
+export function fillUpSlots(slots: ItemSlots, stock: readonly ItemStock[]): ItemSlots {
+  return slots.map((entry) =>
+    entry && slotMax(stock, entry.item) > 0
+      ? { item: entry.item, count: slotMax(stock, entry.item) }
+      : null,
+  );
+}
+
+/** Owned battle items a slot may take: not already in another slot (one slot per item). */
+export function slotChoices(
+  slots: ItemSlots,
+  stock: readonly ItemStock[],
+  editing: number,
+): typeof BATTLE_ITEMS {
+  return BATTLE_ITEMS.filter(
+    (item) =>
+      ownedCount(stock, item.id) > 0 &&
+      !slots.some((entry, index) => index !== editing && entry?.item === item.id),
+  );
+}
+
+/** Slots with `index` set to `entry`, as the remembered loadout stores them. */
+export function setSlot(slots: ItemSlots, index: number, entry: LoadoutEntry | null): ItemSlots {
+  return slots.map((current, i) => (i === index ? entry : current));
+}

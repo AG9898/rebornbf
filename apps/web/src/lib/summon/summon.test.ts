@@ -36,7 +36,10 @@ describe("launch banner", () => {
 
   it("has key art and lists every form with its rate, featured first", () => {
     expect(banner?.id).toBe("launch-summon");
-    expect(bannerArt("launch-summon")).toBe("summon-banner-launch");
+    expect(bannerArt("launch-summon")).toEqual({
+      banner: "gacha/gacha_rare_bg_img.png",
+      door: "gacha/gacha_rare_door.png",
+    });
     expect(bannerArt("unknown")).toBeNull();
     if (!banner) return;
     const rates = bannerRates(banner);

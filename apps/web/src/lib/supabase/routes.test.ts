@@ -35,6 +35,14 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/conclaves")).toBe(false);
   });
 
+  it("protects the Items screens (M8-10)", () => {
+    expect(isProtectedPath("/items")).toBe(true);
+    expect(isProtectedPath("/items/list")).toBe(true);
+    expect(isProtectedPath("/itemsx")).toBe(false);
+    expect(isProtectedPath("/gifts")).toBe(true);
+    expect(isProtectedPath("/gifts/presents")).toBe(true);
+  });
+
   it("protects Reinforcement and Begin Quest without matching unrelated prefixes", () => {
     expect(isProtectedPath("/start/story-01")).toBe(true);
     expect(isProtectedPath("/start/story-01/begin")).toBe(true);

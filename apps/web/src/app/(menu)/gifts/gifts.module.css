@@ -1,0 +1,160 @@
+/*
+ * Gifts screens (M8-12; ART_GUIDE -> UI -> Gifts). Logical px (--u); positions are the screen
+ * positions in art/original/layouts/gifts.json and gifts_presents.json less 304 (164 px header +
+ * 140 px title bar).
+ */
+
+/* ---------- Rewards: main_s_btn at x 27 + 201 i, y 326 / 503 / 666 ---------- */
+
+.grid {
+  position: relative;
+  height: calc(var(--u) * 540);
+}
+
+.reward.reward {
+  position: absolute;
+}
+
+.smallCaption {
+  font-size: calc(var(--u) * 27);
+  white-space: nowrap;
+}
+
+.row0 {
+  top: calc(var(--u) * 22);
+}
+
+.row1 {
+  top: calc(var(--u) * 199);
+}
+
+.row2 {
+  top: calc(var(--u) * 362);
+}
+
+.col0 {
+  left: calc(var(--u) * 27);
+}
+
+.col1 {
+  left: calc(var(--u) * 228);
+}
+
+.col2 {
+  left: calc(var(--u) * 429);
+}
+
+/* ---------- Present Box: list_frame1 rows stepped 120, frame origin F = 294 + 120 k ---------- */
+
+.form {
+  display: contents;
+}
+
+/* Receive All over the kit's sub_s_btn (the title action box sits at screen 434, 219). */
+.receiveAll {
+  display: block;
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+}
+
+.list {
+  margin: 0;
+  padding: calc(var(--u) * 10) 0 calc(var(--u) * 20);
+  list-style: none;
+}
+
+/* Each row is 120 tall; the 640x150 frame starts 20 above it (its transparent margin). */
+.row {
+  position: relative;
+  height: calc(var(--u) * 120);
+}
+
+.rowFrame,
+.thumb,
+.separator,
+.date,
+.name,
+.note,
+.received {
+  position: absolute;
+  pointer-events: none;
+}
+
+.rowFrame {
+  left: 0;
+  top: calc(var(--u) * -20);
+}
+
+/* Thumb (item_frame_bg, gem or ticket, item_frame_0) at (20, F + 24). */
+.thumb {
+  left: calc(var(--u) * 20);
+  top: calc(var(--u) * 4);
+}
+
+/* The claim date over the thumb's top edge, as the original's ins_date (8, F + 15). */
+.date {
+  left: calc(var(--u) * 8);
+  top: calc(var(--u) * -4);
+  width: calc(var(--u) * 126);
+  font-size: calc(var(--u) * 19);
+  line-height: calc(var(--u) * 25);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.name,
+.note {
+  left: calc(var(--u) * 129);
+  width: calc(var(--u) * 369);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  top: calc(var(--u) * 4);
+  font-size: calc(var(--u) * 26);
+  line-height: calc(var(--u) * 34);
+}
+
+/* The gold separator cropped from list_frame0, at (123, F + 53). */
+.separator {
+  left: calc(var(--u) * 123);
+  top: calc(var(--u) * 33);
+}
+
+.note {
+  top: calc(var(--u) * 50);
+  font-size: calc(var(--u) * 22);
+  line-height: calc(var(--u) * 42);
+}
+
+/* Receive (sub_square1_btn + gift_do_recieve_btn_label, 112x90) at (504, F + 31). */
+.receive.receive {
+  position: absolute;
+  left: calc(var(--u) * 504);
+  top: calc(var(--u) * 11);
+  width: calc(var(--u) * 112);
+  height: calc(var(--u) * 90);
+}
+
+.received {
+  left: calc(var(--u) * 504);
+  top: calc(var(--u) * 11);
+  width: calc(var(--u) * 112);
+  font-size: calc(var(--u) * 22);
+  line-height: calc(var(--u) * 90);
+  text-align: center;
+}
+
+/* Doubled so they beat kit.text's stroke and white in any stylesheet order. */
+.date.date,
+.name.name,
+.note.note,
+.received.received {
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+.received.received {
+  color: #cbb98a;
+}

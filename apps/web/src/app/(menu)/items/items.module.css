@@ -1,0 +1,446 @@
+/*
+ * Items screens (M8-10; ART_GUIDE -> UI -> Items). Logical px (--u); positions are the screen
+ * positions in art/original/layouts/items.json and items_list.json less 304 (164 px header +
+ * 140 px title bar).
+ */
+
+/* The town backdrop from screen y 64 (page top is y 164), dimmed as the original dims it. */
+.town.town {
+  background:
+    linear-gradient(rgb(6 10 24 / 0.7), rgb(6 10 24 / 0.7)),
+    #0c1220 url("/assets/original/mytown_top/mytown_base.jpg") 0 calc(var(--u) * -100) / 100% auto
+    no-repeat;
+}
+
+/* All Items keeps the town a little brighter behind the grid. */
+.town.townList {
+  background:
+    linear-gradient(rgb(6 10 24 / 0.55), rgb(6 10 24 / 0.55)),
+    #0c1220 url("/assets/original/mytown_top/mytown_base.jpg") 0 calc(var(--u) * -100) / 100% auto
+    no-repeat;
+}
+
+/* ---------- Item menu: 2x2 main_l_btn at x 40 / 340, y 370 + 168 ---------- */
+
+.menuBoard {
+  position: relative;
+  height: calc(var(--u) * 420);
+}
+
+.menuButton {
+  position: absolute;
+  width: calc(var(--u) * 260);
+  height: calc(var(--u) * 156);
+}
+
+.menuRow0 {
+  top: calc(var(--u) * 66);
+}
+
+.menuRow1 {
+  top: calc(var(--u) * 234);
+}
+
+.menuCol0 {
+  left: calc(var(--u) * 40);
+}
+
+.menuCol1 {
+  left: calc(var(--u) * 340);
+}
+
+/* ---------- All Items: 102 px thumbs at x 16 + 126 i, y 300 + 113 per row ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, calc(var(--u) * 102));
+  grid-auto-rows: calc(var(--u) * 113);
+  column-gap: calc(var(--u) * 24);
+  margin: calc(var(--u) * -4) 0 0;
+  padding: 0 0 calc(var(--u) * 12) calc(var(--u) * 16);
+  list-style: none;
+}
+
+.cell {
+  position: relative;
+  display: block;
+  width: calc(var(--u) * 102);
+  height: calc(var(--u) * 113);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thumb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--u) * 102);
+  height: calc(var(--u) * 102);
+}
+
+.thumb > .icon {
+  position: absolute;
+  left: calc(var(--u) * 13);
+  top: calc(var(--u) * 13);
+  width: calc(var(--u) * 76);
+  height: calc(var(--u) * 76);
+}
+
+.count {
+  position: absolute;
+  right: calc(var(--u) * 6);
+  top: calc(var(--u) * -1);
+  font-size: calc(var(--u) * 27);
+  line-height: 1.1;
+}
+
+.name {
+  position: absolute;
+  left: calc(var(--u) * -12);
+  right: calc(var(--u) * -12);
+  top: calc(var(--u) * 80);
+  overflow: hidden;
+  font-size: calc(var(--u) * 20);
+  line-height: calc(var(--u) * 26);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ---------- Item detail window ---------- */
+
+.detailCover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.detail {
+  position: absolute;
+  left: calc(var(--u) * 30);
+  top: calc(var(--u) * 120);
+  width: calc(var(--u) * 580);
+  min-height: calc(var(--u) * 360);
+}
+
+.detailBody {
+  position: relative;
+  min-height: calc(var(--u) * 330);
+  padding: calc(var(--u) * 17) calc(var(--u) * 22) calc(var(--u) * 96);
+  color: #fff;
+}
+
+.detailBody > .thumb {
+  left: calc(var(--u) * 17);
+  top: calc(var(--u) * 17);
+}
+
+.detailName,
+.detailKind {
+  margin: 0 0 0 calc(var(--u) * 116);
+}
+
+.detailName {
+  font-size: calc(var(--u) * 32);
+  line-height: calc(var(--u) * 44);
+}
+
+.detailKind {
+  font-size: calc(var(--u) * 22);
+  line-height: calc(var(--u) * 34);
+  color: #ffe9a8;
+}
+
+.detailText {
+  margin: calc(var(--u) * 40) 0 0;
+  font-size: calc(var(--u) * 24);
+  line-height: 1.35;
+}
+
+.detail .detailClose {
+  position: absolute;
+  left: calc(var(--u) * 196);
+  bottom: calc(var(--u) * 20);
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+}
+
+/* A held cell brightens its thumb; buttons with paired art swap by opacity instead. */
+.cell:active .thumb {
+  filter: brightness(1.25);
+}
+
+/* ---------- Manage Items (M8-10_1; layouts/items_manage.json less 304) ---------- */
+
+/* The CSV's frame band sits 68 px under the current title bar, its buttons 178 px lower. */
+.manageStage {
+  position: relative;
+  height: calc(var(--u) * 680);
+  overflow: hidden;
+}
+
+.squadRow {
+  position: absolute;
+  left: calc(var(--u) * 150);
+  top: calc(var(--u) * 10);
+  width: calc(var(--u) * 340);
+  height: calc(var(--u) * 80);
+}
+
+.squadArrow {
+  position: absolute;
+  top: 0;
+  width: calc(var(--u) * 40);
+  height: calc(var(--u) * 80);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.squadArrow:active {
+  filter: brightness(1.3);
+}
+
+.squadArrowL {
+  left: 0;
+}
+
+.squadArrowR {
+  right: 0;
+}
+
+.squadName {
+  position: absolute;
+  left: calc(var(--u) * 40);
+  right: calc(var(--u) * 40);
+  top: 0;
+  font-size: calc(var(--u) * 32);
+  line-height: calc(var(--u) * 80);
+  text-align: center;
+}
+
+.equipCaption {
+  position: absolute;
+  left: calc(var(--u) * 16);
+  top: calc(var(--u) * 62);
+}
+
+/* item_frame_edit (644 x 150) over its dark backing at screen (0, 421). */
+.slotFrame {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 117);
+  width: calc(var(--u) * 644);
+  height: calc(var(--u) * 150);
+}
+
+/* Slots: 98 px at screen x 23 / 149 / 271 / 397 / 518, y 446 (layout_item_edit_top.csv). */
+.slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slots > li {
+  position: absolute;
+  top: calc(var(--u) * 142);
+  width: calc(var(--u) * 98);
+  height: calc(var(--u) * 98);
+}
+
+.slot0 {
+  left: calc(var(--u) * 23);
+}
+
+.slot1 {
+  left: calc(var(--u) * 149);
+}
+
+.slot2 {
+  left: calc(var(--u) * 271);
+}
+
+.slot3 {
+  left: calc(var(--u) * 397);
+}
+
+.slot4 {
+  left: calc(var(--u) * 518);
+}
+
+.slot {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.slot:active {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.slot > .slotIcon {
+  position: absolute;
+  left: calc(var(--u) * 11);
+  top: calc(var(--u) * 11);
+  width: calc(var(--u) * 76);
+  height: calc(var(--u) * 76);
+}
+
+.slotCount {
+  position: absolute;
+  right: calc(var(--u) * 2);
+  bottom: calc(var(--u) * -2);
+  font-size: calc(var(--u) * 27);
+  line-height: 1.1;
+}
+
+.slotName {
+  position: absolute;
+  left: calc(var(--u) * -14);
+  right: calc(var(--u) * -14);
+  top: calc(var(--u) * 132);
+  overflow: hidden;
+  font-size: calc(var(--u) * 20);
+  line-height: calc(var(--u) * 26);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* sub_m_btn (204 x 84) with item_edit labels at screen (70 / 366, 727) and (70 / 369, 857). */
+.manageStage > .manageButton {
+  position: absolute;
+  display: block;
+  width: calc(var(--u) * 204);
+  height: calc(var(--u) * 84);
+}
+
+.manageButton0 {
+  left: calc(var(--u) * 70);
+  top: calc(var(--u) * 423);
+}
+
+.manageButton1 {
+  left: calc(var(--u) * 366);
+  top: calc(var(--u) * 423);
+}
+
+.manageButton2 {
+  left: calc(var(--u) * 70);
+  top: calc(var(--u) * 553);
+}
+
+.manageButton3 {
+  left: calc(var(--u) * 369);
+  top: calc(var(--u) * 553);
+}
+
+/* ---------- Slot picker (system window) ---------- */
+
+.picker {
+  position: absolute;
+  left: calc(var(--u) * 10);
+  top: calc(var(--u) * 40);
+  width: calc(var(--u) * 620);
+}
+
+.pickerBody {
+  padding: calc(var(--u) * 18) calc(var(--u) * 20) calc(var(--u) * 20);
+  color: #fff;
+}
+
+.pickerTitle {
+  margin: 0 0 calc(var(--u) * 12);
+  font-size: calc(var(--u) * 32);
+  line-height: calc(var(--u) * 44);
+  text-align: center;
+}
+
+.pickerNote,
+.pickText {
+  margin: 0;
+  font-size: calc(var(--u) * 24);
+  line-height: 1.35;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(5, calc(var(--u) * 102));
+  grid-auto-rows: calc(var(--u) * 110);
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  position: relative;
+  display: block;
+  width: calc(var(--u) * 102);
+  height: calc(var(--u) * 102);
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--u) * 10);
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.choice[aria-pressed="true"] {
+  box-shadow: 0 0 0 calc(var(--u) * 4) #ffd84a;
+}
+
+.choice:active .thumb {
+  filter: brightness(1.25);
+}
+
+.pickDetail {
+  margin-top: calc(var(--u) * 10);
+}
+
+.pickName {
+  margin: 0;
+  font-size: calc(var(--u) * 30);
+  line-height: calc(var(--u) * 42);
+}
+
+.countRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: calc(var(--u) * 14);
+}
+
+.countRow > * {
+  width: calc(var(--u) * 112);
+  height: calc(var(--u) * 42);
+}
+
+.countRow > .countValue {
+  width: calc(var(--u) * 100);
+  height: auto;
+  font-size: calc(var(--u) * 36);
+  text-align: center;
+}
+
+.pickerButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: calc(var(--u) * 22);
+}
+
+.pickerButtons > *,
+.pickerSpacer {
+  display: block;
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+}
+
+.selectButton.selectButton:disabled {
+  cursor: default;
+  filter: grayscale(0.6) brightness(0.8);
+}
