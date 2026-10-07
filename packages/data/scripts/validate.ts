@@ -1,11 +1,15 @@
 // Content validation entry point: parses every file in content/ against its zod schema.
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { type Batch, BatchSchema } from "../src/schemas/batch.ts";
 import { type Enemy, EnemySchema } from "../src/schemas/enemy.ts";
 import { type Stage, StageSchema } from "../src/schemas/stage.ts";
 import { type Unit, UnitSchema } from "../src/schemas/unit.ts";
 import {
+  formatIssues,
+  obtainableUnitIds,
   validateBannerFile,
+  validateBatches,
   validateDropRefs,
   validateDungeons,
   validateEnemyFile,
@@ -27,6 +31,7 @@ import {
 const contentDir = join(import.meta.dirname, "..", "content");
 
 function jsonFiles(dir: string): string[] {
+  if (!existsSync(join(contentDir, dir))) return [];
   return readdirSync(join(contentDir, dir))
     .filter((name) => name.endsWith(".json"))
     .sort()
@@ -58,14 +63,47 @@ validateDir("units", (file, json) => {
   return validateUnitFile(file, json);
 });
 validateDir("items", validateItemFile);
-// Evolution recipes reference material units and items by file name.
-const unitIds = new Set(jsonFiles("units").map((file) => file.slice("units/".length, -5)));
-const itemIds = new Set(jsonFiles("items").map((file) => file.slice("items/".length, -5)));
+// Imported original content (UNIT_ROADMAP): units and items, and the batches that release them.
+const originalUnits = new Map<string, Unit>();
+validateDir("original/units", (file, json) => {
+  const parsed = UnitSchema.safeParse(json);
+  if (parsed.success) originalUnits.set(parsed.data.id, parsed.data);
+  return validateUnitFile(file, json);
+});
+validateDir("original/items", validateItemFile);
+const batches: Batch[] = [];
+validateDir("original/batches", (file, json) => {
+  const parsed = BatchSchema.safeParse(json);
+  if (!parsed.success) return formatIssues(file, parsed.error.issues);
+  batches.push(parsed.data);
+  const expected = file.replace(/^.*\//, "").replace(/\.json$/, "");
+  return parsed.data.id === expected ? [] : [`${file}: id: must match the file name "${expected}"`];
+});
+const idsIn = (dir: string) => jsonFiles(dir).map((file) => file.slice(dir.length + 1, -5));
+const legacyUnitIds = new Set(idsIn("units"));
+for (const id of idsIn("original/units")) {
+  if (legacyUnitIds.has(id)) errors.push(`original/units/${id}.json: id: also a unit in units/`);
+}
+for (const id of idsIn("original/items")) {
+  if (idsIn("items").includes(id))
+    errors.push(`original/items/${id}.json: id: also an item in items/`);
+}
+errors.push(...validateBatches(batches, originalUnits, legacyUnitIds));
+// Other content may name launch units, imported materials, and released batches' characters only.
+const unitIds = obtainableUnitIds(legacyUnitIds, originalUnits, batches);
+const itemIds = new Set([...idsIn("items"), ...idsIn("original/items")]);
+// Evolution recipes may name any imported unit or item.
+const recipeUnitIds = new Set([...legacyUnitIds, ...originalUnits.keys()]);
 validateDir("guests", (file, json) => validateGuestFile(file, json, unitIds));
 validateDir("spheres", (file, json) => validateSphereFile(file, json, unitIds));
 const sphereIds = new Set(jsonFiles("spheres").map((file) => file.slice("spheres/".length, -5)));
 for (const unit of units) {
   errors.push(...validateEvolutionRefs(`units/${unit.id}.json`, unit, unitIds, itemIds));
+}
+for (const unit of originalUnits.values()) {
+  errors.push(
+    ...validateEvolutionRefs(`original/units/${unit.id}.json`, unit, recipeUnitIds, itemIds),
+  );
 }
 const enemies = new Map<string, Enemy>();
 validateDir("enemies", (file, json) => {
@@ -116,6 +154,10 @@ for (const file of jsonFiles("units")) {
   } catch {
     // Invalid JSON is already reported by validateDir("units", …).
   }
+}
+// Released batches' characters and imported materials are bannerable; staged characters are not.
+for (const unit of originalUnits.values()) {
+  if (unitIds.has(unit.id)) unitForms.set(unit.id, new Set(unit.forms.map((form) => form.id)));
 }
 validateDir("banners", (file, json) => validateBannerFile(file, json, unitForms));
 

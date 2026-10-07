@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { BannerSchema } from "./schemas/banner.ts";
+import type { Batch } from "./schemas/batch.ts";
 import { type Enemy, EnemySchema } from "./schemas/enemy.ts";
 import { GuestSchema } from "./schemas/guest.ts";
 import { ItemContentSchema } from "./schemas/item.ts";
@@ -471,4 +472,68 @@ export function validateBannerFile(
     });
   }
   return errors;
+}
+
+/**
+ * Cross-file batch checks (UNIT_ROADMAP, RESOLVED-100): every batch character names an imported
+ * unit (`originalUnits`, the files in `content/original/units/`) and each `replaces` a launch unit
+ * (`legacyUnitIds`, the files in `content/units/`); every imported non-stackable unit belongs to
+ * exactly one batch; and batch orders are unique. Stackable imports (evolution materials) belong
+ * to no batch.
+ */
+export function validateBatches(
+  batches: readonly Batch[],
+  originalUnits: ReadonlyMap<string, Unit>,
+  legacyUnitIds: ReadonlySet<string>,
+): string[] {
+  const errors: string[] = [];
+  const owner = new Map<string, string>();
+  const orders = new Map<number, string>();
+  for (const batch of batches) {
+    const file = `original/batches/${batch.id}.json`;
+    const other = orders.get(batch.order);
+    if (other) errors.push(`${file}: order: ${batch.order} is also batch "${other}"`);
+    orders.set(batch.order, batch.id);
+    batch.characters.forEach((character, i) => {
+      const unit = originalUnits.get(character.unit);
+      if (!unit) {
+        errors.push(`${file}: characters[${i}].unit: no imported unit "${character.unit}"`);
+      } else if (unit.stackable) {
+        errors.push(`${file}: characters[${i}].unit: "${character.unit}" is a stackable material`);
+      }
+      const first = owner.get(character.unit);
+      if (first) {
+        errors.push(`${file}: characters[${i}].unit: "${character.unit}" is also in "${first}"`);
+      }
+      owner.set(character.unit, batch.id);
+      if (character.replaces && !legacyUnitIds.has(character.replaces)) {
+        errors.push(`${file}: characters[${i}].replaces: no launch unit "${character.replaces}"`);
+      }
+    });
+  }
+  for (const unit of originalUnits.values()) {
+    if (!unit.stackable && !owner.has(unit.id)) {
+      errors.push(`original/units/${unit.id}.json: (root): not in any batch`);
+    }
+  }
+  return errors;
+}
+
+/**
+ * The unit IDs other content may reference (banners, stages, guests, spheres, starters): every
+ * launch unit, every imported stackable material, and the characters of released batches. A staged
+ * batch's characters are imported and validated but not obtainable (RESOLVED-100).
+ */
+export function obtainableUnitIds(
+  legacyUnitIds: Iterable<string>,
+  originalUnits: ReadonlyMap<string, Unit>,
+  batches: readonly Batch[],
+): Set<string> {
+  const ids = new Set(legacyUnitIds);
+  for (const unit of originalUnits.values()) if (unit.stackable) ids.add(unit.id);
+  for (const batch of batches) {
+    if (batch.status !== "released") continue;
+    for (const character of batch.characters) ids.add(character.unit);
+  }
+  return ids;
 }

@@ -24,7 +24,7 @@ export function OriginalTitleBar({
   action,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   subtitle?: ReactNode;
   backHref?: string;
   action?: ReactNode;

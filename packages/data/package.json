@@ -13,7 +13,8 @@
     "test": "vitest run",
     "validate": "node scripts/validate.ts",
     "seed": "node scripts/seed.ts",
-    "dungeons": "node scripts/dungeons.ts"
+    "dungeons": "node scripts/dungeons.ts",
+    "import:batch": "node scripts/import-batch.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"

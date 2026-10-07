@@ -1,5 +1,6 @@
 export * from "./attack.ts";
 export * from "./banner.ts";
+export * from "./batch.ts";
 export * from "./burst.ts";
 export * from "./common.ts";
 export * from "./effect.ts";

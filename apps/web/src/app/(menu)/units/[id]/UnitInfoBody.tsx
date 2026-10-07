@@ -10,6 +10,7 @@ import {
 } from "react";
 import kit from "../../../../components/menu/kit.module.css";
 import { OriginalImage } from "../../../../components/menu/OriginalImage.tsx";
+import { OriginalWindow } from "../../../../components/menu/OriginalKit.tsx";
 import { SkillText } from "../../../../components/units/SkillRow.tsx";
 import {
   UNIT_INFO_ASSETS as A,
@@ -135,7 +136,11 @@ function OriginalSkillRow({
         asset={skill?.key === "leader" || label === "Leader Skill" ? A.leader : A.bb}
         className={styles.skillBase}
       />
-      {overlay ? <OriginalImage asset={overlay} className={styles.skillLabel} /> : null}
+      {overlay ? (
+        <span className={styles.skillLabel} data-key={skill?.key}>
+          <OriginalImage asset={overlay} />
+        </span>
+      ) : null}
       <span className={`${styles.skillName} ${styles.text}`}>
         <SkillText text={skill?.name ?? "None"} />
       </span>
@@ -149,16 +154,19 @@ function OriginalSkillRow({
   );
 }
 
-/** Short labels for the skill panels. */
-const TAB_LABELS: Record<SkillDisplay["key"], string> = {
+/** The italic tier caption on each held panel, as in the reference. */
+const PANEL_LABELS: Record<SkillDisplay["key"], string> = {
   leader: "Leader Skill",
   extra: "Extra Skill",
   bb: "Brave Burst",
-  sbb: "Super BB",
-  ubb: "Ultimate BB",
+  sbb: "Super Brave Burst",
+  ubb: "Ultimate Brave Burst",
 };
 
-/** One skill as the original's long-press panel: the gold tab label, the name, then the effects. */
+/**
+ * One skill as the original's held panel: the translucent gold `wide_use` frame with the tier
+ * caption on its top edge, the name and level, a rule, then the full effects.
+ */
 function SkillPanel({ skill }: { skill: SkillDisplay }): ReactNode {
   const meta = [
     skill.level !== undefined ? `Lv.${skill.level}` : null,
@@ -166,17 +174,16 @@ function SkillPanel({ skill }: { skill: SkillDisplay }): ReactNode {
   ].filter(Boolean);
   return (
     <article className={styles.panel} data-key={skill.key} aria-label={skill.label}>
-      <OriginalImage asset={A.panel} className={styles.panelArt} />
-      {skill.key === "extra" ? (
-        <OriginalImage asset={A.extra} className={styles.panelExtraArt} alt="Extra Skill" />
-      ) : (
-        <p className={styles.panelLabel}>{TAB_LABELS[skill.key]}</p>
-      )}
-      <h2 className={styles.text}>{skill.name}</h2>
-      {meta.length ? <p className={styles.panelCost}>{meta.join(" · ")}</p> : null}
-      <p className={styles.panelText} title={skill.effects.join(" · ")}>
-        {skill.effects.join(" · ")}
-      </p>
+      <OriginalWindow className={styles.panelWindow}>
+        <header className={styles.panelHead}>
+          <h2 className={styles.text}>
+            <SkillText text={skill.name} />
+          </h2>
+          {meta.length ? <p className={styles.text}>{meta.join(" · ")}</p> : null}
+        </header>
+        <p className={`${styles.panelText} ${styles.text}`}>{skill.effects.join(" · ")}</p>
+      </OriginalWindow>
+      <p className={`${styles.panelLabel} ${styles.text}`}>{PANEL_LABELS[skill.key]}</p>
     </article>
   );
 }

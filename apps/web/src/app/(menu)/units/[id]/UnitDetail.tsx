@@ -55,7 +55,7 @@ export function UnitDetail({
       )}
       <div className={styles.left}>
         <dl className={styles.stats}>
-          <StatPill label="Type" art="type" value={unit.typeLabel} accent />
+          <StatPill label="Type" art="type" value={unit.typeLabel} accent fit />
           <StatPill
             label="Lv."
             art="lv"
@@ -192,23 +192,45 @@ export function UnitTitleBar({
   backHref: string;
 }): ReactNode {
   return (
-    <OriginalTitleBar title={unit.name} subtitle={unit.formName ?? "Unit Info"} backHref={backHref}>
-      {unit.element ? (
-        <OriginalImage
-          asset={`common/attribute_mark_M/${unit.element}.png`}
-          className={styles.orb}
-        />
-      ) : null}
-      {unit.rarity !== null ? (
-        <span
-          className={`${styles.rarity} ${styles.text}`}
-          role="img"
-          aria-label={unit.rarityLabel}
-        >
-          {"★".repeat(unit.rarity === "omni" ? 7 : unit.rarity)}
+    <OriginalTitleBar
+      title={
+        <span className={styles.titleRow}>
+          {unit.element ? (
+            <OriginalImage
+              asset={`common/attribute_mark_M/${unit.element}.png`}
+              className={styles.orb}
+            />
+          ) : null}
+          <span className={styles.titleName}>{unit.name}</span>
+          {unit.rarity !== null ? (
+            <RarityMark rarity={unit.rarity} label={unit.rarityLabel} />
+          ) : null}
         </span>
-      ) : null}
-    </OriginalTitleBar>
+      }
+      subtitle={unit.formName ?? "Unit Info"}
+      backHref={backHref}
+    />
+  );
+}
+
+/** Original rarity: one `star_rare` per star (1–7), or the rainbow Omni mark. */
+function RarityMark({
+  rarity,
+  label,
+}: {
+  rarity: NonNullable<UnitDetailView["rarity"]>;
+  label: string;
+}): ReactNode {
+  if (rarity === "omni") {
+    return <OriginalImage asset={A.omni} alt={label} className={styles.omni} />;
+  }
+  return (
+    <span className={styles.stars} role="img" aria-label={label}>
+      {Array.from({ length: rarity }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: identical stars, fixed order.
+        <OriginalImage key={index} asset={A.star} className={styles.star} />
+      ))}
+    </span>
   );
 }
 
@@ -228,14 +250,17 @@ function StatPill({
   art,
   value,
   accent = false,
+  fit = false,
 }: {
   label: string;
   art: keyof typeof A.labels;
   value: string;
   accent?: boolean;
+  /** Size the frame to the caption and value instead of the 180 px column. */
+  fit?: boolean;
 }): ReactNode {
   return (
-    <div className={styles.pill}>
+    <div className={styles.pill} data-fit={fit || undefined}>
       <StatusFrame />
       <dt className={styles.label}>
         <OriginalImage asset={A.labels[art]} alt={label} className={styles.labelArt} />
