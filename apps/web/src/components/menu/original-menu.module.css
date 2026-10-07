@@ -1,0 +1,318 @@
+/*
+ * The original's menu chrome and home screen (RESOLVED-98; ART_GUIDE → Original Asset Import).
+ * Positions are the original 640x1136 screen in logical pixels (--u, from menu.module.css), measured
+ * from BluuArc's recordings. Pieces are 1x, so a piece's own width is its logical width (--w).
+ */
+
+.piece {
+  display: block;
+  width: calc(var(--u) * var(--w));
+  height: auto;
+}
+
+/* White lettering with the original's thin dark outline. */
+.text {
+  color: #fff;
+  font-weight: 700;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #10131c;
+  text-decoration: none;
+}
+
+/* Pressed art swaps in while a button is held. */
+.pressed {
+  display: none;
+}
+
+:active > .normal,
+[aria-expanded="true"] > .normal {
+  display: none;
+}
+
+:active > .pressed,
+[aria-expanded="true"] > .pressed {
+  display: block;
+}
+
+.footerButton[aria-disabled="true"],
+.sideButton[aria-disabled="true"],
+.shortcut[aria-disabled="true"],
+.slide[aria-disabled="true"] {
+  cursor: default;
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  position: relative;
+  flex: none;
+  height: calc(var(--u) * 164);
+  z-index: 3;
+}
+
+.headerPlate,
+.barExp,
+.barEnergy,
+.headerName,
+.headerValue {
+  position: absolute;
+}
+
+.headerPlate {
+  left: calc(var(--u) * -2);
+  top: 0;
+  pointer-events: none;
+}
+
+.barExp,
+.barEnergy {
+  left: calc(var(--u) * 48);
+}
+
+.barExp {
+  top: calc(var(--u) * 73);
+}
+
+.barEnergy {
+  top: calc(var(--u) * 104);
+}
+
+.headerName {
+  left: calc(var(--u) * 8);
+  top: calc(var(--u) * 4);
+  width: calc(var(--u) * 178);
+  height: calc(var(--u) * 28);
+  overflow: hidden;
+  font-size: calc(var(--u) * 20);
+  line-height: calc(var(--u) * 28);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerValue {
+  left: calc(var(--u) * 498);
+  width: calc(var(--u) * 110);
+  height: calc(var(--u) * 26);
+  font-size: calc(var(--u) * 19);
+  line-height: calc(var(--u) * 26);
+  text-align: right;
+}
+
+.gems {
+  top: calc(var(--u) * 37);
+}
+
+.zel {
+  top: calc(var(--u) * 68);
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  position: relative;
+  flex: none;
+  height: calc(var(--u) * 114);
+  z-index: 3;
+}
+
+.footerBase {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.footerButton {
+  position: absolute;
+  top: calc(var(--u) * 4);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Home ---------- */
+
+.home {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  /* base.jpg spans the whole original screen; shift it up by the header so it lines up. */
+  background:
+    #1c1408 url("/assets/original/common/base.jpg") 0 calc(var(--u) * -164) / 100% auto no-repeat;
+}
+
+.squad {
+  position: absolute;
+  inset: 0 0 auto;
+  height: calc(var(--u) * 350);
+}
+
+.slot {
+  position: absolute;
+  top: calc(var(--u) * 21);
+  width: calc(var(--u) * 111);
+  height: calc(var(--u) * 304);
+  overflow: hidden;
+  background: url("/assets/original/home/home_character_frame_bg.png") center / cover;
+}
+
+.slotArt {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.slotName {
+  position: absolute;
+  inset: 40% 0 auto;
+  font-size: calc(var(--u) * 18);
+  text-align: center;
+}
+
+.leader {
+  position: absolute;
+  inset: calc(var(--u) * 4) 0 auto;
+  font-size: calc(var(--u) * 24);
+  font-style: italic;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(#fff6c8 10%, #f6c342 45%, #c9811c 75%, #fbe39a 100%);
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 calc(var(--u) * 2) #2a1606);
+}
+
+.squadFrame,
+.orb {
+  position: absolute;
+  pointer-events: none;
+}
+
+.squadFrame {
+  left: calc(var(--u) * -2);
+  top: calc(var(--u) * -4);
+}
+
+.orb {
+  top: calc(var(--u) * 294);
+}
+
+.sideLeft,
+.sideRight {
+  position: absolute;
+  top: calc(var(--u) * 348);
+  display: flex;
+}
+
+.sideLeft {
+  left: calc(var(--u) * 2);
+}
+
+.sideRight {
+  left: calc(var(--u) * 372);
+}
+
+.sideButton {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sideLeft > .sideButton + .sideButton {
+  margin-left: calc(var(--u) * -16);
+}
+
+.sideRight > .sideButton + .sideButton {
+  margin-left: calc(var(--u) * -14);
+}
+
+.shortcuts {
+  position: absolute;
+  top: calc(var(--u) * 432);
+  left: calc(var(--u) * 10);
+  right: calc(var(--u) * 10);
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 6);
+  border-radius: calc(var(--u) * 10);
+  background: rgb(0 0 0 / 0.7);
+}
+
+.shortcut {
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.carousel {
+  position: absolute;
+  inset: calc(var(--u) * 528) 0 auto;
+  height: calc(var(--u) * 260);
+}
+
+.track {
+  display: flex;
+  gap: calc(var(--u) * 55);
+  height: calc(var(--u) * 240);
+  padding-inline: calc(var(--u) * 149);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  flex: none;
+  display: block;
+  width: calc(var(--u) * 342);
+  scroll-snap-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.window {
+  width: 100%;
+}
+
+.dots {
+  position: absolute;
+  top: calc(var(--u) * 212);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.dot {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.ticker {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * 820);
+  width: calc(var(--u) * 640);
+  height: calc(var(--u) * 38);
+  margin: 0;
+}
+
+.tickerBase {
+  position: absolute;
+  inset: 0;
+}
+
+.tickerText {
+  position: absolute;
+  left: calc(var(--u) * 10);
+  top: 0;
+  font-size: calc(var(--u) * 21);
+  line-height: calc(var(--u) * 38);
+  color: #fff;
+}

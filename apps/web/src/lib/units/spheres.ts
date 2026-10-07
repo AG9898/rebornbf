@@ -1,5 +1,5 @@
 /**
- * The Equip Sphere screen's view model (M4-06J; ART_GUIDE → UI → Equip Sphere, GAME_DESIGN §6 →
+ * The Equip Sphere screen's view model (M4-06J; legacy/ART_GUIDE_BFR.md → UI → Equip Sphere, GAME_DESIGN §6 →
  * Spheres). Pure: the pages read `owned_spheres` and `unit_spheres` under RLS and pass the rows in;
  * every change goes through the `equip_sphere` RPC (M4-04A).
  */

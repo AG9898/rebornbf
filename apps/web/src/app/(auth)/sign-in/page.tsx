@@ -31,7 +31,7 @@ type SignInPageProps = {
 };
 
 /**
- * The sign-in screen (ART_GUIDE → Sign-in and Account screens): the onboarding backdrop and
+ * The sign-in screen (legacy/ART_GUIDE_BFR.md → Sign-in and Account screens): the onboarding backdrop and
  * wordmark, the six starters' Omni cards in a raised row, and a gold-trimmed panel with the Google
  * and Discord buttons on `btn-pill` plates. The demo battle link plays without an account.
  */

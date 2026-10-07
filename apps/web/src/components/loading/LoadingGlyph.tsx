@@ -4,7 +4,7 @@ import styles from "./loading-glyph.module.css";
 export type LoadingGlyphVariant = "inline" | "screen";
 
 /**
- * The one loading indicator for every wait in the game (RESOLVED-95; ART_GUIDE → Trials flow):
+ * The one loading indicator for every wait in the game (RESOLVED-95; legacy/ART_GUIDE_BFR.md → Trials flow):
  * the locked `loading-run` strip (six frames of the white knight running in place) with
  * "Connecting" and three pulsing trail dots in code.
  *

@@ -1,5 +1,5 @@
 /*
- * Onboarding screens (ART_GUIDE.md -> Onboarding screens). The same portrait 640x1136 screen as
+ * Onboarding screens (legacy/ART_GUIDE_BFR.md -> Onboarding screens). The same portrait 640x1136 screen as
  * the title screen (app/title.module.css), with its key art blurred and dimmed, a small wordmark,
  * and a centred slate-and-gold panel. Everything sizes in cqw/cqh of the screen. Built only from
  * locked pieces: title-keyart, bg-slate, item-panel, btn-pill-lit, btn-pill.

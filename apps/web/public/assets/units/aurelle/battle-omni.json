@@ -170,7 +170,7 @@
     }
   },
   "meta": {
-    "app": "art/tools/bfr_anim.py (Aseprite json-hash layout)",
+    "app": "art/legacy/tools/bfr_anim.py (Aseprite json-hash layout)",
     "image": "battle-omni.png",
     "format": "RGBA8888",
     "size": {

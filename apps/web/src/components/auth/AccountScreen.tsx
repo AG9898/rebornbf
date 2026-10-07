@@ -25,7 +25,7 @@ export type AccountScreenProps = {
 };
 
 /**
- * The account screen (ART_GUIDE → Sign-in and Account screens) on the onboarding backdrop: a
+ * The account screen (legacy/ART_GUIDE_BFR.md → Sign-in and Account screens) on the onboarding backdrop: a
  * summoner card with the leader in its element frame (the crest when there is none), the display
  * name, join date, and sign-in provider; gems, Zel, and units on value plates; Home, Settings, and
  * Sign out pills.

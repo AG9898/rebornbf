@@ -11,7 +11,7 @@ import type { StarterOption, StarterUnitId } from "../../../lib/onboarding/start
 import { pickStarter } from "./actions.ts";
 
 /**
- * The six starters as showcase cards (ART_GUIDE → Onboarding screens → Starter step). Selecting a
+ * The six starters as showcase cards (legacy/ART_GUIDE_BFR.md → Onboarding screens → Starter step). Selecting a
  * card opens a confirm panel (an `OnboardingPanel`) over the grid; Confirm calls `pickStarter`, which lands on home, and
  * Back returns to the grid.
  */

@@ -3,7 +3,7 @@ import { sortOwnedUnits, type UnitSortKey } from "./owned-units.ts";
 import type { CollectionEntry } from "./unit-stacks.ts";
 
 /**
- * The shared multi-select unit picker's state (M4-06N, RESOLVED-83; ART_GUIDE → UI → Multi-select
+ * The shared multi-select unit picker's state (M4-06N, RESOLVED-83; legacy/ART_GUIDE_BFR.md → UI → Multi-select
  * picker). Pure helpers: picks are kept in pick order (the red numbered badges), an owned row is one
  * copy and a stack contributes a chosen number of copies, every copy counts against the picker's
  * limit, and an ineligible tile can never be picked. Fusion fodder, squad fill, and sell adopt it.

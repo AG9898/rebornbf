@@ -1,7 +1,7 @@
 import type { Rarity } from "@bfr/data";
 
 /**
- * Client-safe helpers for the evolve cinematic (M4-06M; ART_GUIDE → UI → Evolve cinematic). No
+ * Client-safe helpers for the evolve cinematic (M4-06M; legacy/ART_GUIDE_BFR.md → UI → Evolve cinematic). No
  * content imports, so the client sequence can use them.
  */
 

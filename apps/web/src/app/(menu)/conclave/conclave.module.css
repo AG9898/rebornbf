@@ -1,5 +1,5 @@
 /*
- * The Brightmere Conclave and its Proving Lab (M6-01G, RESOLVED-95; ART_GUIDE.md -> Trials flow).
+ * The Brightmere Conclave and its Proving Lab (M6-01G, RESOLVED-95; legacy/ART_GUIDE_BFR.md -> Trials flow).
  * Both sit inside the menu frame, between the status bar and the nav. Each screen is its own size
  * container so the cover-fitted 2:3 backdrop and anything anchored on it use the same box; the
  * Conclave reuses the region map's plate, pill, and notice styles. Sizes use --u.

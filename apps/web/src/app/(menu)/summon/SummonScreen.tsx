@@ -19,7 +19,7 @@ import { SummonSequence } from "./SummonSequence.tsx";
 import styles from "./summon.module.css";
 
 /**
- * The summon screen (ART_GUIDE → Summon screen, gate, and reveal): the banner carousel, its info
+ * The summon screen (legacy/ART_GUIDE_BFR.md → Summon screen, gate, and reveal): the banner carousel, its info
  * panel with costs, pity, and rates, and the two Summon buttons, plus a free 10-pull ticket button
  * while one is held (M5-01D). A summon calls the server action, then plays `SummonSequence` over
  * the whole column.

@@ -111,7 +111,7 @@ const REPLAY_DELAY_MS = 800;
 const MAX_FLYING_CRYSTALS = 6;
 /** How far (logical px) a still sprite lunges toward the enemies when it acts. */
 const LUNGE_PX = 24;
-/** Flash size (logical px) per piece: ART_GUIDE.md → Battle HUD art (96–128 px). */
+/** Flash size (logical px) per piece: legacy/ART_GUIDE_BFR.md → Battle HUD art (96–128 px). */
 const FLASH_PX: Readonly<Record<FlashPiece, number>> = {
   "fx-hit": 96,
   "fx-spark": 128,
@@ -153,7 +153,7 @@ export interface BattleSpec {
   /** Top-bar title. */
   readonly title: string;
   create(seed: number): BattleState;
-  /** `art/units/<id>` export for each party slot, in party order; missing slots draw a box. */
+  /** `art/legacy/units/<id>` export for each party slot, in party order; missing slots draw a box. */
   readonly partyArt: readonly string[];
   /** Locked background id selected by the stage's chapter or explicit stage mapping. */
   readonly background?: string;

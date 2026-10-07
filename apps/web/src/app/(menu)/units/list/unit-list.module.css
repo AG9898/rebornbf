@@ -1,0 +1,291 @@
+/*
+ * The original's Units list and sort screen (M8-04, RESOLVED-98; ART_GUIDE -> UI -> Units list and
+ * sort screen). Logical px (--u). List positions are art/original/layouts/unit_list.json less the
+ * 164 px header (title bar) or less 304 (body); sort-screen positions are the screen's own, since
+ * that page covers the header (art/original/layouts/unit_sort.json).
+ */
+
+/* ---------- List title bar (bar y = screen y - 164) ---------- */
+
+.sortValue {
+  color: #f3d77a;
+}
+
+/* Doubled to outrank the kit's `.button { position: relative }` whatever the stylesheet order. */
+.filterButton.filterButton {
+  position: absolute;
+  left: calc(var(--u) * 422);
+  top: calc(var(--u) * 49);
+  width: calc(var(--u) * 105);
+  height: calc(var(--u) * 83);
+}
+
+.count {
+  position: absolute;
+  left: calc(var(--u) * 528);
+  top: calc(var(--u) * 58);
+  width: calc(var(--u) * 110);
+  margin: 0;
+  font-size: calc(var(--u) * 21);
+  line-height: 1;
+  text-align: right;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+/* ---------- Grid (body y = screen y - 304) ---------- */
+
+/* Thumbs are 102x102 at x 27 + 124·i, rows from screen y 300 every 119 (layouts/unit_list.json). */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, calc(var(--u) * 102));
+  column-gap: calc(var(--u) * 22);
+  row-gap: calc(var(--u) * 17);
+  margin: 0;
+  padding: calc(var(--u) * 6) 0 calc(var(--u) * 24) calc(var(--u) * 27);
+  list-style: none;
+}
+
+.message {
+  margin: calc(var(--u) * 40) calc(var(--u) * 30) 0;
+}
+
+.messageText {
+  margin: 0;
+  font-size: calc(var(--u) * 24);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.messageButton {
+  display: block;
+  width: fit-content;
+  margin: calc(var(--u) * 20) auto 0;
+}
+
+/* ---------- Sort screen (screen coordinates; covers the header) ---------- */
+
+.sortPage {
+  position: absolute;
+  inset: 0 0 calc(var(--u) * 114);
+  /* Over the header (z-index 3, its crest overhangs the page); the footer stays visible. */
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.55)),
+    #1c1408 url("/assets/original/common/base.jpg") 0 0 / 100% auto no-repeat;
+}
+
+.sortBoard {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.sortBoard > * {
+  position: absolute;
+}
+
+.tabBase {
+  left: calc(var(--u) * -1);
+  top: calc(var(--u) * 88);
+  pointer-events: none;
+}
+
+.sortBoard > .sortBack {
+  position: absolute;
+  left: calc(var(--u) * 2);
+  top: calc(var(--u) * 91);
+}
+
+.sortTab {
+  left: calc(var(--u) * 104);
+  top: calc(var(--u) * 88);
+  margin: 0;
+}
+
+.filterTab {
+  left: calc(var(--u) * 344);
+  top: calc(var(--u) * 88);
+}
+
+.options {
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* sub_m_option_btn (204x84) at x 8 + 204·i, y 218 + 120·j. */
+.option {
+  position: absolute;
+  width: calc(var(--u) * 204);
+  height: calc(var(--u) * 84);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.option[aria-disabled="true"],
+.order[aria-disabled="true"] {
+  cursor: default;
+  filter: grayscale(0.6) brightness(0.8);
+}
+
+.option > img {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Name has no original label; its caption is drawn in the label sheet's style. */
+/* Under .option so the kit's white text colour does not win. */
+.option .optionCaption {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--u) * 34);
+  color: #c9c9c9;
+}
+
+.option[aria-pressed="true"] .optionCaption {
+  color: #fff;
+}
+
+.order {
+  top: calc(var(--u) * 812);
+}
+
+.order > img {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.ascending {
+  left: calc(var(--u) * 16);
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+}
+
+.descending {
+  left: calc(var(--u) * 424);
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+}
+
+.sortBoard > .select {
+  position: absolute;
+  left: calc(var(--u) * 212);
+  top: calc(var(--u) * 794);
+}
+
+.divider {
+  left: calc(var(--u) * -1);
+  top: calc(var(--u) * 882);
+  pointer-events: none;
+}
+
+/* ---------- Header tabs (both tabs are buttons; the open one shows its lit piece) ---------- */
+
+.tab {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab[aria-pressed="true"] {
+  cursor: default;
+}
+
+/* ---------- Filter tab (M8-04_1; layouts/unit_filter.json = layout_unit_filter.csv + 88) ---------- */
+
+/* The CSV's clip area: x 0-627, screen y 188-790; rows are positioned inside it (CSV y - 100). */
+.filterScroll {
+  left: 0;
+  top: calc(var(--u) * 188);
+  width: calc(var(--u) * 640);
+  height: calc(var(--u) * 602);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c9a24a transparent;
+}
+
+.filterRows {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filterOption {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filterOption > img {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* The separate 137x54 labels (Rex, DBB, Golems) centred on the 151x84 base. */
+.filterOption > img.filterSmallLabel {
+  left: calc(var(--u) * 7);
+  top: calc(var(--u) * 15);
+}
+
+.filterDisabled {
+  cursor: default;
+  filter: grayscale(0.6) brightness(0.8);
+}
+
+/* sub_s_r_btn (188x64) at the CSV's select_clear / select_all, y 727 + 88. */
+.sortBoard > .clearSelection {
+  position: absolute;
+  left: calc(var(--u) * 16);
+  top: calc(var(--u) * 815);
+}
+
+.sortBoard > .selectAll {
+  position: absolute;
+  left: calc(var(--u) * 424);
+  top: calc(var(--u) * 815);
+}
+
+/* ---------- List: Remove Filter tile (grid's last cell while a filter is applied) ---------- */
+
+.removeFilter {
+  position: relative;
+  display: block;
+  width: calc(var(--u) * 102);
+  height: calc(var(--u) * 102);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.removeFilter > img {
+  position: absolute;
+  left: calc(var(--u) * -4);
+  top: 0;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  margin: calc(var(--u) * 20) 0;
+  font-size: calc(var(--u) * 24);
+  text-align: center;
+}

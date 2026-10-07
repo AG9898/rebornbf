@@ -214,7 +214,7 @@ export function evolutionPlan(
   };
 }
 
-/** The evolve screen's red status strip labels (M4-06L, ART_GUIDE → UI → Evolve screen). */
+/** The evolve screen's red status strip labels (M4-06L, legacy/ART_GUIDE_BFR.md → UI → Evolve screen). */
 export type EvolveBlocker = "Insufficient Units" | "Insufficient Zel" | "Insufficient Level";
 
 /**

@@ -66,7 +66,7 @@ function useReducedMotion(setting: boolean): boolean | null {
 }
 
 /**
- * The evolve cinematic (M4-06M; ART_GUIDE → UI → Evolve cinematic), played over the menu column
+ * The evolve cinematic (M4-06M; legacy/ART_GUIDE_BFR.md → UI → Evolve cinematic), played over the menu column
  * after `evolve` succeeds: a black stage with the base and material pedestals, their circles
  * lighting and joining into one, pillars and falling sparks, a beam, a starburst, a white flash,
  * then the new form on its halo with the quote and the rarity word dropping in letter by letter.

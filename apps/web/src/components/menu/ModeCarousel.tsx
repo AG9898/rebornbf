@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import styles from "./menu.module.css";
+import { OriginalImage } from "./OriginalImage.tsx";
+import styles from "./original-menu.module.css";
 import { GAME_MODES, START_MODE_INDEX } from "./sections.ts";
-import { UiImage } from "./UiImage.tsx";
 
 /** Scroll the track so slide `index` sits in the middle. */
 function centreSlide(track: HTMLDivElement | null, index: number, behavior: ScrollBehavior): void {
@@ -32,7 +32,7 @@ function centredSlide(track: HTMLDivElement): number {
   return best;
 }
 
-/** Swipeable mode banners (Conclave, Quest, Dungeons) with page dots; opens on Quest. */
+/** The original's swipeable mode windows with page dots; modes without a screen are disabled. */
 export function ModeCarousel(): ReactNode {
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(START_MODE_INDEX);
@@ -46,33 +46,48 @@ export function ModeCarousel(): ReactNode {
         className={styles.track}
         onScroll={(e) => setActive(centredSlide(e.currentTarget))}
       >
-        {GAME_MODES.map((mode, i) => (
-          <Link
-            key={mode.href}
-            href={mode.href}
-            className={styles.slide}
-            data-active={i === active}
-            prefetch={false}
-          >
-            <UiImage
-              name={`mode-${mode.emblem}`}
-              className={styles.emblem}
+        {GAME_MODES.map((mode, i) => {
+          const art = (
+            <OriginalImage
+              key={mode.title}
+              asset={mode.art}
+              className={styles.window}
+              alt={mode.title}
               priority={i === START_MODE_INDEX}
             />
-            <span className={`${styles.modeTitle} ${styles.gold}`}>{mode.title}</span>
-          </Link>
-        ))}
+          );
+          return mode.href ? (
+            <Link key={mode.title} href={mode.href} className={styles.slide} prefetch={false}>
+              {art}
+            </Link>
+          ) : (
+            <span
+              key={mode.title}
+              className={styles.slide}
+              aria-disabled="true"
+              title="Coming soon"
+            >
+              {art}
+            </span>
+          );
+        })}
       </div>
       <div className={styles.dots}>
         {GAME_MODES.map((mode, i) => (
           <button
-            key={mode.href}
+            key={mode.title}
             type="button"
             className={styles.dot}
             aria-label={`Show ${mode.title}`}
             aria-current={i === active}
             onClick={() => centreSlide(track.current, i, "smooth")}
-          />
+          >
+            <OriginalImage
+              asset={
+                i === active ? "home/home_position_mark/on.png" : "home/home_position_mark/off.png"
+              }
+            />
+          </button>
         ))}
       </div>
     </section>

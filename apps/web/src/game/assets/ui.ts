@@ -2,7 +2,7 @@ import type { Element } from "@bfr/data";
 import { PORTRAIT_ART, UI_ASSETS, type UiAsset } from "../../components/menu/ui-assets.ts";
 
 /**
- * The locked battle HUD pieces (ART_GUIDE.md → Battle HUD art), exported by `bfr_ui.py` to
+ * The locked battle HUD pieces (legacy/ART_GUIDE_BFR.md → Battle HUD art), exported by `bfr_ui.py` to
  * `public/assets/ui/<name>.webp` at 2× their logical size. Each is a Phaser texture keyed
  * `ui-<name>`.
  */
@@ -120,7 +120,7 @@ export function elementOrb(element: Element): BattleUiPiece {
 
 /**
  * A unit form's battle portrait (M2-06D), `public/assets/ui/cards/battle/<art>-<form>.webp`, for an
- * `art/units/<art>` id and its exported form (`3star`…`7star`, `omni`). Undefined without an art id.
+ * `art/legacy/units/<art>` id and its exported form (`3star`…`7star`, `omni`). Undefined without an art id.
  */
 export function unitPortrait(art: string | undefined, form = "6star"): UiTexture | undefined {
   if (!art) return undefined;

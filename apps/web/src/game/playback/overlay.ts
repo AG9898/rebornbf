@@ -4,7 +4,7 @@ import type { HudState } from "../hud/model.ts";
 import { type StatusBadge, statusBadges } from "../hud/status.ts";
 import { ART_SCALE, enemyRect, type Rect, unitSpriteRect } from "./layout.ts";
 
-/** Status badge size and pitch (logical px; ART_GUIDE.md → Battle HUD art). */
+/** Status badge size and pitch (logical px; legacy/ART_GUIDE_BFR.md → Battle HUD art). */
 const BADGE_PX = 32;
 const BADGE_PITCH = 30;
 

@@ -18,7 +18,7 @@ export const SKILL_HOLD_MS = 300;
 type PanelSet = "leader" | "burst";
 
 /**
- * Unit Info's body (ART_GUIDE → Units, Squad, and Unit detail screens): the hero the server built
+ * Unit Info's body (legacy/ART_GUIDE_BFR.md → Units, Squad, and Unit detail screens): the hero the server built
  * (splash, stat column, spheres) with the right column of actions and Switch, then the two pinned
  * skill rows, Leader Skill and one burst. Switch cycles the burst row BB → SBB → UBB through the
  * tiers the form has; the tag follows (blue / gold / red).

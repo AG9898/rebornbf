@@ -11,7 +11,7 @@ import styles from "./summon.module.css";
 
 /**
  * Timed phases of one pull after the gate is tapped (ms). `gate` and `reveal` wait for a tap.
- * ART_GUIDE → Summon sequence.
+ * legacy/ART_GUIDE_BFR.md → Summon sequence.
  */
 type Phase = "gate" | "open" | "burst" | "flash" | "reveal";
 const TIMED: Partial<Record<Phase, { next: Phase; ms: number }>> = {

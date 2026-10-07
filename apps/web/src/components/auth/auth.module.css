@@ -1,5 +1,5 @@
 /*
- * Sign-in and Account screens (ART_GUIDE.md -> Sign-in and Account screens). Both draw inside
+ * Sign-in and Account screens (legacy/ART_GUIDE_BFR.md -> Sign-in and Account screens). Both draw inside
  * `OnboardingScreen`, so cqw/cqh are the portrait 640x1136 screen's, and add these pieces around
  * its `OnboardingPanel`. Built only from locked pieces: cards/<unit>-omni, card-frame, orb-*,
  * util-flourish, btn-pill, btn-pill-lit, unit-frame-*, leader-ribbon, value-plate, icon-gem,

@@ -1,0 +1,55 @@
+/*
+ * The original's Menu screen (M8-02, RESOLVED-98). Logical px (--u); body positions are the
+ * screen positions in art/original/layouts/menu.json less 304 (164 px header + 140 px title bar).
+ */
+
+.news {
+  width: calc(var(--u) * 188);
+  height: calc(var(--u) * 64);
+}
+
+.board {
+  position: relative;
+  height: calc(var(--u) * 680);
+}
+
+.tile {
+  position: absolute;
+  width: calc(var(--u) * 180);
+  height: calc(var(--u) * 156);
+}
+
+.row0 {
+  top: calc(var(--u) * 57);
+}
+
+.row1 {
+  top: calc(var(--u) * 234);
+}
+
+.row2 {
+  top: calc(var(--u) * 405);
+}
+
+.col0 {
+  left: calc(var(--u) * 28);
+}
+
+.col1 {
+  left: calc(var(--u) * 229);
+}
+
+.col2 {
+  left: calc(var(--u) * 430);
+}
+
+/* BFR-only links under the grid: two sub_m_btn (204x84) centred at screen y 885. */
+.extras {
+  position: absolute;
+  top: calc(var(--u) * 581);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u) * 24);
+}

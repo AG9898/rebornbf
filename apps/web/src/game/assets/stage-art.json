@@ -1,5 +1,5 @@
 {
-  "note": "Battle art the app selects by stage, derived from art/backgrounds/backgrounds.json (chapters, stages) and art/enemies/enemies.json (canvas, fallback). stage-art.test.ts fails when they drift; copy the changed fields here.",
+  "note": "Battle art the app selects by stage, derived from art/legacy/backgrounds/backgrounds.json (chapters, stages) and art/legacy/enemies/enemies.json (canvas, fallback). stage-art.test.ts fails when they drift; copy the changed fields here.",
   "backgrounds": {
     "plains": {
       "chapters": [1],

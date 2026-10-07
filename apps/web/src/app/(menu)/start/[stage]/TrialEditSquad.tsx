@@ -38,7 +38,7 @@ const PARTY_INDEXES: readonly number[] = Array.from({ length: TRIAL_PARTIES }, (
 const POSITIONS: readonly number[] = Array.from({ length: SQUAD_SIZE }, (_, i) => i);
 
 /**
- * A trial's Edit Squad (M6-01K, RESOLVED-95; ART_GUIDE → Trials flow): three Party rows over
+ * A trial's Edit Squad (M6-01K, RESOLVED-95; legacy/ART_GUIDE_BFR.md → Trials flow): three Party rows over
  * `bg-proving-lab`, each bound to a saved squad slot (its Squad button steps to the next free
  * slot) with five unit slots and the leader marked; Pell's hint in the `dialogue-panel`. An empty
  * slot opens the shared unit picker, which dims every unit already in a party; tapping a member

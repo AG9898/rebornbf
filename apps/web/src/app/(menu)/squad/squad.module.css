@@ -1,5 +1,5 @@
 /*
- * Squad editor (M3-03B) as the original's Manage Squad (M3-03F), per ART_GUIDE -> UI -> Units,
+ * Squad editor (M3-03B) as the original's Manage Squad (M3-03F), per legacy/ART_GUIDE_BFR.md -> UI -> Units,
  * Squad, and Unit detail screens. The title bar, pills, skill row, and picker icons come from
  * ../units/units.module.css. Sizes use the menu frame's logical pixel, --u.
  */

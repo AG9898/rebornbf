@@ -148,7 +148,7 @@ export type UnitSource = z.infer<typeof UnitSourceSchema>;
 export const UNIT_QUOTE_MAX_LENGTH = 80;
 
 /**
- * A unit's quote (ART_GUIDE → UI → Fusion result): one original line in the unit's voice, never
+ * A unit's quote (legacy/ART_GUIDE_BFR.md → UI → Fusion result): one original line in the unit's voice, never
  * original game text (IP_POLICY rule 1). Trimmed, one line (the screen wraps it to at most two),
  * and at most `UNIT_QUOTE_MAX_LENGTH` characters.
  */

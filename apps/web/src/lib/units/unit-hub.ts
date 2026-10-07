@@ -1,6 +1,6 @@
 /**
- * The Unit hub and the All Units list's pick modes (M4-06B, RESOLVED-80; ART_GUIDE -> UI -> Unit
- * hub). `/units` is the six-button hub; All Units lives at `/units/list`.
+ * The Unit hub and the All Units list's pick modes (M4-06B, M8-03; ART_GUIDE -> UI -> Unit hub).
+ * `/units` is the original's six-button Unit menu; All Units lives at `/units/list`.
  */
 import { nextEvolution } from "./evolution.ts";
 import type { UnitSortKey } from "./owned-units.ts";
@@ -11,19 +11,31 @@ export const UNIT_LIST_PATH = "/units/list";
 
 export type UnitHubButton = {
   label: string;
+  /**
+   * The original's label overlay drawn over `UNIT_HUB_BASE`, without its state suffix:
+   * `<art>1.png` normal, `<art>2.png` pressed (M8-03; ART_GUIDE -> UI -> Unit hub).
+   */
+  art: string;
   /** Where the button goes; null while the screen it opens does not exist yet. */
   href: string | null;
 };
 
-/** The hub's 2x3 grid in the original's order, left to right, top to bottom. */
+/** The blue `main_l_btn` (260x156) under every hub label. */
+export const UNIT_HUB_BASE = "common/button/main_l_btn";
+
+/**
+ * The hub's 2x3 grid in the original's order, left to right, top to bottom (screen x 40 / 340,
+ * y 370 + 163 per row; art/original/layouts/unit.json). The archive's own Equip Sphere label
+ * (`unit_top_eqp_btn`) is Japanese, so it uses the Items menu's English one.
+ */
 export const UNIT_HUB_BUTTONS: readonly UnitHubButton[] = [
-  { label: "View Units", href: UNIT_LIST_PATH },
-  { label: "Manage Squad", href: "/squad" },
-  { label: "Fusion", href: "/fusion" },
-  { label: "Evolve Unit", href: `${UNIT_LIST_PATH}?pick=evolve` },
-  { label: "Equip Sphere", href: `${UNIT_LIST_PATH}?pick=sphere` },
+  { label: "View Units", art: "unit_top/unit_top_box_btn", href: UNIT_LIST_PATH },
+  { label: "Manage Squad", art: "unit_top/unit_top_edit_btn", href: "/squad" },
+  { label: "Fusion", art: "unit_top/unit_top_mix_btn", href: "/fusion" },
+  { label: "Evolve Unit", art: "unit_top/unit_top_evo_btn", href: `${UNIT_LIST_PATH}?pick=evolve` },
+  { label: "Equip Sphere", art: "item_top/sphere_eqp_btn", href: `${UNIT_LIST_PATH}?pick=sphere` },
   // Sell Unit (M4-06I) opens once its screen exists.
-  { label: "Sell Unit", href: null },
+  { label: "Sell Unit", art: "unit_top/unit_top_sell_btn", href: null },
 ];
 
 /** The list's pick modes: a tap opens that action's screen instead of the unit detail. */

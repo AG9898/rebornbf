@@ -1,5 +1,5 @@
 /*
- * The region map (M3-04M; ART_GUIDE.md -> UI -> Region map). It covers the whole menu column,
+ * The region map (M3-04M; legacy/ART_GUIDE_BFR.md -> UI -> Region map). It covers the whole menu column,
  * status bar and nav included. The 2:3 map is cover-fitted: --map-w/--map-h are the drawn map's
  * size, and each plate is placed at its anchor fraction of that same size from the centre.
  * Sizes use the menu frame's logical pixel, --u.

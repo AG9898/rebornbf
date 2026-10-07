@@ -1,5 +1,5 @@
 /*
- * LoadingGlyph (ART_GUIDE.md -> Trials flow). One indicator for every wait: the white knight runs
+ * LoadingGlyph (legacy/ART_GUIDE_BFR.md -> Trials flow). One indicator for every wait: the white knight runs
  * in place through the six-frame `loading-run` strip (990x128, 165x128 frames) and the trail dots
  * pulse; both stop on frame one under OS reduced motion or `data-still` (the saved setting).
  */

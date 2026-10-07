@@ -1,7 +1,7 @@
 import type { EffectId } from "@bfr/data";
 import type { BattleUiPiece } from "../assets/ui.ts";
 
-/** A round 32 px status badge (ART_GUIDE.md → Battle HUD art): ailment, buff, or debuff. */
+/** A round 32 px status badge (legacy/ART_GUIDE_BFR.md → Battle HUD art): ailment, buff, or debuff. */
 export type StatusBadge = Extract<
   BattleUiPiece,
   `status-${string}` | `buff-${string}` | `debuff-${string}`

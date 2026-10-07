@@ -84,7 +84,7 @@ export function unitCardRect(index: number): Rect {
 }
 
 /**
- * The locked HUD pieces are 2× exports cut from the approved keyframe (ART_GUIDE.md → Battle HUD
+ * The locked HUD pieces are 2× exports cut from the approved keyframe (legacy/ART_GUIDE_BFR.md → Battle HUD
  * art), which is 1024×1536: squatter than the 640×1136 grid. Panels, frames, and bars are drawn at
  * half width and `PANEL_STRETCH`× half height so they land on the keyframe's bands; round emblems
  * (crests, orbs, the leader crown, portraits) keep their aspect.

@@ -2,7 +2,7 @@ import type { BurstTier } from "@bfr/engine";
 import type { Cue, CueContext } from "../playback/cues.ts";
 
 /**
- * Every sound effect ART_GUIDE.md → Audio names: tap/hit, spark, crit, burst start (per tier),
+ * Every sound effect legacy/ART_GUIDE_BFR.md → Audio names: tap/hit, spark, crit, burst start (per tier),
  * crystal pickup, unit death, UI confirm/cancel, and summon reveal.
  */
 export const SFX_IDS = [

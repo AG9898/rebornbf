@@ -28,7 +28,7 @@ const RESTART_DELAY_MS = 2500;
 const REPLAY_EXIT_PATH = "/other";
 
 /**
- * The tutorial battle with its prompts (M3-06E; ART_GUIDE → Onboarding screens): the battle runs
+ * The tutorial battle with its prompts (M3-06E; legacy/ART_GUIDE_BFR.md → Onboarding screens): the battle runs
  * full screen and each prompt docks over the item bar in the onboarding panel style with a Skip
  * button, advancing as `advancePrompts` sees the player perform its action. A loss restarts the
  * battle (a fresh mount at the same seed) and the prompts. Skipping or winning calls

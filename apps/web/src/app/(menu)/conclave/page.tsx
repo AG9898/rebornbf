@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Conclave · BFR" };
 /** ui.json `bg-conclave` `anchors.proving-lab`, in master px: the Proving Lab's copper-green dome. */
 const PROVING_LAB_ANCHOR = { x: 125, y: 560 } as const;
 
-/** The plate's count tab, as on the region map's area plates (ART_GUIDE.md → Region map). */
+/** The plate's count tab, as on the region map's area plates (legacy/ART_GUIDE_BFR.md → Region map). */
 const AREA_TAB_STYLE: CSSProperties = (() => {
   const { width, height } = UI_ASSETS["area-plate"];
   const pct = (value: number, of: number) => `${((value / of) * 100).toFixed(3)}%`;

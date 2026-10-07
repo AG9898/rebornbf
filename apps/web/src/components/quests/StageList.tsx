@@ -18,7 +18,7 @@ export type StageListEntry = {
 };
 
 /**
- * Measured off the `stage-panel` export (2x px; ART_GUIDE.md → Stage list): its inner face runs
+ * Measured off the `stage-panel` export (2x px; legacy/ART_GUIDE_BFR.md → Stage list): its inner face runs
  * x 10–1269, y 30–310 with the divider at y 161–165. The name sits above the divider (clear of
  * the corner ribbon), the flavour below it, and "Left N today" in the stepped right slot
  * (x 969–1240, y 6–36). The wave count uses the piece's `textBox`, the centre slot.

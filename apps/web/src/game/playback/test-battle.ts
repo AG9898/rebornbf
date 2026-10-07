@@ -84,7 +84,7 @@ const UNITS: readonly Unit[] = [
 ];
 
 /**
- * Art for each party slot, in party order: the `art/units/<id>` export whose 6★ idle sprite draws
+ * Art for each party slot, in party order: the `art/legacy/units/<id>` export whose 6★ idle sprite draws
  * the unit. Brand is drawn from the test sheet (built from his 6★ idle), so he also animates.
  */
 export const TEST_PARTY_ART: readonly string[] = ["brand", "maren", "rook", "garrick", "solen"];

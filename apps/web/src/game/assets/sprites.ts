@@ -25,7 +25,7 @@ export function loadUnitSpriteSheet(key: string, imageUrl: string, json: unknown
 
 /**
  * The M2-03 test sheet (Brand's 6★ idle sprite offset into idle and attack frames, built by
- * `art/tools/make_test_sheet.py`). Its hit tags set the test battle's normal-attack timing.
+ * `art/legacy/tools/make_test_sheet.py`). Its hit tags set the test battle's normal-attack timing.
  */
 export const TEST_UNIT_SHEET: UnitSpriteSheet = loadUnitSpriteSheet(
   "test-brand",
@@ -39,7 +39,7 @@ export const TEST_ATTACK_TIMING: SheetAttackTiming = attackTimingFromSheet(
   "attack",
 );
 
-/** A locked 128×128 idle sprite exported from `art/units/<id>/` (one frame, no animation). */
+/** A locked 128×128 idle sprite exported from `art/legacy/units/<id>/` (one frame, no animation). */
 export interface UnitIdleSprite {
   readonly key: string;
   readonly imageUrl: string;
@@ -54,7 +54,7 @@ export function unitIdleSprite(artId: string, form = "6star"): UnitIdleSprite {
 }
 
 /**
- * Unit forms with an exported idle sheet (`art/tools/bfr_anim.py bake <id> <form> --web` writes the
+ * Unit forms with an exported idle sheet (`art/legacy/tools/bfr_anim.py bake <id> <form> --web` writes the
  * sheet and this index), by art id.
  */
 const IDLE_SHEETS: Readonly<Record<string, readonly string[]>> = idleSheets;

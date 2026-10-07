@@ -55,7 +55,7 @@ const PEDESTAL_SPOTS = ["centre", "tl", "tr", "bl", "br"] as const;
 const SLOT_NUMBERS: readonly number[] = Array.from({ length: SQUAD_SLOTS }, (_, i) => i);
 
 /**
- * The squad editor (M3-03B) as the original's Manage Squad (M3-03F, ART_GUIDE → UI → Units,
+ * The squad editor (M3-03B) as the original's Manage Squad (M3-03F, legacy/ART_GUIDE_BFR.md → UI → Units,
  * Squad, and Unit detail screens): five pedestals over `bg-olive` with the leader in the centre
  * under the leader ribbon, squad arrows and page dots for the ten squads, the Leader Skill bar,
  * and below them the unit picker. Tapping a squad member removes it; with

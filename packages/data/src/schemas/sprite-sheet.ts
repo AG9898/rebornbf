@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NonNegativeIntSchema, PositiveIntSchema } from "./common.ts";
 
 /**
- * Battle sprite frame canvas in pixels (ART_GUIDE → Battle Sprites, RESOLVED-39). Every frame of a
+ * Battle sprite frame canvas in pixels (legacy/ART_GUIDE_BFR.md → Battle Sprites, RESOLVED-39). Every frame of a
  * unit sprite sheet is a square of this size, matching the locked-master sprite export.
  */
 export const SPRITE_FRAME_SIZE = 128;
@@ -14,7 +14,7 @@ const TICKS_PER_SECOND = 60;
 export const HIT_TAG = "hit";
 
 /**
- * Animation tags every unit sheet must have (ART_GUIDE → Required animations). Every unit form gets
+ * Animation tags every unit sheet must have (legacy/ART_GUIDE_BFR.md → Required animations). Every unit form gets
  * an idle loop first; `attack` and the other animations are optional until a form has them.
  */
 export const REQUIRED_SPRITE_TAGS = ["idle"] as const;
@@ -100,7 +100,7 @@ export function msToTicks(ms: number): number {
 }
 
 /**
- * Reads an attack animation's hit timing from a sheet (ART_GUIDE → Battle Sprites). Each `hit`
+ * Reads an attack animation's hit timing from a sheet (legacy/ART_GUIDE_BFR.md → Battle Sprites). Each `hit`
  * tag inside the `animation` tag is one hit landing at the start of the tag's first frame; two
  * `hit` tags on one frame are two same-tick hits. A hit's time is the summed frame durations
  * from the animation start, converted to ticks. The first hit sets `startDelayFrames`, and

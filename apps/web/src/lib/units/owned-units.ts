@@ -148,7 +148,7 @@ export type OwnedUnitView = {
   sprite: string | null;
   /**
    * Web path of the form's square thumbnail icon (256×256, built from the splash by the face-point
-   * rule in `art/ui/ui.json` `cards.thumb`), when the unit has exported art for it.
+   * rule in `art/legacy/ui/ui.json` `cards.thumb`), when the unit has exported art for it.
    */
   thumb: string | null;
 };

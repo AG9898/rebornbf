@@ -29,7 +29,7 @@ import { UiImage } from "../menu/UiImage.tsx";
 import { UnitIconFace, unitIconLabel } from "./UnitIconFace.tsx";
 
 /**
- * The shared multi-select unit picker (M4-06N, RESOLVED-83; ART_GUIDE → UI → Multi-select picker):
+ * The shared multi-select unit picker (M4-06N, RESOLVED-83; legacy/ART_GUIDE_BFR.md → UI → Multi-select picker):
  * the All Units grid with a context title, Sort and Filter, and the count plate. Pickable icons
  * carry a grey tick circle, picked icons a red badge numbered in pick order, and ineligible icons
  * are dimmed and inert. A picked stack shows a stepper for its copies; every copy counts against

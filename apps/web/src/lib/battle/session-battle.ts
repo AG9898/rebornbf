@@ -114,7 +114,7 @@ export type SessionBattle = {
   stage: Stage;
   setup: BattleSetup;
   seed: number;
-  /** `art/units/<id>` per party slot ("" when the unit has no exported art). */
+  /** `art/legacy/units/<id>` per party slot ("" when the unit has no exported art). */
   partyArt: string[];
   /** Idle form per party slot (`3star`…`omni`). */
   partyArtForms: (string | undefined)[];

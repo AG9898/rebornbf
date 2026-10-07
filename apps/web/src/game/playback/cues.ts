@@ -34,7 +34,7 @@ export function damageStyle(hit: Pick<HitLandedEvent, "sparked" | "critical">): 
   return "normal";
 }
 
-/** A flash image played on a struck target (ART_GUIDE.md → Battle HUD art). */
+/** A flash image played on a struck target (legacy/ART_GUIDE_BFR.md → Battle HUD art). */
 export type FlashPiece = Extract<BattleUiPiece, "fx-hit" | "fx-spark" | "fx-crit">;
 
 /** Every hit flashes `fx-hit`; a sparked hit adds `fx-spark` and a critical one `fx-crit`. */
@@ -46,7 +46,7 @@ export function hitFlashes(hit: Pick<HitLandedEvent, "sparked" | "critical">): F
   ];
 }
 
-/** A weakness/resist arrow shown on a struck target (ART_GUIDE.md → Battle HUD art). */
+/** A weakness/resist arrow shown on a struck target (legacy/ART_GUIDE_BFR.md → Battle HUD art). */
 export type ElementArrow = Extract<BattleUiPiece, "icon-weak" | "icon-resist">;
 
 /**
@@ -61,7 +61,7 @@ export function elementArrow(hit: {
   return undefined;
 }
 
-/** The "SPARK!!" popup (ART_GUIDE.md → Effects): green, or red on a Spark Critical. */
+/** The "SPARK!!" popup (legacy/ART_GUIDE_BFR.md → Effects): green, or red on a Spark Critical. */
 export const SPARK_POPUP = { text: "SPARK!!", color: "#72e05a", critColor: "#ff4a3d" } as const;
 
 /** One drop kind flying to a card: its crystal art and how many dropped. */

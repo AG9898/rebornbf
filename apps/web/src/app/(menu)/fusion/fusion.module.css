@@ -1,5 +1,5 @@
 /*
- * Fuse Units stage (M4-06D, RESOLVED-80) per ART_GUIDE -> UI -> Fusion stage. The page, title bar,
+ * Fuse Units stage (M4-06D, RESOLVED-80) per legacy/ART_GUIDE_BFR.md -> UI -> Fusion stage. The page, title bar,
  * pills, pedestals, stat plate, and strip come from ../squad/squad.module.css and
  * ../units/units.module.css; this file places the six pedestals. Sizes use the menu's --u.
  */
@@ -393,7 +393,7 @@
   width: calc(var(--u) * 150);
 }
 
-/* ---------- Fusion result (M4-06E, ART_GUIDE -> UI -> Fusion result) ---------- */
+/* ---------- Fusion result (M4-06E, legacy/ART_GUIDE_BFR.md -> UI -> Fusion result) ---------- */
 
 .resultPage {
   flex: 1;

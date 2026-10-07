@@ -8,7 +8,12 @@ import {
   type OwnedUnitRow,
   parseUnitSort,
 } from "../../../../lib/units/owned-units.ts";
-import { parseUnitPick, unitListHref } from "../../../../lib/units/unit-hub.ts";
+import {
+  filterEntries,
+  parseUnitFilter,
+  unitListFilterHref,
+} from "../../../../lib/units/unit-filter.ts";
+import { parseUnitPick } from "../../../../lib/units/unit-hub.ts";
 import {
   collectionEntries,
   ownedCopyTotal,
@@ -20,18 +25,19 @@ import { UnitsList } from "./UnitsList.tsx";
 export const metadata: Metadata = { title: "Units · BFR" };
 
 /**
- * The unit collection, laid out as the original's All Units (M3-03E, ART_GUIDE → UI → Units,
+ * The unit collection, laid out as the original's All Units (M3-03E, legacy/ART_GUIDE_BFR.md → UI → Units,
  * Squad, and Unit detail screens): title bar, a five-column grid of element-framed thumbs over
  * `bg-olive`, and the help ticker. Opened from the Unit hub at `/units` (M4-06B); `?pick=evolve`
  * dims units that cannot evolve and sends a tap to the evolve screen; `?pick=sphere` sends a tap to
- * the Equip Sphere screen (M4-06J). The signed-in player's `owned_units`, `owned_unit_stacks`
+ * the Equip Sphere screen (M4-06J). The Filter tab's parameters (M8-04_1, `unit-filter.ts`) keep only
+ * matching tiles. The signed-in player's `owned_units`, `owned_unit_stacks`
  * (one tile per stack, M4-05C), and `squads` are read with their session, so RLS returns only
  * their own rows. Protected by `src/proxy.ts`.
  */
 export default async function UnitsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string | string[]; pick?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactNode> {
   const supabase = await createSupabaseServerClient();
   const { data: claims } = supabase ? await supabase.auth.getClaims() : { data: null };
@@ -39,8 +45,9 @@ export default async function UnitsPage({
   const params = await searchParams;
   const sort = parseUnitSort(params.sort);
   const pick = parseUnitPick(params.pick);
+  const filter = parseUnitFilter(params);
   if (!supabase || !userId) {
-    redirect(`${SIGN_IN_PATH}?next=${encodeURIComponent(unitListHref(sort, pick))}`);
+    redirect(`${SIGN_IN_PATH}?next=${encodeURIComponent(unitListFilterHref(sort, pick, filter))}`);
   }
 
   const [unitsResult, stacksResult, squadsResult] = await Promise.all([
@@ -66,14 +73,16 @@ export default async function UnitsPage({
   const rows = failed ? [] : (unitsResult.data ?? []);
   const stacks = failed ? [] : (stacksResult.data ?? []);
   const party = new Set((squadsResult.data ?? []).flatMap((squad) => squad.unit_ids));
+  const types = new Map(rows.map((row) => [row.id, row.unit_type?.type ?? "lord"] as const));
 
   return (
     <UnitsList
-      units={collectionEntries(rows, stacks, sort)}
+      units={filterEntries(collectionEntries(rows, stacks, sort), filter, { party, types })}
       total={ownedCopyTotal(rows, stacks)}
       party={party}
       sort={sort}
       pick={pick}
+      filter={filter}
       failed={failed}
     />
   );

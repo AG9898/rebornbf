@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { ORIGINAL_ASSETS } from "../original/original-assets.ts";
 import {
   parseUnitPick,
   pickHref,
+  UNIT_HUB_BASE,
   UNIT_HUB_BUTTONS,
   UNIT_LIST_PATH,
   unitListHref,
@@ -19,6 +21,16 @@ describe("Unit hub (M4-06B)", () => {
       ["Equip Sphere", "/units/list?pick=sphere"],
       ["Sell Unit", null],
     ]);
+  });
+
+  it("draws every button from imported original normal and pressed art (M8-03)", () => {
+    const imported = (asset: string): boolean => asset in ORIGINAL_ASSETS;
+    for (const state of [1, 2]) {
+      expect(imported(`${UNIT_HUB_BASE}${state}.png`)).toBe(true);
+      for (const b of UNIT_HUB_BUTTONS) {
+        expect(imported(`${b.art}${state}.png`), b.label).toBe(true);
+      }
+    }
   });
 
   it("builds the All Units URL, keeping sort and pick", () => {

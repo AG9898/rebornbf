@@ -53,7 +53,7 @@ type Fused = {
 };
 
 /**
- * The Fuse Units stage (M4-01B/C, restyled in M4-06D; ART_GUIDE → UI → Fusion stage): the base's
+ * The Fuse Units stage (M4-01B/C, restyled in M4-06D; legacy/ART_GUIDE_BFR.md → UI → Fusion stage): the base's
  * idle sprite on the centre pedestal with its stat plate, five fodder pedestals at the corners and
  * bottom centre, Change Base and Display Status in the title bar, and a Fuse pill that opens the
  * confirm. The empty base opens the multi-select picker (M4-06N); each fodder pedestal is one slot

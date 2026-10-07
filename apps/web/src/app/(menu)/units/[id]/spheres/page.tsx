@@ -25,7 +25,7 @@ import { SphereEquip } from "./SphereEquip.tsx";
 export const metadata: Metadata = { title: "Equip Sphere · BFR" };
 
 /**
- * The Equip Sphere screen (M4-06J; ART_GUIDE → UI → Equip Sphere): the unit detail's title bar, the
+ * The Equip Sphere screen (M4-06J; legacy/ART_GUIDE_BFR.md → UI → Equip Sphere): the unit detail's title bar, the
  * unit's sphere sockets (the second only once unlocked, M4-04D), and the player's owned spheres.
  * The unit, its equipment, and the spheres are read under RLS; changes go through `equip_sphere`
  * (M4-04A) in a Server Action. Protected by `src/proxy.ts`.

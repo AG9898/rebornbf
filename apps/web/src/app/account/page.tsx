@@ -15,7 +15,7 @@ import {
 export const metadata: Metadata = { title: "Account · BFR" };
 
 /**
- * The signed-in player's account page (protected by `src/proxy.ts`; ART_GUIDE → Sign-in and
+ * The signed-in player's account page (protected by `src/proxy.ts`; legacy/ART_GUIDE_BFR.md → Sign-in and
  * Account screens). It sits outside the menu frame, so it also works mid-onboarding as the sign-out
  * path. It reads the profile, wallet, unit counts, and the first saved squad's leader under RLS
  * and draws them with `AccountScreen`.

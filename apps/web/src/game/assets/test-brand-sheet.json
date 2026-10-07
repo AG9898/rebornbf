@@ -275,7 +275,7 @@
     }
   },
   "meta": {
-    "app": "art/tools/make_test_sheet.py (Aseprite json-hash layout)",
+    "app": "art/legacy/tools/make_test_sheet.py (Aseprite json-hash layout)",
     "image": "test-brand-sheet.png",
     "format": "RGBA8888",
     "size": {

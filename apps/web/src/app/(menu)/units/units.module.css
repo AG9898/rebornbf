@@ -1,6 +1,6 @@
 /*
  * Unit collection and detail (M3-03A); the list is the original's All Units (M3-03E) and the
- * detail its Unit Info (M3-03G), per ART_GUIDE -> UI -> Units, Squad, and Unit detail screens.
+ * detail its Unit Info (M3-03G), per legacy/ART_GUIDE_BFR.md -> UI -> Units, Squad, and Unit detail screens.
  * The evolve page reuses the title bar, pills, and icon classes. Sizes use the menu frame's
  * logical pixel, --u.
  */
@@ -205,29 +205,33 @@
   border: calc(var(--u) * 4) solid #6b6456;
 }
 
-.party,
 .level {
   position: absolute;
   left: 0;
   right: 0;
+  bottom: calc(var(--u) * 2);
   text-align: center;
   white-space: nowrap;
+  pointer-events: none;
+  font-size: calc(var(--u) * 21);
+}
+
+/* The original's PARTY (94x27) and Lv.MAX (87x27, at 0.88) pieces, as measured in layouts/unit_list.json. */
+.party,
+.levelMax {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
 .party {
-  --stroke: 4;
-  top: calc(var(--u) * -4);
-  font-size: calc(var(--u) * 20);
-  color: #6fd0ff;
-  -webkit-text-stroke-color: #06224a;
-  text-shadow: 0 calc(var(--u) * 2) 0 #06224a;
+  top: calc(var(--u) * -10);
 }
 
-.level {
-  bottom: calc(var(--u) * 2);
-  font-size: calc(var(--u) * 21);
-  color: #ffe34a;
+.icon .levelMax {
+  bottom: calc(var(--u) * -2);
+  width: calc(var(--u) * 77);
 }
 
 /* A stack's copy count (M4-05C): white outlined text inside the frame's top-right corner. */
@@ -382,62 +386,41 @@
   background-image: url("/assets/ui/btn-pill-lit.webp");
 }
 
-/* ---------- Unit hub (M4-06B, RESOLVED-80) ---------- */
+/* ---------- Unit hub (M4-06B, M8-03) ---------- */
 
-.hubGrid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(2, calc(var(--u) * 280));
-  grid-auto-rows: calc(var(--u) * 128);
-  align-content: center;
-  justify-content: center;
-  gap: calc(var(--u) * 22) calc(var(--u) * 18);
-  list-style: none;
-  margin: 0;
-  padding: calc(var(--u) * 16);
-}
-
-/* btn-hub drawn at its own aspect (520x237 at 2x), so its text box maps as percentages. */
-.hubButton {
+/*
+ * Logical px (--u); positions are the screen positions in art/original/layouts/unit.json less
+ * 304 (164 px header + 140 px title bar). Each button is one main_l_btn (260x156).
+ */
+.hubBoard {
   position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-decoration: none;
+  height: calc(var(--u) * 680);
 }
 
-.hubButtonArt {
+.hubButton {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  width: calc(var(--u) * 260);
+  height: calc(var(--u) * 156);
 }
 
-.hubButtonText {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: calc(var(--u) * 28);
-  white-space: nowrap;
+.hubRow0 {
+  top: calc(var(--u) * 66);
 }
 
-a.hubButton:hover,
-a.hubButton:focus-visible {
-  filter: brightness(1.15);
+.hubRow1 {
+  top: calc(var(--u) * 229);
 }
 
-a.hubButton:focus-visible {
-  outline: calc(var(--u) * 3) solid #fbe39a;
-  outline-offset: calc(var(--u) * 2);
-  border-radius: calc(var(--u) * 20);
+.hubRow2 {
+  top: calc(var(--u) * 392);
 }
 
-.hubButton[aria-disabled="true"] {
-  filter: grayscale(0.7) brightness(0.7);
-  cursor: default;
+.hubCol0 {
+  left: calc(var(--u) * 40);
+}
+
+.hubCol1 {
+  left: calc(var(--u) * 340);
 }
 
 /* ---------- Unit detail (M3-03G) ---------- */
@@ -709,7 +692,7 @@ button.actionButton:disabled {
   aspect-ratio: 232 / 248;
 }
 
-/* The sphere icon fills 70% of the socket, as in ART_GUIDE → UI → Sphere icons. */
+/* The sphere icon fills 70% of the socket, as in legacy/ART_GUIDE_BFR.md → UI → Sphere icons. */
 .sphereIcon {
   position: relative;
   width: 70%;

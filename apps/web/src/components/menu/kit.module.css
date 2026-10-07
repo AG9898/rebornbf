@@ -1,0 +1,241 @@
+/*
+ * The original's shared sub-screen chrome (M8-01, RESOLVED-98). Logical px (--u) on the original
+ * 640x1136 screen less the 164 px header; measured in art/original/layouts/kit-rewards.json.
+ */
+
+.text {
+  color: #fff;
+  font-weight: 700;
+  paint-order: stroke fill;
+  -webkit-text-stroke: calc(var(--u) * 4) #10131c;
+}
+
+.pressed {
+  display: none;
+}
+
+:active > .normal {
+  display: none;
+}
+
+:active > .pressed {
+  display: block;
+}
+
+/* A sub-screen: title bar, the page's content, ticker. */
+.page {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    #1c1408 url("/assets/original/common/base.jpg") 0 calc(var(--u) * -164) / 100% auto no-repeat;
+}
+
+.body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ---------- Title bar (screen y 212–296) ---------- */
+
+.titleBar {
+  position: relative;
+  flex: none;
+  height: calc(var(--u) * 140);
+}
+
+.titlePlate,
+.back,
+.title,
+.titleAction {
+  position: absolute;
+}
+
+.titlePlate {
+  left: 0;
+  top: calc(var(--u) * 48);
+  pointer-events: none;
+}
+
+.back {
+  left: calc(var(--u) * 2);
+  top: calc(var(--u) * 53);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.title {
+  left: calc(var(--u) * 104);
+  top: calc(var(--u) * 48);
+  width: calc(var(--u) * 290);
+  height: calc(var(--u) * 84);
+  margin: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 32);
+  line-height: calc(var(--u) * 84);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* With a subtitle (Units list, M8-04): title centred at screen y 250, the subtitle at 274. */
+.titleWithSub {
+  top: calc(var(--u) * 52);
+  height: calc(var(--u) * 44);
+  line-height: calc(var(--u) * 44);
+}
+
+.subtitle {
+  position: absolute;
+  left: calc(var(--u) * 106);
+  top: calc(var(--u) * 98);
+  width: calc(var(--u) * 290);
+  margin: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 19);
+  line-height: calc(var(--u) * 24);
+  white-space: nowrap;
+  -webkit-text-stroke-width: calc(var(--u) * 3);
+}
+
+/* A right-hand action such as Receive All (sub_s_btn at screen x 434, y 219). */
+.titleAction {
+  left: calc(var(--u) * 434);
+  top: calc(var(--u) * 55);
+}
+
+/* ---------- Ticker (screen y 984–1022) ---------- */
+
+.ticker {
+  position: relative;
+  flex: none;
+  height: calc(var(--u) * 38);
+  margin: 0;
+}
+
+.tickerBase {
+  position: absolute;
+  inset: 0;
+}
+
+.tickerText {
+  position: absolute;
+  left: calc(var(--u) * 10);
+  right: calc(var(--u) * 10);
+  top: 0;
+  overflow: hidden;
+  font-size: calc(var(--u) * 21);
+  line-height: calc(var(--u) * 38);
+  white-space: nowrap;
+  color: #fff;
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  position: relative;
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.button[aria-disabled="true"] {
+  cursor: default;
+  filter: grayscale(0.6) brightness(0.8);
+}
+
+/* OriginalLabelButton: base and label pieces stack in one box the size of the base. */
+.labelButton {
+  display: block;
+}
+
+.layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.caption {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(var(--u) * 14);
+  line-height: 1.05;
+  text-align: center;
+}
+
+/* ---------- Nine-slice windows ---------- */
+
+.window {
+  --c: calc(var(--u) * var(--corner));
+  position: relative;
+  background: var(--base) center / 100% 100%;
+}
+
+/* Edges run the full length under the corners, so fractional --u leaves no seam. */
+.frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    var(--top) left top / 100% var(--c) no-repeat,
+    var(--bottom) left bottom / 100% var(--c) no-repeat,
+    var(--left) left top / var(--c) 100% no-repeat,
+    var(--right) right top / var(--c) 100% no-repeat;
+}
+
+.frame::before,
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.frame::before {
+  background:
+    var(--lt) left top / var(--c) var(--c) no-repeat,
+    var(--rt) right top / var(--c) var(--c) no-repeat;
+}
+
+.frame::after {
+  background:
+    var(--lb) left bottom / var(--c) var(--c) no-repeat,
+    var(--rb) right bottom / var(--c) var(--c) no-repeat;
+}
+
+.windowBody {
+  position: relative;
+  padding: var(--c);
+}
+
+/* ---------- Placeholder page (ComingSoon) ---------- */
+
+.placeholderWindow {
+  margin: calc(var(--u) * 60) calc(var(--u) * 30) 0;
+}
+
+.placeholderWindow > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 24);
+  padding-block: calc(var(--u) * 48);
+}
+
+.placeholderText {
+  margin: 0;
+  font-size: calc(var(--u) * 26);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.placeholderButton {
+  flex: none;
+}

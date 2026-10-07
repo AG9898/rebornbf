@@ -23,7 +23,7 @@ import units from "../units/units.module.css";
 import styles from "./fusion.module.css";
 
 /**
- * The fusion fodder picker (RESOLVED-90 item 2, M4-01F; ART_GUIDE → UI → Fusion stage): the
+ * The fusion fodder picker (RESOLVED-90 item 2, M4-01F; legacy/ART_GUIDE_BFR.md → UI → Fusion stage): the
  * multi-select picker's title bar and grid, where tapping an icon adds one copy and holding keeps
  * adding, faster, until the no-wasted-pick cutoff (`addGrantingFodderCopy`), the held copies, or 99.
  * Icons that would add nothing are dimmed. The bottom bar shows the five slots, each with ×N and a

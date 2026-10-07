@@ -68,7 +68,7 @@ export type ContinueState = {
 };
 
 /**
- * The quest completion flow over the battle (M2-07H; ART_GUIDE → Battle result screens). A win
+ * The quest completion flow over the battle (M2-07H; legacy/ART_GUIDE_BFR.md → Battle result screens). A win
  * plays the clear beat while the server verifies the log, then (only for a verified submission)
  * the Quest Clear Reward screen, the starter reveal, and the first-clear bonus. A loss shows GAME
  * OVER, then the Continue dialog. It only presents `ending`; settlement happened once upstream.

@@ -20,7 +20,7 @@ export type FlyingFodder = {
 const ANIMATION_FALLBACK_MS = 2500;
 
 /**
- * The fusion animation and result screen (M4-06E; ART_GUIDE → UI → Fusion stage and Fusion
+ * The fusion animation and result screen (M4-06E; legacy/ART_GUIDE_BFR.md → UI → Fusion stage and Fusion
  * result). First the fodder sprites fly from their pedestals into the base and a flash covers it;
  * the flash's end opens the result: element orb and name, the before ▶ after table, Next Lv. with
  * the EXP bar, the Great/Super Success line when rolled, LEVEL UP!! when the level rose, the idle

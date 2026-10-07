@@ -24,11 +24,11 @@ import {
 import { type BattleControls, speedLabel } from "./controls.ts";
 import { bossEnemy, gaugeView, type HudState, type HudUnit, resultTitle } from "./model.ts";
 
-/** The menu's outlined label style (ART_GUIDE.md → UI): white with a dark brown outline. */
+/** The menu's outlined label style (ART_GUIDE.md → UI → Typography and colour): white with a dark brown outline. */
 export const OUTLINE = "#2a1606";
 /** Used until the Lilita One webfont is known to be loaded (it always is by `mountBattle`). */
 export const FALLBACK_FONT = "sans-serif";
-/** Item icons fill 70% of the slot's width, like sphere icons in their sockets (ART_GUIDE → UI). */
+/** Item icons fill 70% of the slot's width, like sphere icons in their sockets (legacy/ART_GUIDE_BFR.md → Sphere icons). */
 const ITEM_ICON_SCALE = 0.7;
 
 export const HUD_COLORS = {
@@ -45,7 +45,7 @@ export const HUD_COLORS = {
   itemEmpty: 0x6a6a78,
 } as const;
 
-/** Top counter label colours (ART_GUIDE.md → Effects): Damage orange, Spark green. */
+/** Top counter label colours (legacy/ART_GUIDE_BFR.md → Effects): Damage orange, Spark green. */
 const DAMAGE_LABEL = "#ff9a2e";
 const SPARK_LABEL = "#72e05a";
 

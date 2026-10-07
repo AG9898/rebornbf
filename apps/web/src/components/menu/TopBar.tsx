@@ -1,17 +1,17 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import styles from "./menu.module.css";
-import { UiImage } from "./UiImage.tsx";
+import { OriginalImage } from "./OriginalImage.tsx";
+import styles from "./original-menu.module.css";
 import { GemCount } from "./WalletGems.tsx";
 
 /** The name plate's text when the player is signed out or has no display name. */
 export const PLACEHOLDER_NAME = "Summoner";
 
 /**
- * Status bar. The name plate shows the player's display name (set on the onboarding name step)
- * and opens the account page; the gem and Zel rows show the player's wallet (0 when signed out).
- * The gem count comes from the wallet context so a claim on the page can update it. Progress is a
- * placeholder.
+ * The original's header (RESOLVED-98): `header_ui` plate with the EXP and Energy bars showing
+ * through its holes. The name opens the account page; gems and Zel show the player's wallet (0
+ * when signed out), the gem count from the wallet context so a claim on the page can update it.
+ * Level, rank, EXP, energy, karma, and arena orbs have no BFR data yet and stay empty.
  */
 export function TopBar({
   playerName,
@@ -21,24 +21,17 @@ export function TopBar({
   zel?: number | null;
 }): ReactNode {
   return (
-    <header className={styles.topBar}>
-      <Link href="/account" className={`${styles.namePlate} ${styles.outlined}`}>
-        <span className={styles.nameText}>{playerName ?? PLACEHOLDER_NAME}</span>
+    <header className={styles.header}>
+      <OriginalImage asset="header/header_ui/bar_bg.png" className={styles.barExp} />
+      <OriginalImage asset="header/header_ui/bar_bg.png" className={styles.barEnergy} />
+      <OriginalImage asset="header/header_ui/plate.png" className={styles.headerPlate} priority />
+      <Link href="/account" className={`${styles.headerName} ${styles.text}`}>
+        {playerName ?? PLACEHOLDER_NAME}
       </Link>
-      <div className={styles.progress} role="presentation">
-        <div className={styles.progressFill} style={{ width: "0%" }} />
-      </div>
-      <UiImage name="top-crest" className={styles.crest} priority />
-      <p className={styles.currency} style={{ top: "calc(var(--u) * 11)" }}>
-        <UiImage name="icon-gem" alt="Gems" />
-        <span className={styles.outlined}>
-          <GemCount />
-        </span>
-      </p>
-      <p className={styles.currency} style={{ top: "calc(var(--u) * 54)" }}>
-        <UiImage name="icon-zel" alt="Zel" />
-        <span className={styles.outlined}>{zel ?? 0}</span>
-      </p>
+      <span className={`${styles.headerValue} ${styles.text} ${styles.gems}`}>
+        <GemCount />
+      </span>
+      <span className={`${styles.headerValue} ${styles.text} ${styles.zel}`}>{zel ?? 0}</span>
     </header>
   );
 }

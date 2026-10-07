@@ -4,7 +4,7 @@
 export const SUMMON_COSTS = { 1: 5, 11: 50 } as const;
 export type SummonCount = keyof typeof SUMMON_COSTS;
 
-/** The gate, burst, halo, and rarity word a pulled form plays (ART_GUIDE → Rarity treatments). */
+/** The gate, burst, halo, and rarity word a pulled form plays (legacy/ART_GUIDE_BFR.md → Rarity treatments). */
 export type SummonTreatment = "gold" | "red" | "rainbow";
 
 export const RARITY_WORDS: Readonly<Record<SummonTreatment, string>> = {

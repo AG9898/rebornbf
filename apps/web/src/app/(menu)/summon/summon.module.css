@@ -1,5 +1,5 @@
 /*
- * Summon screen and sequence (ART_GUIDE → Summon screen, gate, and reveal). Sizes are logical px
+ * Summon screen and sequence (legacy/ART_GUIDE_BFR.md → Summon screen, gate, and reveal). Sizes are logical px
  * (--u); pieces are exported at 2x. `.page` stays unpositioned so `.stage`, the loading glyph,
  * and `.modal` (position: absolute) cover the whole menu column, status bar and nav included.
  */

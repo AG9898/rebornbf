@@ -2,13 +2,17 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import styles from "../../app/(menu)/units/units.module.css";
 import { levelLabel } from "../../lib/units/owned-units.ts";
+import { LIST_LV_MAX, LIST_PARTY_ICON } from "../../lib/units/unit-list-screen.ts";
 import type { CollectionEntry } from "../../lib/units/unit-stacks.ts";
+import { OriginalImage } from "../menu/OriginalImage.tsx";
 import { UiImage } from "../menu/UiImage.tsx";
 import { THUMB_ART_SIZE } from "../menu/ui-assets.ts";
 
 /**
  * The inside of one All Units grid icon (M3-03E): the form's thumb (or sprite, or initial) in its
- * element frame, PARTY on top, a stack's ×N count, and the level across the bottom. The Units list
+ * element frame, PARTY on top, a stack's ×N count, and the level across the bottom. PARTY and
+ * Lv.MAX are the original's pieces (M8-04); a lower level is drawn in code. The original's thumbs
+ * carry their own element frame, so BFR's thumb and frame stay until the unit import. The Units list
  * and the multi-select picker (M4-06N) wrap it in their own link or button with the `icon` class.
  */
 export function UnitIconFace({
@@ -48,13 +52,17 @@ export function UnitIconFace({
       {unit.element ? (
         <UiImage name={`unit-frame-${unit.element}`} className={styles.iconFrame} />
       ) : null}
-      {inParty ? <span className={`${styles.party} ${styles.outline}`}>PARTY</span> : null}
+      {inParty ? <OriginalImage asset={LIST_PARTY_ICON} className={styles.party} /> : null}
       {unit.stackCount !== null ? (
         <span className={`${styles.stackCount} ${styles.outline}`} aria-hidden>
           ×{unit.stackCount}
         </span>
       ) : null}
-      <span className={`${styles.level} ${styles.outline}`}>{levelLabel(unit)}</span>
+      {unit.maxLevel !== null && unit.level >= unit.maxLevel ? (
+        <OriginalImage asset={LIST_LV_MAX} className={styles.levelMax} />
+      ) : (
+        <span className={`${styles.level} ${styles.outline}`}>{levelLabel(unit)}</span>
+      )}
     </>
   );
 }

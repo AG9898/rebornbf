@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import styles from "./onboarding.module.css";
 
 /**
- * The onboarding backdrop (ART_GUIDE → Onboarding screens): the portrait 640x1136 screen with the
+ * The onboarding backdrop (legacy/ART_GUIDE_BFR.md → Onboarding screens): the portrait 640x1136 screen with the
  * title key art blurred and dimmed and a small gold wordmark at the top, so each step follows on
  * from the title screen. The name, tutorial-prompt, and starter steps all draw inside it; the page
  * must sit under a parent that sets the menu font variable (`app/onboarding/layout.tsx`).

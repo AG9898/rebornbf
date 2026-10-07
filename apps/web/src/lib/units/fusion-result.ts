@@ -39,7 +39,7 @@ export type FusionResultRow = {
   rose: boolean;
 };
 
-/** The fusion result screen's content (ART_GUIDE → UI → Fusion result). */
+/** The fusion result screen's content (legacy/ART_GUIDE_BFR.md → UI → Fusion result). */
 export type FusionResultView = {
   name: string;
   element: OwnedUnitView["element"];

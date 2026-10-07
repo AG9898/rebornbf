@@ -1,5 +1,5 @@
 /*
- * Quest completion flow over the battle (M2-07H; ART_GUIDE -> Battle result screens, RESOLVED-92).
+ * Quest completion flow over the battle (M2-07H; legacy/ART_GUIDE_BFR.md -> Battle result screens, RESOLVED-92).
  * The layer is the canvas's size (the battle overlay is a size container), so --u is one logical
  * pixel of the 640-wide battle grid, as in the menu frame. All lettering is code; motion runs only
  * when neither the player's setting nor the OS asks for reduced motion ([data-motion="full"]).

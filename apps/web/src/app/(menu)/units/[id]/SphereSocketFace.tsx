@@ -5,7 +5,7 @@ import type { SphereSocketView, SphereView } from "../../../../lib/units/spheres
 import styles from "../units.module.css";
 
 /**
- * One sphere socket (M4-06J; ART_GUIDE → UI → Units, Squad, and Unit detail screens): the
+ * One sphere socket (M4-06J; legacy/ART_GUIDE_BFR.md → UI → Units, Squad, and Unit detail screens): the
  * `item-slot` piece holding the sphere's icon, then a name plate with the sphere's name and
  * effect summary, "Empty", or "Locked". The caller wraps it in a link or button.
  */

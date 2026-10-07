@@ -7,7 +7,7 @@ import { trialStage } from "../../lib/quests/trials.ts";
 import stageArt from "./stage-art.json";
 import { stageBackground, stageEnemyArt } from "./stage-art.ts";
 
-const artDir = join(import.meta.dirname, "..", "..", "..", "..", "..", "art");
+const artDir = join(import.meta.dirname, "..", "..", "..", "..", "..", "art", "legacy");
 const backgroundsPath = join(artDir, "backgrounds", "backgrounds.json");
 const enemiesPath = join(artDir, "enemies", "enemies.json");
 

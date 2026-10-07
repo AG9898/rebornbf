@@ -3,7 +3,7 @@ import { isOAuthProvider, type OAuthProvider } from "../supabase/routes.ts";
 import { unitContent } from "../units/owned-units.ts";
 
 /**
- * Display helpers for the sign-in and account screens (ART_GUIDE → Sign-in and Account screens).
+ * Display helpers for the sign-in and account screens (legacy/ART_GUIDE_BFR.md → Sign-in and Account screens).
  * Pure, so the pages stay thin and this is testable.
  */
 

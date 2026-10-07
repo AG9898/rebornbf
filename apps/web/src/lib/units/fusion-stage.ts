@@ -10,7 +10,7 @@ import {
 } from "./unit-stacks.ts";
 
 /**
- * The Fuse Units stage's draft (M4-06D, RESOLVED-80; ART_GUIDE → UI → Fusion stage). Pure helpers:
+ * The Fuse Units stage's draft (M4-06D, RESOLVED-80; legacy/ART_GUIDE_BFR.md → UI → Fusion stage). Pure helpers:
  * the base sits on the centre pedestal; the fodder fill up to five slots in pick order (RESOLVED-90):
  * an owned row is one slot (×1), a stack is one slot of 1–99 copies. Adding and removing work one
  * copy at a time; a stack slot that reaches 0 copies empties.

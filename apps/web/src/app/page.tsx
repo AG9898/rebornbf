@@ -6,7 +6,7 @@ import { menuFont } from "../styles/fonts.ts";
 import styles from "./title.module.css";
 
 /**
- * The title screen (RESOLVED-68, ART_GUIDE → Title screen), shown on every visit outside the menu
+ * The title screen (RESOLVED-68, legacy/ART_GUIDE_BFR.md → Title screen), shown on every visit outside the menu
  * frame: the locked key art (M6-09A), the app-rendered gold wordmark in the top band, and the
  * bottom band with the "Tap to start" ribbon and the footer. The tap goes to sign-in, the next
  * unfinished onboarding step, or home; the footer's About link sits above the tap target.

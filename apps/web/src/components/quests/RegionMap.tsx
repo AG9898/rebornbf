@@ -9,7 +9,7 @@ import { UI_ASSETS } from "../menu/ui-assets.ts";
 import styles from "./region-map.module.css";
 
 /**
- * Measured off the 2x exports (ART_GUIDE.md → Region map), as percentages of the piece: the
+ * Measured off the 2x exports (legacy/ART_GUIDE_BFR.md → Region map), as percentages of the piece: the
  * area-plate's small count tab (its inner face, x 204–395, y 93–131; the plate's `textBox` holds
  * the name), and the clear space above region-plate's centre ornament where the region name sits.
  */

@@ -11,7 +11,7 @@ import { formArtFile, unitContent } from "../units/owned-units.ts";
 import type { Submission } from "./submit-session.ts";
 
 /**
- * The quest completion flow's presentation (M2-07H; ART_GUIDE → Battle result screens,
+ * The quest completion flow's presentation (M2-07H; legacy/ART_GUIDE_BFR.md → Battle result screens,
  * RESOLVED-92). Pure: it only reshapes a verified `submitSession` result and the stage content, so
  * every amount, item, and unit shown comes from the server settlement and nothing is invented.
  */
